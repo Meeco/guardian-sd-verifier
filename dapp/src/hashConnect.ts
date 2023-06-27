@@ -1,26 +1,26 @@
-import { HashConnect, HashConnectTypes } from "hashconnect";
+import { HashConnect, HashConnectTypes, MessageTypes } from "hashconnect";
+
+export let hashconnect: HashConnect;
+export let initData: HashConnectTypes.InitilizationData;
 
 export const initHashconnect = async () => {
-  const hashconnect = new HashConnect();
+  const hashconnectInstance = new HashConnect();
   const appMetadata = {
     name: "dApp Example",
     description: "An example hedera dApp",
     icon: "https://www.hashpack.app/img/logo.svg",
   };
 
-  const initData = await hashconnect.init(appMetadata, "testnet", false);
+  const data = await hashconnectInstance.init(appMetadata, "testnet", false);
+  initData = data;
+  hashconnect = hashconnectInstance;
 
-  return { hashconnect, initData };
+  return initData;
 };
 
 export const pairWallet = async (
-  hashConnectPromise: Promise<{
-    hashconnect: HashConnect;
-    initData: HashConnectTypes.InitilizationData;
-  }>,
   setPairingData: (val?: HashConnectTypes.SavedPairingData) => void
 ) => {
-  const { initData, hashconnect } = await hashConnectPromise;
   if (initData) hashconnect.connectToLocalWallet();
 
   hashconnect.foundExtensionEvent.once((walletMetadata) => {
@@ -33,4 +33,27 @@ export const pairWallet = async (
   });
 
   return initData;
+};
+
+export const sendTransaction = async (
+  trans: Uint8Array,
+  acctToSign: string,
+  return_trans: boolean = false,
+  hideNfts: boolean = false,
+  getRecord: boolean = false
+) => {
+  const { topic } = initData;
+  const transaction: MessageTypes.Transaction = {
+    topic: topic,
+    byteArray: trans,
+
+    metadata: {
+      accountToSign: acctToSign,
+      returnTransaction: return_trans,
+      hideNft: hideNfts,
+      getRecord: getRecord,
+    },
+  };
+
+  return await hashconnect.sendTransaction(topic, transaction);
 };

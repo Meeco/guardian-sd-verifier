@@ -3,27 +3,28 @@ import { useEffect, useState } from "react";
 import "./App.css";
 import { initHashconnect, pairWallet } from "./hashConnect";
 import { HashConnectTypes } from "hashconnect";
+import buildCreateFileTransaction from "./fileCreate";
 
 
 
 function App() {
-  const [hashConnectData, setHashConnectData] = useState<HashConnectTypes.InitilizationData | undefined>()
+  // const [hashConnectData, setHashConnectData] = useState<HashConnectTypes.InitilizationData | undefined>()
   const [pairingData, setPairingData] = useState<HashConnectTypes.SavedPairingData | undefined>()
 
-  const hashConnectPromise = initHashconnect()
+  const existingInitDataPromise = initHashconnect()
 
   const accountIds = pairingData?.accountIds
 
   const handleSetPairingData = (val?: HashConnectTypes.SavedPairingData) => setPairingData(val)
 
   const pair = async () => {
-    const initData = await pairWallet(hashConnectPromise, handleSetPairingData);
-    setHashConnectData(initData)
+    await pairWallet(handleSetPairingData);
+    // setHashConnectData(initData)
   };
 
   useEffect(() => {
-    hashConnectPromise.then(({ hashconnect, initData }) => {
-      setHashConnectData(initData)
+    existingInitDataPromise.then((initData) => {
+      // setHashConnectData(initData)
       setPairingData(initData?.savedPairings[0])
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -46,6 +47,7 @@ function App() {
           </>
         )} */}
         <button onClick={pair}>Pair wallet</button>
+        <button onClick={buildCreateFileTransaction}>Create File</button>
       </div>
     </div>
   );
