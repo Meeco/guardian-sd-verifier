@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import { initSigningService, signAndMakeBytes } from "./signingService";
+import { initSigningService, createTransactionString } from "./signingService";
 
 const app = express();
 dotenv.config();
@@ -21,6 +21,22 @@ app.listen(port, () => {
 initSigningService(accountId, privateKey);
 
 app.get("/tx-bytes-string", async (req, res) => {
-  const outBytesStr = await signAndMakeBytes(privateKey, accountId);
+  const outBytesStr = await createTransactionString(privateKey, accountId);
   res.json({ outBytesStr });
+});
+
+app.get("/resolve-did/:id", async (req, res) => {
+  const { params } = req;
+  const { id } = params;
+  const response = await fetch(
+    `https://api.godiddy.com/0.1.0/universal-resolver/identifiers/${id}`,
+    {
+      headers: {
+        Authorization: `Bearer ${process.env.GODIDDY_APIKEY}`,
+      },
+    }
+  );
+
+  const resJson = await response.json();
+  res.json(resJson);
 });
