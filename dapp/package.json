@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@digitalbazaar/ed25519-signature-2018": "^4.0.0",
+    "@digitalbazaar/ed25519-verification-key-2018": "^4.0.0",
+    "@digitalbazaar/vc": "^6.0.1",
     "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^13.0.0",
     "@testing-library/user-event": "^13.2.1",
@@ -11,6 +14,8 @@
     "@types/react": "^18.0.0",
     "@types/react-dom": "^18.0.0",
     "hashconnect": "^0.2.4",
+    "jsonld-signatures": "^11.2.1",
+    "moment": "^2.29.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-scripts": "5.0.1",
@@ -40,5 +45,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@types/": "digitalbazaar/ed25519-verification-key-2020"
   }
 }

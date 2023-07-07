@@ -1,56 +1,128 @@
-import { useEffect, useState } from "react";
-
-import "./App.css";
-import { initHashconnect, pairWallet } from "./hashConnect";
-import { HashConnectTypes } from "hashconnect";
-import buildCreateFileTransaction from "./fileCreate";
-
+import { ChangeEvent, useState } from "react";
+import fetchResolveDid from "./fetchResolveDid";
+import { createPresentation, issue, signPresentation } from '@digitalbazaar/vc';
+import { generateKeyPair, getSuite } from "./generateKeyPair";
+import documentLoader from "./documentLoader";
+import moment from "moment";
 
 
 function App() {
-  // const [hashConnectData, setHashConnectData] = useState<HashConnectTypes.InitilizationData | undefined>()
-  const [pairingData, setPairingData] = useState<HashConnectTypes.SavedPairingData | undefined>()
+  const [verificationMethods, setVerificationMethods] = useState([])
+  const [credential, setCredential] = useState<any>()
+  const [verifiableCredentialDid, setVerifiableCredentialDid] = useState('')
+  const [selectedMethod, setSelectedMethod] = useState<any>()
 
-  const existingInitDataPromise = initHashconnect()
+  const getVerificationMethods = async () => {
+    const { didDocument } = await fetchResolveDid(verifiableCredentialDid)
+    const { verificationMethod } = didDocument
+    setVerificationMethods(verificationMethod)
+  }
 
-  const accountIds = pairingData?.accountIds
+  const handleExtractDid = () => {
+    if (credential) {
+      const { credentialSubject } = credential
+      setVerifiableCredentialDid(credentialSubject.id)
+      handleGenKeyPair(credentialSubject.id).then(async (keyPair) => {
+        const date = moment(credential.credentialSubject.valid_until).add(1, 'y').format('YYYY-MM-DD')
 
-  const handleSetPairingData = (val?: HashConnectTypes.SavedPairingData) => setPairingData(val)
+        const formattedCredential = {
+          ...credential,
+          "@context": ["https://www.w3.org/2018/credentials/v1", "https://ipfs.io/ipfs/QmdafSLzFLrTSp3fPG8CpcjH5MehtDFY4nxjr5CVq3z1rz"],
+          issuer: {
+            ...credential.issuer,
+            id: credential.credentialSubject.id,
+            name: "Self Asserted"
+          },
+          credentialSubject: {
+            ...credential.credentialSubject,
+            type: "auditor_template",
+            valid_until: date
+          }
+        }
+        delete formattedCredential.credentialStatus
 
-  const pair = async () => {
-    await pairWallet(handleSetPairingData);
-    // setHashConnectData(initData)
+        const suite = getSuite(keyPair)
+        const signedVC = await issue({ credential: formattedCredential, suite, documentLoader });
+        console.log(JSON.stringify(signedVC, null, 2));
+
+        const presentation = createPresentation({
+          verifiableCredential: signedVC
+        });
+
+        console.log("presentation: ", JSON.stringify(presentation, null, 2));
+        console.log("\n")
+
+        const vp = await signPresentation({
+          presentation, suite, challenge: 'challenge', documentLoader
+        });
+
+        console.log("Singed Presentation: ", JSON.stringify(vp, null, 2));
+      })
+    }
+  }
+
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const fileReader = new FileReader();
+      fileReader.readAsText(e.target.files[0], "UTF-8");
+      fileReader.onload = e => {
+        const str: string = e.target?.result as string || ''
+        if (str) {
+          setCredential(JSON.parse(str))
+        }
+      };
+    }
   };
 
-  useEffect(() => {
-    existingInitDataPromise.then((initData) => {
-      // setHashConnectData(initData)
-      setPairingData(initData?.savedPairings[0])
-    })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  const getDisplayedMethod = (input: string) => {
+    const index = input.indexOf("#");
+    if (index !== -1) {
+      return input.slice(index + 1);
+    }
+    return null;
+  }
 
+
+  const handleGenKeyPair = async (id: string) => {
+    const keyPair = await generateKeyPair(id)
+
+    return keyPair
+  }
 
   return (
     <div className="App">
-      <div className="card">
-        {accountIds && (
-          <>
-            <p>Account IDs:</p>
-            <p>{accountIds}</p>
-          </>
-        )}
-        {/* {pairingString && (
-          <>
-            <h1>Pairing string:</h1>
-            <p>{pairingString}</p>
-          </>
-        )} */}
-        <button onClick={pair}>Pair wallet</button>
-        <button onClick={buildCreateFileTransaction}>Create File</button>
+      <div className="file">
+        <p>VC</p>
+        <input type="file" name="vc-file" id="vc-file" onChange={handleFileChange} />
       </div>
+      <button onClick={handleExtractDid}>Extract DID</button>
+      {verifiableCredentialDid ? (
+        <> <div className="did">
+          <p>DID: </p>
+          <p>{verifiableCredentialDid}</p>
+        </div>
+          <div>
+            <button onClick={getVerificationMethods}>Get verification Method(s)</button>
+            {verificationMethods && <div>
+              <div>
+                {
+                  verificationMethods.map((item: any) => (
+                    <div>
+                      <input type="radio" value={item.id} name="verification-method" onChange={() => {
+                        setSelectedMethod(item)
+                      }} />
+                      <label htmlFor="label">#{getDisplayedMethod(item.id)}</label>
+                    </div>
+                  ))
+                }
+              </div>
+            </div>}
+          </div>
+        </>
+
+      ) : null}
     </div>
-  );
+  )
 }
 
 export default App;
