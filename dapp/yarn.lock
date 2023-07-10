@@ -1594,7 +1594,7 @@
     protobufjs "^7.1.2"
     protobufjs-cli "^1.0.2"
 
-"@hashgraph/sdk@^2.19.2":
+"@hashgraph/sdk@^2.19.2", "@hashgraph/sdk@^2.29.0":
   version "2.29.0"
   resolved "https://registry.yarnpkg.com/@hashgraph/sdk/-/sdk-2.29.0.tgz#aeaaea672f2564d66c98b6f7dddbc6b77c850680"
   integrity sha512-dMv2q7OCa2Xyi0ooGjo4JJRFxHKzKBvMd8G/n30j4jHx1JiSfI2ckPTAOwfCbYZ/o+EMDZzevyD5+Juf9iph+A==

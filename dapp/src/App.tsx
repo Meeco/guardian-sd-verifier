@@ -1,16 +1,24 @@
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import fetchResolveDid from "./fetchResolveDid";
 import { createPresentation, issue, signPresentation } from '@digitalbazaar/vc';
 import { generateKeyPair, getSuite } from "./generateKeyPair";
 import documentLoader from "./documentLoader";
 import moment from "moment";
+import { createHederaClient } from "./hedera";
+import { getTopicMessage, makeTopic, submitMessage } from "./consensusService";
+import { MessageType, PresentationQueryMessage } from "./message";
 
 
 function App() {
+  const accountId = process.env.REACT_APP_MY_ACCOUNT_ID || ''
+  const privateKey = process.env.REACT_APP_MY_PRIVATE_KEY || ''
+  const client = createHederaClient(accountId, privateKey)
+
   const [verificationMethods, setVerificationMethods] = useState([])
   const [credential, setCredential] = useState<any>()
   const [verifiableCredentialDid, setVerifiableCredentialDid] = useState('')
   const [selectedMethod, setSelectedMethod] = useState<any>()
+  const [topicId, setTopicId] = useState<string | undefined>()
 
   const getVerificationMethods = async () => {
     const { didDocument } = await fetchResolveDid(verifiableCredentialDid)
@@ -43,20 +51,16 @@ function App() {
 
         const suite = getSuite(keyPair)
         const signedVC = await issue({ credential: formattedCredential, suite, documentLoader });
-        console.log(JSON.stringify(signedVC, null, 2));
+        // console.log(JSON.stringify(signedVC, null, 2));
 
         const presentation = createPresentation({
           verifiableCredential: signedVC
-        });
-
-        console.log("presentation: ", JSON.stringify(presentation, null, 2));
-        console.log("\n")
+        })
 
         const vp = await signPresentation({
           presentation, suite, challenge: 'challenge', documentLoader
         });
 
-        console.log("Singed Presentation: ", JSON.stringify(vp, null, 2));
       })
     }
   }
@@ -82,12 +86,31 @@ function App() {
     return null;
   }
 
-
   const handleGenKeyPair = async (id: string) => {
     const keyPair = await generateKeyPair(id)
-
     return keyPair
   }
+
+  const submitPresentationQueryMessage = () => {
+    const presentationQuery: PresentationQueryMessage = {
+      operation: MessageType.PRESENTATION_QUERY,
+      // TODO: get vc_id from UI instead of hardcode
+      vc_id: "urn:uuid:81348e38-db35-4e5a-bcce-1644422cedd9",
+      requester_did:
+        "did:hedera:testnet:DkUFuWbM49QU13y52cWTotMYXQ84X9cN7u1GJpMVbPv4_0.0.15069804",
+      limit_hbar: 1,
+    };
+    const message = JSON.stringify(presentationQuery);
+    submitMessage(message, client, topicId)
+  }
+
+  useEffect(() => {
+    makeTopic(client).then((id) => {
+      setTopicId(id?.toString())
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
 
   return (
     <div className="App">
@@ -116,6 +139,12 @@ function App() {
                   ))
                 }
               </div>
+              {
+                selectedMethod &&
+                <div>
+                  <button onClick={submitPresentationQueryMessage}>send query message</button>
+                </div>
+              }
             </div>}
           </div>
         </>

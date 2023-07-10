@@ -1,5 +1,5 @@
 const fetchResolveDid = async (did: string) => {
-  const res = await fetch(`https://dev.uniresolver.io/1.0/identifiers/${did}`);
+  const res = await fetch(`http://localhost:8000/resolve-did/${did}`);
 
   return res.json();
 };
