@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import { initSigningService, createTransactionString } from "./signingService";
+import { initSigningService } from "./signingService";
 
 const app = express();
 dotenv.config();
@@ -20,10 +20,10 @@ app.listen(port, () => {
 
 initSigningService(accountId, privateKey);
 
-app.get("/tx-bytes-string", async (req, res) => {
-  const outBytesStr = await createTransactionString(privateKey, accountId);
-  res.json({ outBytesStr });
-});
+// app.get("/tx-bytes-string", async (req, res) => {
+//   const outBytesStr = await createTransactionString(privateKey, accountId);
+//   res.json({ outBytesStr });
+// });
 
 app.get("/resolve-did/:id", async (req, res) => {
   const { params } = req;

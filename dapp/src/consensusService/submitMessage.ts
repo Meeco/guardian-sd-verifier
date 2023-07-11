@@ -5,16 +5,20 @@ export const submitMessage = async (
   client: Client,
   topicId?: string
 ) => {
-  const sendResponse = await new TopicMessageSubmitTransaction({
-    topicId: topicId || undefined,
-    message,
-  }).execute(client);
+  try {
+    const sendResponse = await new TopicMessageSubmitTransaction({
+      topicId: topicId || undefined,
+      message,
+    }).execute(client);
 
-  const getReceipt = await sendResponse.getReceipt(client);
-  const transactionStatus = getReceipt.status;
+    const getReceipt = await sendResponse.getReceipt(client);
+    const transactionStatus = getReceipt.status;
 
-  console.log(
-    "The message transaction status: " + transactionStatus.toString()
-  );
-  console.log("Complete");
+    console.log(
+      "The message transaction status: " + transactionStatus.toString()
+    );
+    console.log("Complete");
+  } catch (error) {
+    console.log({ error });
+  }
 };

@@ -2,7 +2,7 @@ import jsonldSignatures from "jsonld-signatures";
 
 const { extendContextLoader } = jsonldSignatures;
 
-const documentLoader = extendContextLoader(async (url: string) => {
+export const documentLoader = extendContextLoader(async (url: string) => {
   if (
     url ===
     "https://ipfs.io/ipfs/QmdafSLzFLrTSp3fPG8CpcjH5MehtDFY4nxjr5CVq3z1rz"
@@ -54,4 +54,3 @@ const documentLoader = extendContextLoader(async (url: string) => {
   };
 });
 
-export default documentLoader;
