@@ -1,5 +1,5 @@
 import { Buffer } from 'buffer';
-import { QueryResponseMessage } from '../types';
+import { QueryResponseMessage, PresentationResponseMessage } from '../types';
 
 const baseUrl = 'https://testnet.mirrornode.hedera.com';
 
@@ -26,6 +26,6 @@ export const getResponderDid = async (topicId: string) => {
   }
 };
 
-const decodeMessage = (value: string): QueryResponseMessage => {
+const decodeMessage = (value: string): QueryResponseMessage | PresentationResponseMessage => {
   return JSON.parse(Buffer.from(value, 'base64').toString('utf-8'));
 };

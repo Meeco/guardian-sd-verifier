@@ -1,6 +1,6 @@
 import { Client, FileCreateTransaction, Hbar, PrivateKey, PublicKey } from "@hashgraph/sdk";
 
-export const createFile = async (client: Client, contents: string) => {
+const createFile = async (client: Client, contents: string) => {
   try {
     const publicKey = PublicKey.fromString(process.env.REACT_APP_RESPONDER_DID_PUBLIC_KEY_HEX || '');
     const privateKey = PrivateKey.fromString(process.env.REACT_APP_RESPONDER_DID_PRIVATE_KEY_HEX || '');
@@ -27,3 +27,5 @@ export const createFile = async (client: Client, contents: string) => {
     console.log({ error });
   }
 };
+
+export default createFile;

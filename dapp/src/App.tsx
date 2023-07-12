@@ -9,8 +9,10 @@ import {
   MessageType,
   PresentationQueryMessage,
   PresentationRequestMessage,
+  PresentationResponseMessage,
+  QueryResponseMessage,
 } from "./types";
-import { createFile } from "./fileService";
+import { createFile, getFileContents } from "./fileService";
 import presentationDefinition from "./presentation_definition.json";
 import FullPageLoader from "./FullPageLoader";
 
@@ -83,6 +85,8 @@ function App() {
           documentLoader,
         });
 
+        console.log({ authorization_details: signedPresentation });
+
         setAuthPresentation(signedPresentation);
       });
     }
@@ -126,7 +130,7 @@ function App() {
     };
     const presentationQueryMessage = JSON.stringify(presentationQuery);
     submitMessage(presentationQueryMessage, client, topicId).then(async () => {
-      // Waiting 5s to allow transaction propagation to mirror
+      // Waiting 10s to allow transaction propagation to mirror
       await delay(10000);
       const topicMessages = await getResponderDid(topicId || "");
       const queryResponseMessage = topicMessages?.filter(
@@ -136,13 +140,17 @@ function App() {
       // create file in HFS
       const contents = {
         ...presentationDefinition,
-        authorization_details: authPresentation,
+        authorization_details: {
+          ...authPresentation,
+          // TODO: update this to use credential's did
+          did: "did:hedera:testnet:DkUFuWbM49QU13y52cWTotMYXQ84X9cN7u1GJpMVbPv4_0.0.15069804"
+        },
       };
       createFile(client, JSON.stringify(contents)).then(async (fileId) => {
         console.log({ queryResponseMessage });
         const presentationRequest: PresentationRequestMessage = {
           operation: MessageType.PRESENTATION_REQUEST,
-          recipient_did: queryResponseMessage?.responder_did || "",
+          recipient_did: (queryResponseMessage as QueryResponseMessage)?.responder_did || "",
           request_file_id: fileId?.toString() || "",
           // TODO: Update this field later
           request_file_dek_encrypted_base64: "",
@@ -152,11 +160,16 @@ function App() {
         // send file to HCS
         const presentationRequestMessage = JSON.stringify(presentationRequest);
         submitMessage(presentationRequestMessage, client, topicId);
-        // Waiting 5s to allow transaction propagation to mirror
-        await delay(10000);
+        // Waiting 20s to allow transaction propagation to mirror
+        await delay(20000);
         const topicMessages = await getResponderDid(topicId || "");
+        const presentationResponseMessage = topicMessages?.filter(
+          (msg) => msg.operation === MessageType.PRESENTATION_RESPONSE
+        )[0];
+        const responseFileId = (presentationResponseMessage as PresentationResponseMessage | undefined)?.response_file_id || '';
+        const contents = await getFileContents(client, responseFileId);
         setLoading(false);
-        console.log({ topicMessages });
+        console.log({ contents });
       });
     });
   };
@@ -170,64 +183,60 @@ function App() {
 
   return (
     <div className="App">
-      {loading ? (
-        <FullPageLoader />
-      ) : (
+      {loading &&
+        <FullPageLoader />}
+      <div className="file">
+        <p>VC</p>
+        <input
+          type="file"
+          name="vc-file"
+          id="vc-file"
+          onChange={handleFileChange}
+        />
+      </div>
+      <button onClick={handleExtractDid}>Extract DID</button>
+      {verifiableCredentialDid ? (
         <>
-          <div className="file">
-            <p>VC</p>
-            <input
-              type="file"
-              name="vc-file"
-              id="vc-file"
-              onChange={handleFileChange}
-            />
+          {" "}
+          <div className="did">
+            <p>DID: </p>
+            <p>{verifiableCredentialDid}</p>
           </div>
-          <button onClick={handleExtractDid}>Extract DID</button>
-          {verifiableCredentialDid ? (
-            <>
-              {" "}
-              <div className="did">
-                <p>DID: </p>
-                <p>{verifiableCredentialDid}</p>
-              </div>
+          <div>
+            <button onClick={getVerificationMethods}>
+              Get verification Method(s)
+            </button>
+            {verificationMethods && (
               <div>
-                <button onClick={getVerificationMethods}>
-                  Get verification Method(s)
-                </button>
-                {verificationMethods && (
-                  <div>
-                    <div>
-                      {verificationMethods.map((item: any) => (
-                        <div key={item.id}>
-                          <input
-                            type="radio"
-                            value={item.id}
-                            name="verification-method"
-                            onChange={() => {
-                              setSelectedMethod(item);
-                            }}
-                          />
-                          <label htmlFor="label">
-                            #{getDisplayedMethod(item.id)}
-                          </label>
-                        </div>
-                      ))}
+                <div>
+                  {verificationMethods.map((item: any) => (
+                    <div key={item.id}>
+                      <input
+                        type="radio"
+                        value={item.id}
+                        name="verification-method"
+                        onChange={() => {
+                          setSelectedMethod(item);
+                        }}
+                      />
+                      <label htmlFor="label">
+                        #{getDisplayedMethod(item.id)}
+                      </label>
                     </div>
-                    {selectedMethod && (
-                      <div>
-                        <button onClick={submitPresentationQueryMessage}>
-                          send query message
-                        </button>
-                      </div>
-                    )}
+                  ))}
+                </div>
+                {selectedMethod && (
+                  <div>
+                    <button onClick={submitPresentationQueryMessage}>
+                      send query message
+                    </button>
                   </div>
                 )}
               </div>
-            </>
-          ) : null}
+            )}
+          </div>
         </>
-      )}
+      ) : null}
     </div>
   );
 }
