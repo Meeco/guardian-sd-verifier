@@ -161,13 +161,13 @@ function App() {
             did: "did:hedera:testnet:DkUFuWbM49QU13y52cWTotMYXQ84X9cN7u1GJpMVbPv4_0.0.15069804",
           },
         };
+
         createFile(
           client,
           process.env.REACT_APP_RESPONDER_DID_PRIVATE_KEY_HEX || "",
           process.env.REACT_APP_RESPONDER_DID_PUBLIC_KEY_HEX || "",
           JSON.stringify(contents)
         ).then(async (fileId) => {
-          console.log({ queryResponseMessage });
           const presentationRequest: PresentationRequestMessage = {
             operation: MessageType.PRESENTATION_REQUEST,
             recipient_did:
@@ -179,10 +179,12 @@ function App() {
             // TODO: Update this field later
             request_file_public_key_id: "",
           };
+
           // send file to HCS
           const presentationRequestMessage =
             JSON.stringify(presentationRequest);
           submitMessage(presentationRequestMessage, client, topicId);
+
           // Waiting 15s to allow transaction propagation to mirror
           await delay(15000);
           const topicMessages = await getTopicMessages(topicId || "");
@@ -190,6 +192,7 @@ function App() {
             (msg) =>
               msg.operation === MessageType.PRESENTATION_RESPONSE
           )[0];
+
           // get response file's contents
           const responseFileId =
             (
@@ -197,6 +200,7 @@ function App() {
               | PresentationResponseMessage
               | undefined
             )?.response_file_id || "";
+
           const contents = await getFileContents(
             client,
             responseFileId

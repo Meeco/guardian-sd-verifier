@@ -13,12 +13,13 @@ const getFileContents = async (client: Client, fileId: string) => {
     try {
         //Create the query
         const query = new FileContentsQuery()
-            .setFileId(fileId);
+            .setFileId(fileId)
+            .setMaxAttempts(2);
         //Sign with client operator private key and submit the query to a Hedera network
         const contents = await query.execute(client);
         return readFileAsJson(await readFileAsText(contents));
     } catch (error) {
-        console.log({ error });
+        console.log("Get file contents failed", error);
     }
 };
 
