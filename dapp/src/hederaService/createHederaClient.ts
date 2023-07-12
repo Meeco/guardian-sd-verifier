@@ -1,6 +1,6 @@
 import { Client, Hbar } from "@hashgraph/sdk";
 
-export const createHederaClient = (
+const createHederaClient = (
   accountId: string,
   accountPrivateKey: string
 ) => {
@@ -12,3 +12,5 @@ export const createHederaClient = (
 
   return client;
 };
+
+export default createHederaClient;

@@ -14,7 +14,7 @@ import {
 } from "./types";
 import { createFile, getFileContents } from "./fileService";
 import presentationDefinition from "./presentation_definition.json";
-import FullPageLoader from "./FullPageLoader";
+import { FullPageLoader } from "./components";
 import './App.css';
 
 function App() {

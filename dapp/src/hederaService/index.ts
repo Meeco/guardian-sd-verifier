@@ -1,1 +1,1 @@
-export { createHederaClient } from './createHederaClient';
+export { default as createHederaClient } from './createHederaClient';

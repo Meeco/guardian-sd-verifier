@@ -1,6 +1,6 @@
 import { Client, TopicCreateTransaction } from "@hashgraph/sdk";
 
-export async function makeTopic(hederaClient: Client) {
+const makeTopic = async (hederaClient: Client) => {
   try {
     // Create a new topic
     let txResponse = await new TopicCreateTransaction().execute(hederaClient);
@@ -14,5 +14,6 @@ export async function makeTopic(hederaClient: Client) {
   } catch (error) {
     console.log({ error });
   }
+};
 
-}
+export default makeTopic;

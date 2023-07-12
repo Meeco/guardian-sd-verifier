@@ -11,7 +11,7 @@ interface TopicMessages {
   messages: Message[];
 }
 
-export const getResponderDid = async (topicId: string) => {
+const getResponderDid = async (topicId: string) => {
   try {
     const res = await fetch(`${baseUrl}/api/v1/topics/${topicId}/messages?encoding=base64&order=asc`, {
       headers: {
@@ -29,3 +29,5 @@ export const getResponderDid = async (topicId: string) => {
 const decodeMessage = (value: string): QueryResponseMessage | PresentationResponseMessage => {
   return JSON.parse(Buffer.from(value, 'base64').toString('utf-8'));
 };
+
+export default getResponderDid;

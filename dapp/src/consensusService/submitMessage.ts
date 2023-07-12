@@ -1,6 +1,6 @@
 import { Client, TopicMessageSubmitTransaction } from "@hashgraph/sdk";
 
-export const submitMessage = async (
+const submitMessage = async (
   message: string,
   client: Client,
   topicId?: string
@@ -22,3 +22,5 @@ export const submitMessage = async (
     console.log({ error });
   }
 };
+
+export default submitMessage;

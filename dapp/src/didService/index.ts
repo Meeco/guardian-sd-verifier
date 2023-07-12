@@ -1,2 +1,2 @@
-export { fetchResolveDid } from './fetchResolveDid';
-export { getResponderDid } from './getResponderDid';
+export { default as fetchResolveDid } from './fetchResolveDid';
+export { default as getResponderDid } from './getResponderDid';
