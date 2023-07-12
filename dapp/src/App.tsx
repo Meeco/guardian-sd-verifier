@@ -1,9 +1,9 @@
 import { ChangeEvent, useEffect, useState } from "react";
-import { fetchResolveDid, getResponderDid } from "./didService";
+import { fetchResolveDid } from "./didService";
 import { createPresentation, issue, signPresentation } from "@digitalbazaar/vc";
 import { generateKeyPair, getSuite, documentLoader, delay } from "./utils";
 import moment from "moment";
-import { createHederaClient } from "./hederaService";
+import { createHederaClient, getTopicMessages } from "./hederaService";
 import { makeTopic, submitMessage } from "./consensusService";
 import {
   MessageType,
@@ -13,7 +13,7 @@ import {
   QueryResponseMessage,
 } from "./types";
 import { createFile, getFileContents } from "./fileService";
-import presentationDefinition from "./presentation_definition.json";
+import presentationDefinition from "./mock/presentation_definition.json";
 import { FullPageLoader } from "./components";
 import './App.css';
 
@@ -139,7 +139,7 @@ function App() {
     submitMessage(presentationQueryMessage, client, topicId).then(async () => {
       // Waiting 10s to allow transaction propagation to mirror
       await delay(10000);
-      const topicMessages = await getResponderDid(topicId || "");
+      const topicMessages = await getTopicMessages(topicId || "");
       const queryResponseMessage = topicMessages?.filter(
         (msg) => msg.operation === MessageType.QUERY_RESPONSE
       )[0];
@@ -169,7 +169,7 @@ function App() {
         submitMessage(presentationRequestMessage, client, topicId);
         // Waiting 15s to allow transaction propagation to mirror
         await delay(15000);
-        const topicMessages = await getResponderDid(topicId || "");
+        const topicMessages = await getTopicMessages(topicId || "");
         const presentationResponseMessage = topicMessages?.filter(
           (msg) => msg.operation === MessageType.PRESENTATION_RESPONSE
         )[0];
