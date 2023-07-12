@@ -1,9 +1,9 @@
 import { Client, FileCreateTransaction, Hbar, PrivateKey, PublicKey } from "@hashgraph/sdk";
 
-const createFile = async (client: Client, contents: string) => {
+const createFile = async (client: Client, privateKeyStr: string, publicKeyStr: string, contents: string) => {
   try {
-    const publicKey = PublicKey.fromString(process.env.REACT_APP_RESPONDER_DID_PUBLIC_KEY_HEX || '');
-    const privateKey = PrivateKey.fromString(process.env.REACT_APP_RESPONDER_DID_PRIVATE_KEY_HEX || '');
+    const publicKey = PublicKey.fromString(publicKeyStr);
+    const privateKey = PrivateKey.fromString(privateKeyStr);
     //Create the transaction
     const transaction = await new FileCreateTransaction()
       .setKeys([publicKey]) //A different key then the client operator key
@@ -24,7 +24,7 @@ const createFile = async (client: Client, contents: string) => {
     const { fileId } = receipt;
     return fileId;
   } catch (error) {
-    console.log({ error });
+    console.log("Create file transaction failed", error);
   }
 };
 
