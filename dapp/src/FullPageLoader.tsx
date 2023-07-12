@@ -1,5 +1,4 @@
 import { Oval } from 'react-loader-spinner';
-import './App.css';
 
 const FullPageLoader = () => (
     <div className="Spinner">
