@@ -7,8 +7,8 @@ const app = express();
 dotenv.config();
 
 const port = process.env.PORT || 8000;
-const accountId = process.env.MY_ACCOUNT_ID || "";
-const privateKey = process.env.MY_PRIVATE_KEY || "";
+const accountId = process.env.HEDERA_ACCOUNT_ID || "";
+const privateKey = process.env.HEDERA_PRIVATE_KEY || "";
 
 app.use(cors());
 app.use(express.json());
