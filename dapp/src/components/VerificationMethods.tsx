@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import {
-  delay,
   documentLoader,
   generateKeyPair,
   getSuite,
