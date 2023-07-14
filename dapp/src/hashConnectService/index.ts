@@ -1,1 +1,1 @@
-export * from './hashConnect';
+export * from "./hashConnect";

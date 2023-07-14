@@ -1,6 +1,17 @@
-import { Client, FileCreateTransaction, Hbar, PrivateKey, PublicKey } from "@hashgraph/sdk";
+import {
+  Client,
+  FileCreateTransaction,
+  Hbar,
+  PrivateKey,
+  PublicKey,
+} from "@hashgraph/sdk";
 
-const createFile = async (client: Client, privateKeyStr: string, publicKeyStr: string, contents: string) => {
+const createFile = async (
+  client: Client,
+  privateKeyStr: string,
+  publicKeyStr: string,
+  contents: string
+) => {
   try {
     const publicKey = PublicKey.fromString(publicKeyStr);
     const privateKey = PrivateKey.fromString(privateKeyStr);

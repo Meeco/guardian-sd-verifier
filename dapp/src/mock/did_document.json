@@ -1,58 +1,58 @@
 {
-    "@context": "https://w3id.org/did-resolution/v1",
-    "didDocument": {
-        "@context": [
-            "https://www.w3.org/ns/did/v1",
-            {
-                "Ed25519VerificationKey2018": "https://w3id.org/security#Ed25519VerificationKey2018",
-                "publicKeyJwk": {
-                    "@id": "https://w3id.org/security#publicKeyJwk",
-                    "@type": "@json"
-                }
-            }
-        ],
-        "id": "did:key:z6Mkr5wVSomgoJBCUT1ugrR6r5ZdJsfj4f2Vc2MSsqyWRHd9",
-        "verificationMethod": [
-            {
-                "id": "did:key:z6Mkr5wVSomgoJBCUT1ugrR6r5ZdJsfj4f2Vc2MSsqyWRHd9#z6Mkr5wVSomgoJBCUT1ugrR6r5ZdJsfj4f2Vc2MSsqyWRHd9",
-                "type": "Ed25519VerificationKey2018",
-                "controller": "did:key:z6Mkr5wVSomgoJBCUT1ugrR6r5ZdJsfj4f2Vc2MSsqyWRHd9",
-                "publicKeyJwk": {
-                    "kty": "OKP",
-                    "crv": "Ed25519",
-                    "x": "rNYRGP-Q8BeuyzxXxm87E4KPR_JseAW3Elmi3ZU_2gA"
-                }
-            }
-        ],
-        "authentication": [
-            "did:key:z6Mkr5wVSomgoJBCUT1ugrR6r5ZdJsfj4f2Vc2MSsqyWRHd9#z6Mkr5wVSomgoJBCUT1ugrR6r5ZdJsfj4f2Vc2MSsqyWRHd9"
-        ],
-        "assertionMethod": [
-            "did:key:z6Mkr5wVSomgoJBCUT1ugrR6r5ZdJsfj4f2Vc2MSsqyWRHd9#z6Mkr5wVSomgoJBCUT1ugrR6r5ZdJsfj4f2Vc2MSsqyWRHd9"
-        ]
-    },
-    "didResolutionMetadata": {
-        "pattern": "^did:(?:tz:|pkh:|web:|key:(?:z6Mk|zQ3s|zDna|z.{200,})).+$",
-        "driverUrl": "http://driver-didkit:3000/identifiers/$1",
-        "duration": 6,
-        "did": {
-            "didString": "did:key:z6Mkr5wVSomgoJBCUT1ugrR6r5ZdJsfj4f2Vc2MSsqyWRHd9",
-            "methodSpecificId": "z6Mkr5wVSomgoJBCUT1ugrR6r5ZdJsfj4f2Vc2MSsqyWRHd9",
-            "method": "key"
-        },
-        "contentType": "application/did+ld+json",
-        "didUrl": {
-            "path": null,
-            "fragment": null,
-            "query": null,
-            "didUrlString": "did:key:z6Mkr5wVSomgoJBCUT1ugrR6r5ZdJsfj4f2Vc2MSsqyWRHd9",
-            "parameters": null,
-            "did": {
-                "didString": "did:key:z6Mkr5wVSomgoJBCUT1ugrR6r5ZdJsfj4f2Vc2MSsqyWRHd9",
-                "methodSpecificId": "z6Mkr5wVSomgoJBCUT1ugrR6r5ZdJsfj4f2Vc2MSsqyWRHd9",
-                "method": "key"
-            }
+  "@context": "https://w3id.org/did-resolution/v1",
+  "didDocument": {
+    "@context": [
+      "https://www.w3.org/ns/did/v1",
+      {
+        "Ed25519VerificationKey2018": "https://w3id.org/security#Ed25519VerificationKey2018",
+        "publicKeyJwk": {
+          "@id": "https://w3id.org/security#publicKeyJwk",
+          "@type": "@json"
         }
+      }
+    ],
+    "id": "did:key:z6Mkr5wVSomgoJBCUT1ugrR6r5ZdJsfj4f2Vc2MSsqyWRHd9",
+    "verificationMethod": [
+      {
+        "id": "did:key:z6Mkr5wVSomgoJBCUT1ugrR6r5ZdJsfj4f2Vc2MSsqyWRHd9#z6Mkr5wVSomgoJBCUT1ugrR6r5ZdJsfj4f2Vc2MSsqyWRHd9",
+        "type": "Ed25519VerificationKey2018",
+        "controller": "did:key:z6Mkr5wVSomgoJBCUT1ugrR6r5ZdJsfj4f2Vc2MSsqyWRHd9",
+        "publicKeyJwk": {
+          "kty": "OKP",
+          "crv": "Ed25519",
+          "x": "rNYRGP-Q8BeuyzxXxm87E4KPR_JseAW3Elmi3ZU_2gA"
+        }
+      }
+    ],
+    "authentication": [
+      "did:key:z6Mkr5wVSomgoJBCUT1ugrR6r5ZdJsfj4f2Vc2MSsqyWRHd9#z6Mkr5wVSomgoJBCUT1ugrR6r5ZdJsfj4f2Vc2MSsqyWRHd9"
+    ],
+    "assertionMethod": [
+      "did:key:z6Mkr5wVSomgoJBCUT1ugrR6r5ZdJsfj4f2Vc2MSsqyWRHd9#z6Mkr5wVSomgoJBCUT1ugrR6r5ZdJsfj4f2Vc2MSsqyWRHd9"
+    ]
+  },
+  "didResolutionMetadata": {
+    "pattern": "^did:(?:tz:|pkh:|web:|key:(?:z6Mk|zQ3s|zDna|z.{200,})).+$",
+    "driverUrl": "http://driver-didkit:3000/identifiers/$1",
+    "duration": 6,
+    "did": {
+      "didString": "did:key:z6Mkr5wVSomgoJBCUT1ugrR6r5ZdJsfj4f2Vc2MSsqyWRHd9",
+      "methodSpecificId": "z6Mkr5wVSomgoJBCUT1ugrR6r5ZdJsfj4f2Vc2MSsqyWRHd9",
+      "method": "key"
     },
-    "didDocumentMetadata": {}
+    "contentType": "application/did+ld+json",
+    "didUrl": {
+      "path": null,
+      "fragment": null,
+      "query": null,
+      "didUrlString": "did:key:z6Mkr5wVSomgoJBCUT1ugrR6r5ZdJsfj4f2Vc2MSsqyWRHd9",
+      "parameters": null,
+      "did": {
+        "didString": "did:key:z6Mkr5wVSomgoJBCUT1ugrR6r5ZdJsfj4f2Vc2MSsqyWRHd9",
+        "methodSpecificId": "z6Mkr5wVSomgoJBCUT1ugrR6r5ZdJsfj4f2Vc2MSsqyWRHd9",
+        "method": "key"
+      }
+    }
+  },
+  "didDocumentMetadata": {}
 }

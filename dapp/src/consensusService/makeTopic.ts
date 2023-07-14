@@ -12,7 +12,7 @@ const makeTopic = async (client: Client) => {
     await new Promise((resolve) => setTimeout(resolve, 5000));
     return topicId;
   } catch (error) {
-    console.log('Make topic failed', error);
+    console.log("Make topic failed", error);
   }
 };
 

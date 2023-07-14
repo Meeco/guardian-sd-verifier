@@ -53,4 +53,3 @@ export const documentLoader = extendContextLoader(async (url: string) => {
     document: await await fetch(url).then((res) => res.json()),
   };
 });
-

@@ -19,7 +19,7 @@ const submitMessage = async (
     );
     console.log("Complete");
   } catch (error) {
-    console.log('Submit message failed', error);
+    console.log("Submit message failed", error);
   }
 };
 
