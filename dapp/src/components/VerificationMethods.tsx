@@ -11,8 +11,8 @@ import {
 import { getTopicMessages } from "../hederaService";
 import { submitMessage } from "../consensusService";
 import { Client, FileId } from "@hashgraph/sdk";
-import moment from "moment";
 import { issue, createPresentation, signPresentation } from "@digitalbazaar/vc";
+import { add, format } from "date-fns";
 import presentationDefinition from "../mock/presentation_definition.json";
 
 interface VerificationMethodsProps {
@@ -24,7 +24,7 @@ interface VerificationMethodsProps {
   topicId?: string;
   // Verification methods from DID document
   verificationMethods: any;
-  handleSetLoading: (value: boolean) => void;
+  setLoading: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const VerificationMethods: React.FC<VerificationMethodsProps> = ({
@@ -32,7 +32,7 @@ const VerificationMethods: React.FC<VerificationMethodsProps> = ({
   credential,
   topicId,
   verificationMethods,
-  handleSetLoading,
+  setLoading,
 }) => {
   // Selected verification method
   const [selectedMethod, setSelectedMethod] = useState<any>();
@@ -84,10 +84,10 @@ const VerificationMethods: React.FC<VerificationMethodsProps> = ({
   const createAuthDetails = async (credentialSubject: any, issuer: any) => {
     const authDetails = await handleGenKeyPair(credentialSubject.id).then(
       async (keyPair) => {
-        // Add one more year to `valid_until`
-        const validUntil = moment(credentialSubject.valid_until)
-          .add(1, "y")
-          .format("YYYY-MM-DD");
+        const validUntil = format(
+          add(new Date(credentialSubject.valid_until), { years: 1 }),
+          "yyyy-MM-dd"
+        );
 
         const formattedCredential = getFormattedCredential(
           issuer,
@@ -177,7 +177,7 @@ const VerificationMethods: React.FC<VerificationMethodsProps> = ({
   };
 
   const getPresentationResponse = async () => {
-    handleSetLoading(true);
+    setLoading(true);
     const { credentialSubject, issuer } = credential;
     // create authorization_details
     const authDetails = await createAuthDetails(credentialSubject, issuer);
@@ -217,7 +217,7 @@ const VerificationMethods: React.FC<VerificationMethodsProps> = ({
         queryResponseMessage
       );
 
-      handleSetLoading(false);
+      setLoading(false);
     });
   };
 

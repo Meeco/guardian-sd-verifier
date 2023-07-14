@@ -1,7 +1,6 @@
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, useState } from "react";
 import { fetchResolveDid } from "./didService";
 import { createHederaClient } from "./hederaService";
-import { makeTopic } from "./consensusService";
 import { Loader, VerificationMethods } from "./components";
 import "./App.css";
 
@@ -20,8 +19,8 @@ function App() {
   const [verifiableCredentialDid, setVerifiableCredentialDid] = useState("");
   // Verification methods from DID document
   const [verificationMethods, setVerificationMethods] = useState<any>([]);
-  // Current topic ID for sending/receiving message
-  const [topicId, setTopicId] = useState<string | undefined>();
+  // Topic ID for sending/receiving message
+  const topicId = process.env.REACT_APP_TOPIC_ID;
 
   // Get verification method from user uploaded credential
   const getVerificationMethods = async () => {
@@ -54,18 +53,6 @@ function App() {
     }
   };
 
-  const handleSetLoading = (value: boolean) => {
-    setLoading(value);
-  };
-
-  // Create topic on first landing
-  useEffect(() => {
-    makeTopic(client).then((id) => {
-      setTopicId(id?.toString());
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   return (
     <div className="App">
       {loading && <Loader />}
@@ -95,7 +82,7 @@ function App() {
                 credential={credential}
                 topicId={topicId}
                 verificationMethods={verificationMethods}
-                handleSetLoading={handleSetLoading}
+                setLoading={setLoading}
               />
             )}
           </div>
