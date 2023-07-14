@@ -1,5 +1,11 @@
 import React, { useState } from "react";
-import { delay, documentLoader, generateKeyPair, getSuite } from "../utils";
+import {
+  delay,
+  documentLoader,
+  generateKeyPair,
+  getSuite,
+  pollRequest,
+} from "../utils";
 import { createFile, getFileContents } from "../fileService";
 import {
   MessageType,
@@ -13,7 +19,10 @@ import { submitMessage } from "../consensusService";
 import { Client, FileId } from "@hashgraph/sdk";
 import { issue, createPresentation, signPresentation } from "@digitalbazaar/vc";
 import { add, format } from "date-fns";
+import { v4 as uuidv4 } from "uuid";
+
 import presentationDefinition from "../mock/presentation_definition.json";
+import { resolve } from "path";
 
 interface VerificationMethodsProps {
   // Hedera client instance
@@ -125,8 +134,11 @@ const VerificationMethods: React.FC<VerificationMethodsProps> = ({
     fileId?: FileId | null,
     queryResponseMessage?: QueryResponseMessage | PresentationResponseMessage
   ) => {
+    const requestId = uuidv4();
+
     const presentationRequest: PresentationRequestMessage = {
       operation: MessageType.PRESENTATION_REQUEST,
+      request_id: requestId,
       recipient_did:
         (queryResponseMessage as QueryResponseMessage)?.responder_did || "",
       request_file_id: fileId?.toString() || "",
@@ -140,17 +152,19 @@ const VerificationMethods: React.FC<VerificationMethodsProps> = ({
     const presentationRequestMessage = JSON.stringify(presentationRequest);
     submitMessage(presentationRequestMessage, client, topicId);
 
-    // Waiting 15s to allow transaction propagation to mirror
-    await delay(15000);
-    // Get presentation response from mirror node
-    const topicMessages = (await getTopicMessages(
-      topicId || ""
-    )) as PresentationResponseMessage[];
-    const presentationResponseMessage = topicMessages?.filter(
-      (msg) =>
-        msg.recipient_did === process.env.REACT_APP_REQUESTER_DID &&
-        msg.operation === MessageType.PRESENTATION_RESPONSE
-    )[0];
+    const presentationResponseMessage = await pollRequest(async () => {
+      // Get presentation response from mirror node
+      const topicMessages = (await getTopicMessages(
+        topicId || ""
+      )) as PresentationResponseMessage[];
+      const message = topicMessages?.filter(
+        (msg) =>
+          msg.request_id === requestId &&
+          msg.operation === MessageType.PRESENTATION_RESPONSE
+      )[0];
+
+      return message;
+    }, 15000);
 
     // get response file's contents
     const responseFileId =
@@ -185,9 +199,11 @@ const VerificationMethods: React.FC<VerificationMethodsProps> = ({
     const { credentialSubject, issuer } = credential;
     // create authorization_details
     const authDetails = await createAuthDetails(credentialSubject, issuer);
+    const requestId = uuidv4();
     // create presentation query message
     const presentationQuery: PresentationQueryMessage = {
       operation: MessageType.PRESENTATION_QUERY,
+      request_id: requestId,
       // TODO: get vc_id from UI instead of hardcode
       vc_id: "urn:uuid:81348e38-db35-4e5a-bcce-1644422cedd9",
       requester_did: process.env.REACT_APP_REQUESTER_DID || "",
@@ -197,13 +213,17 @@ const VerificationMethods: React.FC<VerificationMethodsProps> = ({
     const presentationQueryMessage = JSON.stringify(presentationQuery);
     // Send query message to HCS
     submitMessage(presentationQueryMessage, client, topicId).then(async () => {
-      // Waiting 10s to allow transaction propagation to mirror
-      await delay(10000);
-      // Get query response from mirror node
-      const topicMessages = await getTopicMessages(topicId || "");
-      const queryResponseMessage = topicMessages?.filter(
-        (msg) => msg.operation === MessageType.QUERY_RESPONSE
-      )[0];
+      const queryResponseMessage = await pollRequest(async () => {
+        // Get query response from mirror node
+        const topicMessages = await getTopicMessages(topicId || "");
+        const message = topicMessages?.filter(
+          (msg) =>
+            msg.request_id === requestId &&
+            msg.operation === MessageType.QUERY_RESPONSE
+        )[0];
+
+        return message;
+      }, 10000);
 
       // create presentation query file
       const contents = {
