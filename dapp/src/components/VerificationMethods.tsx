@@ -143,9 +143,13 @@ const VerificationMethods: React.FC<VerificationMethodsProps> = ({
     // Waiting 15s to allow transaction propagation to mirror
     await delay(15000);
     // Get presentation response from mirror node
-    const topicMessages = await getTopicMessages(topicId || "");
+    const topicMessages = (await getTopicMessages(
+      topicId || ""
+    )) as PresentationResponseMessage[];
     const presentationResponseMessage = topicMessages?.filter(
-      (msg) => msg.operation === MessageType.PRESENTATION_RESPONSE
+      (msg) =>
+        msg.recipient_did === process.env.REACT_APP_REQUESTER_DID &&
+        msg.operation === MessageType.PRESENTATION_RESPONSE
     )[0];
 
     // get response file's contents
@@ -186,8 +190,7 @@ const VerificationMethods: React.FC<VerificationMethodsProps> = ({
       operation: MessageType.PRESENTATION_QUERY,
       // TODO: get vc_id from UI instead of hardcode
       vc_id: "urn:uuid:81348e38-db35-4e5a-bcce-1644422cedd9",
-      requester_did:
-        "did:hedera:testnet:DkUFuWbM49QU13y52cWTotMYXQ84X9cN7u1GJpMVbPv4_0.0.15069804",
+      requester_did: process.env.REACT_APP_REQUESTER_DID || "",
       limit_hbar: 1,
     };
 
@@ -208,7 +211,7 @@ const VerificationMethods: React.FC<VerificationMethodsProps> = ({
         authorization_details: {
           ...authDetails,
           // TODO: update this to use credential's did
-          did: "did:hedera:testnet:DkUFuWbM49QU13y52cWTotMYXQ84X9cN7u1GJpMVbPv4_0.0.15069804",
+          did: process.env.REACT_APP_REQUESTER_DID,
         },
       };
 
@@ -216,6 +219,8 @@ const VerificationMethods: React.FC<VerificationMethodsProps> = ({
         contents,
         queryResponseMessage
       );
+
+      // console.log({ presentationResponse });
 
       setLoading(false);
     });

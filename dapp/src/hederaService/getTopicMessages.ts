@@ -12,7 +12,7 @@ interface TopicMessages {
 const getTopicMessages = async (topicId: string) => {
   try {
     const res = await fetch(
-      `${process.env.REACT_APP_MIRROR_NODE_URL}/api/v1/topics/${topicId}/messages?encoding=base64&order=asc`,
+      `${process.env.REACT_APP_MIRROR_NODE_URL}/api/v1/topics/${topicId}/messages?encoding=base64&order=desc`,
       {
         headers: {
           Accept: "application/json",
