@@ -1,8 +1,10 @@
-import { Oval } from "react-loader-spinner";
+import Spinner from 'react-bootstrap/Spinner';
 
 const Loader = () => (
   <div className="Spinner">
-    <Oval color="#fff" height={100} width={100} />
+    <Spinner animation="border" role="status">
+      <span className="visually-hidden">Loading...</span>
+    </Spinner>
   </div>
 );
 

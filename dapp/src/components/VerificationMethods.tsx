@@ -19,9 +19,10 @@ import { Client, FileId } from "@hashgraph/sdk";
 import { issue, createPresentation, signPresentation } from "@digitalbazaar/vc";
 import { add, format } from "date-fns";
 import { v4 as uuidv4 } from "uuid";
+import { Button } from 'react-bootstrap';
 
 import presentationDefinition from "../mock/presentation_definition.json";
-import { resolve } from "path";
+import ReactJson from 'react-json-view'
 
 interface VerificationMethodsProps {
   // Hedera client instance
@@ -44,6 +45,7 @@ const VerificationMethods: React.FC<VerificationMethodsProps> = ({
 }) => {
   // Selected verification method
   const [selectedMethod, setSelectedMethod] = useState<any>();
+  const [presentationResponse, setPresentationResponse] = useState<any>()
 
   const getDisplayedMethod = (input: string) => {
     const index = input.indexOf("#");
@@ -234,13 +236,12 @@ const VerificationMethods: React.FC<VerificationMethodsProps> = ({
         },
       };
 
-      const presentationResponse = await handleSendPresentationRequest(
+      const res = await handleSendPresentationRequest(
         contents,
         queryResponseMessage
       );
 
-      // console.log({ presentationResponse });
-
+      setPresentationResponse(res)
       setLoading(false);
     });
   };
@@ -262,9 +263,14 @@ const VerificationMethods: React.FC<VerificationMethodsProps> = ({
       ))}
       {selectedMethod && (
         <div className="request-button">
-          <button onClick={getPresentationResponse}>Request</button>
+          <Button onClick={getPresentationResponse}>Request</Button>
         </div>
       )}
+      {presentationResponse &&
+        <div className="mt-4">
+          <ReactJson src={presentationResponse} name="presentation_response" collapsed theme={"monokai"} />
+        </div>
+      }
     </div>
   );
 };

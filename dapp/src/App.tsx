@@ -2,6 +2,7 @@ import { ChangeEvent, useState } from "react";
 import { fetchResolveDid } from "./didService";
 import { createHederaClient } from "./hederaService";
 import { Loader, VerificationMethods } from "./components";
+import { Button } from 'react-bootstrap';
 import "./App.css";
 
 function App() {
@@ -67,15 +68,15 @@ function App() {
       </div>
       {verifiableCredentialDid ? (
         <>
-          <div className="did">
+          <div className="mt-4">
             <p>
               <b>DID:</b> {verifiableCredentialDid}
             </p>
           </div>
           <div>
-            <button onClick={getVerificationMethods}>
+            <Button onClick={getVerificationMethods}>
               Get verification Method(s)
-            </button>
+            </Button>
             {verificationMethods && (
               <VerificationMethods
                 client={client}
