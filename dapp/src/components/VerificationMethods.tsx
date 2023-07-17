@@ -19,7 +19,7 @@ import { Client, FileId } from "@hashgraph/sdk";
 import { issue, createPresentation, signPresentation } from "@digitalbazaar/vc";
 import { add, format } from "date-fns";
 import { v4 as uuidv4 } from "uuid";
-import { Button } from 'react-bootstrap';
+import { Button, Form } from 'react-bootstrap';
 
 import presentationDefinition from "../mock/presentation_definition.json";
 import ReactJson from 'react-json-view'
@@ -249,17 +249,15 @@ const VerificationMethods: React.FC<VerificationMethodsProps> = ({
   return (
     <div className="verification-method">
       {verificationMethods.map((item: any) => (
-        <div key={item.id}>
-          <input
-            type="radio"
-            value={item.id}
-            name="verification-method"
-            onChange={() => {
-              setSelectedMethod(item);
-            }}
-          />
-          <label htmlFor="label">#{getDisplayedMethod(item.id)}</label>
-        </div>
+        <Form.Check
+          checked={selectedMethod === item}
+          type="radio"
+          label={`#${getDisplayedMethod(item.id)}`}
+          id={item.id}
+          onChange={() => {
+            setSelectedMethod(item);
+          }}
+        />
       ))}
       {selectedMethod && (
         <div className="request-button">
