@@ -1,0 +1,27 @@
+{
+  "comment": "Note: VP, OIDC, DIDComm, or CHAPI outer wrapper would be here.",
+  "presentation_definition": {
+    "id": "33bdb7eb-20fe-47dd-bed3-3f6c582d44d1",
+    "input_descriptors": [
+      {
+        "id": "audit",
+        "name": "Audit Report Request",
+        "purpose": "Require further information to complete audit report.",
+        "constraints": {
+          "fields": [
+            {
+              "path": ["$.id"],
+              "filter": {
+                "type": "string",
+                "const": "urn:uuid:81348e38-db35-4e5a-bcce-1644422cedd9"
+              }
+            },
+            {
+              "path": ["$.credentialSubject.field3"]
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
