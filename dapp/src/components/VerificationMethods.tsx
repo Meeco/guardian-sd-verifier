@@ -250,6 +250,7 @@ const VerificationMethods: React.FC<VerificationMethodsProps> = ({
     <div className="verification-method">
       {verificationMethods.map((item: any) => (
         <Form.Check
+          key={item.id}
           checked={selectedMethod === item}
           type="radio"
           label={`#${getDisplayedMethod(item.id)}`}
