@@ -1,94 +1,76 @@
-import { ChangeEvent, useState } from "react";
-import { fetchResolveDid } from "./didService";
-import { createHederaClient } from "./hederaService";
-import { Loader, VerificationMethods } from "./components";
-import { Button } from 'react-bootstrap';
+import { Client } from "@hashgraph/sdk";
+import { useEffect, useState } from "react";
+import { Accordion } from "react-bootstrap";
 import "./App.css";
+import { Indentity, Loader, Request, WalletInfo } from "./components";
+import { createHederaClient } from "./hederaService";
 
 function App() {
-  // Hedera's account ID
-  const accountId = process.env.REACT_APP_HEDERA_ACCOUNT_ID || "";
-  // Hedera's account private key
-  const privateKey = process.env.REACT_APP_HEDERA_PRIVATE_KEY || "";
-  // Hedera client instance
-  const client = createHederaClient(accountId, privateKey);
   // Loading status
   const [loading, setLoading] = useState(false);
   // User uploaded credential
   const [credential, setCredential] = useState<any>();
-  // User uploaded credential's DID
-  const [verifiableCredentialDid, setVerifiableCredentialDid] = useState("");
-  // Verification methods from DID document
-  const [verificationMethods, setVerificationMethods] = useState<any>([]);
+  // Selected verification method
+  const [selectedMethod, setSelectedMethod] = useState<any>();
+  // User's account ID
+  const [accountId, setAccountId] = useState("");
+  // User's private key
+  const [privateKey, setPrivateKey] = useState("");
+  // Hedera client
+  const [client, setClient] = useState<Client | undefined>();
   // Topic ID for sending/receiving message
   const topicId = process.env.REACT_APP_TOPIC_ID;
 
-  // Get verification method from user uploaded credential
-  const getVerificationMethods = async () => {
-    setLoading(true);
-    const { didDocument } = await fetchResolveDid(verifiableCredentialDid);
-    const { verificationMethod } = didDocument;
-    setVerificationMethods(verificationMethod);
-    setLoading(false);
-  };
-
-  // Extract DID from user uploaded credential
-  const handleExtractDid = (credential: any) => {
-    if (credential) {
-      const { credentialSubject } = credential;
-      setVerifiableCredentialDid(credentialSubject.id);
+  useEffect(() => {
+    if (accountId && privateKey) {
+      const client = createHederaClient(accountId, privateKey);
+      setClient(client);
     }
-  };
-
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files?.length) {
-      const fileReader = new FileReader();
-      fileReader.readAsText(e.target.files[0], "UTF-8");
-      fileReader.onload = (e) => {
-        const str: string = (e.target?.result as string) || "";
-        if (str) {
-          handleExtractDid(JSON.parse(str));
-          setCredential(JSON.parse(str));
-        }
-      };
-    }
-  };
+  }, [accountId, privateKey]);
 
   return (
     <div className="App">
       {loading && <Loader />}
-      <div className="file">
-        <h3>Authorisation Credential</h3>
-        <input
-          type="file"
-          name="vc-file"
-          id="vc-file"
-          onChange={handleFileChange}
-        />
-      </div>
-      {verifiableCredentialDid ? (
-        <>
-          <div className="mt-4">
-            <p>
-              <b>DID:</b> {verifiableCredentialDid}
-            </p>
-          </div>
-          <div>
-            <Button onClick={getVerificationMethods}>
-              Get verification Method(s)
-            </Button>
-            {verificationMethods && (
-              <VerificationMethods
+      <Accordion defaultActiveKey="identity">
+        <Accordion.Item eventKey="identity">
+          <Accordion.Header>Identity</Accordion.Header>
+          <Accordion.Body>
+            <Indentity
+              setLoading={setLoading}
+              setCredential={setCredential}
+              selectedMethod={selectedMethod}
+              setSelectedMethod={setSelectedMethod}
+            />
+          </Accordion.Body>
+        </Accordion.Item>
+        <Accordion.Item eventKey="wallet">
+          <Accordion.Header>WalletInfo</Accordion.Header>
+          <Accordion.Body>
+            <WalletInfo
+              setAccountId={setAccountId}
+              setPrivateKey={setPrivateKey}
+            />
+          </Accordion.Body>
+        </Accordion.Item>
+        <Accordion.Item eventKey="request">
+          <Accordion.Header>Request</Accordion.Header>
+          <Accordion.Body>
+            {client ? (
+              <Request
                 client={client}
                 credential={credential}
                 topicId={topicId}
-                verificationMethods={verificationMethods}
                 setLoading={setLoading}
+                selectedMethod={selectedMethod}
               />
+            ) : (
+              <>
+                <p>Please enter wallet info first</p>
+              </>
             )}
-          </div>
-        </>
-      ) : null}
+          </Accordion.Body>
+        </Accordion.Item>
+      </Accordion>
     </div>
   );
 }
