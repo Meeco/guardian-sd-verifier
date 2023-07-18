@@ -1,59 +1,44 @@
-import React, { useState } from "react";
-import {
-  documentLoader,
-  generateKeyPair,
-  getSuite,
-  pollRequest,
-} from "../utils";
-import { createFile, getFileContents } from "../fileService";
+import { createPresentation, issue, signPresentation } from "@digitalbazaar/vc";
+import { Client, FileId } from "@hashgraph/sdk";
+import { add, format } from "date-fns";
+import { useState } from "react";
+import { Button } from "react-bootstrap";
+import ReactJson from "react-json-view";
+import { v4 as uuidv4 } from "uuid";
+import { submitMessage } from "../../consensusService";
+import { createFile, getFileContents } from "../../fileService";
+import { getTopicMessages } from "../../hederaService";
+import presentationDefinition from "../../mock/presentation_definition.json";
 import {
   MessageType,
   PresentationQueryMessage,
   PresentationRequestMessage,
   PresentationResponseMessage,
   QueryResponseMessage,
-} from "../types";
-import { getTopicMessages } from "../hederaService";
-import { submitMessage } from "../consensusService";
-import { Client, FileId } from "@hashgraph/sdk";
-import { issue, createPresentation, signPresentation } from "@digitalbazaar/vc";
-import { add, format } from "date-fns";
-import { v4 as uuidv4 } from "uuid";
-import { Button, Form } from 'react-bootstrap';
+} from "../../types";
+import {
+  documentLoader,
+  generateKeyPair,
+  getSuite,
+  pollRequest,
+} from "../../utils";
 
-import presentationDefinition from "../mock/presentation_definition.json";
-import ReactJson from 'react-json-view'
-
-interface VerificationMethodsProps {
-  // Hedera client instance
-  client: Client;
-  // User uploaded credential
+interface RequestProps {
   credential: any;
-  // Current topic ID for sending/receiving message
-  topicId?: string;
-  // Verification methods from DID document
-  verificationMethods: any;
+  client: Client;
   setLoading: React.Dispatch<React.SetStateAction<boolean>>;
+  selectedMethod: any;
+  topicId?: string;
 }
 
-const VerificationMethods: React.FC<VerificationMethodsProps> = ({
-  client,
+const Request: React.FC<RequestProps> = ({
   credential,
+  client,
   topicId,
-  verificationMethods,
   setLoading,
+  selectedMethod,
 }) => {
-  // Selected verification method
-  const [selectedMethod, setSelectedMethod] = useState<any>();
-  const [presentationResponse, setPresentationResponse] = useState<any>()
-
-  const getDisplayedMethod = (input: string) => {
-    const index = input.indexOf("#");
-    if (index !== -1) {
-      return input.slice(index + 1);
-    }
-    return null;
-  };
+  const [presentationResponse, setPresentationResponse] = useState<any>();
 
   const handleGenKeyPair = async (id: string) => {
     const keyPair = await generateKeyPair(id);
@@ -89,7 +74,6 @@ const VerificationMethods: React.FC<VerificationMethodsProps> = ({
 
     return newCredential;
   };
-
   // Create authorization_details
   const createAuthDetails = async (credentialSubject: any, issuer: any) => {
     const authDetails = await handleGenKeyPair(credentialSubject.id).then(
@@ -241,37 +225,30 @@ const VerificationMethods: React.FC<VerificationMethodsProps> = ({
         queryResponseMessage
       );
 
-      setPresentationResponse(res)
+      setPresentationResponse(res);
       setLoading(false);
     });
   };
 
   return (
-    <div className="verification-method">
-      {verificationMethods.map((item: any) => (
-        <Form.Check
-          key={item.id}
-          checked={selectedMethod === item}
-          type="radio"
-          label={`#${getDisplayedMethod(item.id)}`}
-          id={item.id}
-          onChange={() => {
-            setSelectedMethod(item);
-          }}
-        />
-      ))}
+    <div>
       {selectedMethod && (
         <div className="request-button">
           <Button onClick={getPresentationResponse}>Request</Button>
         </div>
       )}
-      {presentationResponse &&
+      {presentationResponse && (
         <div className="mt-4">
-          <ReactJson src={presentationResponse} name="presentation_response" collapsed theme={"monokai"} />
+          <ReactJson
+            src={presentationResponse}
+            name="presentation_response"
+            collapsed
+            theme={"monokai"}
+          />
         </div>
-      }
+      )}
     </div>
   );
 };
 
-export default VerificationMethods;
+export default Request;

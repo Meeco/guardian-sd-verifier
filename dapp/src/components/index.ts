@@ -1,2 +1,4 @@
+export * from "./Identity";
 export { default as Loader } from "./Loader";
-export { default as VerificationMethods } from "./VerificationMethods";
+export * from "./Request";
+export * from "./WalletInfo";
