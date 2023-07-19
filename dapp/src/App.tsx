@@ -18,6 +18,10 @@ function App() {
   const [privateKey, setPrivateKey] = useState("");
   // Hedera client
   const [client, setClient] = useState<Client | undefined>();
+  // Credential's private key
+  const [credPrivateKey, setCredPrivateKey] = useState("");
+  // Credential's public key
+  const [credPublicKey, setCredPublicKey] = useState("");
   // Topic ID for sending/receiving message
   const topicId = process.env.REACT_APP_TOPIC_ID;
 
@@ -40,6 +44,8 @@ function App() {
               setCredential={setCredential}
               selectedMethod={selectedMethod}
               setSelectedMethod={setSelectedMethod}
+              setCredPrivateKey={setCredPrivateKey}
+              setCredPublicKey={setCredPublicKey}
             />
           </Accordion.Body>
         </Accordion.Item>
@@ -62,6 +68,8 @@ function App() {
                 topicId={topicId}
                 setLoading={setLoading}
                 selectedMethod={selectedMethod}
+                credPrivateKey={credPrivateKey}
+                credPublicKey={credPublicKey}
               />
             ) : (
               <>

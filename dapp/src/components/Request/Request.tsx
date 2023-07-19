@@ -1,6 +1,4 @@
-import { createPresentation, issue, signPresentation } from "@digitalbazaar/vc";
 import { Client, FileId } from "@hashgraph/sdk";
-import { add, format } from "date-fns";
 import { useState } from "react";
 import { Accordion, Button, Form } from "react-bootstrap";
 import ReactJson from "react-json-view";
@@ -15,18 +13,15 @@ import {
   PresentationResponseMessage,
   QueryResponseMessage,
 } from "../../types";
-import {
-  documentLoader,
-  generateKeyPair,
-  getSuite,
-  pollRequest,
-} from "../../utils";
+import { generateKeyPair, pollRequest } from "../../utils";
 
 interface RequestProps {
   credential: any;
   client: Client;
   setLoading: React.Dispatch<React.SetStateAction<boolean>>;
   selectedMethod: any;
+  credPrivateKey: string;
+  credPublicKey: string;
   topicId?: string;
 }
 
@@ -36,13 +31,19 @@ const Request: React.FC<RequestProps> = ({
   topicId,
   setLoading,
   selectedMethod,
+  credPrivateKey,
+  credPublicKey,
 }) => {
   const [presentationResponse, setPresentationResponse] = useState<any>();
   const [responderDids, setResponderDids] = useState<string[] | []>([]);
   const [vcId, setvcId] = useState("");
 
   const handleGenKeyPair = async (id: string) => {
-    const keyPair = await generateKeyPair(id);
+    const keyPair = await generateKeyPair({
+      credentialSubject: credential.credentialSubject,
+      publicKeyHex: credPublicKey,
+      privateKeyHex: credPrivateKey,
+    });
     return keyPair;
   };
 
@@ -74,45 +75,6 @@ const Request: React.FC<RequestProps> = ({
     delete newCredential.credentialStatus;
 
     return newCredential;
-  };
-  // Create authorization_details
-  const createAuthDetails = async (credentialSubject: any, issuer: any) => {
-    const authDetails = await handleGenKeyPair(credentialSubject.id).then(
-      async (keyPair) => {
-        const validUntil = format(
-          add(new Date(credentialSubject.valid_until), { years: 1 }),
-          "yyyy-MM-dd"
-        );
-
-        const formattedCredential = getFormattedCredential(
-          issuer,
-          credentialSubject,
-          validUntil
-        );
-        // Key pairs
-        const suite = getSuite(keyPair);
-        // Sign the credential
-        const signedCredential = await issue({
-          credential: formattedCredential,
-          suite,
-          documentLoader,
-        });
-
-        const presentation = createPresentation({
-          verifiableCredential: signedCredential,
-        });
-
-        const signedPresentation = await signPresentation({
-          presentation,
-          suite,
-          challenge: "challenge",
-          documentLoader,
-        });
-        return signedPresentation;
-      }
-    );
-
-    return authDetails;
   };
 
   // Get presentation response from HCS

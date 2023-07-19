@@ -1,6 +1,7 @@
 import { ChangeEvent, useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import { fetchResolveDid } from "../../didService";
+import getPublicKeyHexFromJwk from "../../utils/getPublicKeyHexFromJwk";
 import VerificationMethods from "./VerificationMethods";
 
 interface IndentityProps {
@@ -8,6 +9,8 @@ interface IndentityProps {
   setCredential: React.Dispatch<any>;
   selectedMethod: any;
   setSelectedMethod: React.Dispatch<any>;
+  setCredPrivateKey: React.Dispatch<React.SetStateAction<string>>;
+  setCredPublicKey: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const Indentity: React.FC<IndentityProps> = ({
@@ -15,18 +18,36 @@ const Indentity: React.FC<IndentityProps> = ({
   setCredential,
   selectedMethod,
   setSelectedMethod,
+  setCredPrivateKey,
+  setCredPublicKey,
 }) => {
   // User uploaded credential's DID
-  const [verifiableCredentialDid, setVerifiableCredentialDid] = useState("");
+  const [credentialDid, setCredentialDid] = useState("");
   // Verification methods from DID document
   const [verificationMethods, setVerificationMethods] = useState<any>([]);
+
+  // Get public key from user uploaded credential
+  const getPublicKey = async () => {
+    try {
+      const { didDocument } = await fetchResolveDid(credentialDid);
+      const { verificationMethod } = didDocument;
+      const publicKeyJwk = verificationMethod[0].publicKeyJwk;
+      const publicKeyHex = getPublicKeyHexFromJwk(publicKeyJwk);
+      setCredPublicKey(publicKeyHex);
+    } catch (error) {
+      console.log({ error });
+    }
+  };
 
   // Get verification method from user uploaded credential
   const getVerificationMethods = async () => {
     setLoading(true);
-    const { didDocument } = await fetchResolveDid(verifiableCredentialDid);
+    // Get verification method
+    const { didDocument } = await fetchResolveDid(credentialDid);
     const { verificationMethod } = didDocument;
     setVerificationMethods(verificationMethod);
+    // Get public key
+    await getPublicKey();
     setLoading(false);
   };
 
@@ -34,7 +55,7 @@ const Indentity: React.FC<IndentityProps> = ({
   const handleExtractDid = (credential: any) => {
     if (credential) {
       const { credentialSubject } = credential;
-      setVerifiableCredentialDid(credentialSubject.id);
+      setCredentialDid(credentialSubject.id);
     }
   };
 
@@ -54,6 +75,7 @@ const Indentity: React.FC<IndentityProps> = ({
 
   const handlePrivateKeyChange = (e: ChangeEvent<any>) => {
     e.preventDefault();
+    setCredPrivateKey(e.target.value);
     // set credential private key
   };
   return (
@@ -62,11 +84,11 @@ const Indentity: React.FC<IndentityProps> = ({
         <Form.Label>Upload credential</Form.Label>
         <Form.Control type="file" onChange={handleFileChange} />
       </div>
-      {verifiableCredentialDid ? (
+      {credentialDid ? (
         <>
           <div className="mt-4">
             <p>
-              <b>DID:</b> {verifiableCredentialDid}
+              <b>DID:</b> {credentialDid}
             </p>
           </div>
           <div>
@@ -80,10 +102,10 @@ const Indentity: React.FC<IndentityProps> = ({
                   setSelectedMethod={setSelectedMethod}
                   verificationMethods={verificationMethods}
                 />
-                <>
+                <div className="mt-4">
                   <Form.Label>Credential Private Key</Form.Label>
                   <Form.Control type="text" onChange={handlePrivateKeyChange} />
-                </>
+                </div>
               </>
             )}
           </div>
