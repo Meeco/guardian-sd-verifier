@@ -1,4 +1,5 @@
 import { Client, FileId } from "@hashgraph/sdk";
+import { add, format } from "date-fns";
 import { useState } from "react";
 import { Accordion, Button, Form } from "react-bootstrap";
 import ReactJson from "react-json-view";
@@ -6,14 +7,15 @@ import { v4 as uuidv4 } from "uuid";
 import { submitMessage } from "../../consensusService";
 import { createFile, getFileContents } from "../../fileService";
 import { getTopicMessages } from "../../hederaService";
+import presentationDefinition from "../../mock/presentation_definition.json";
 import {
   MessageType,
   PresentationQueryMessage,
   PresentationRequestMessage,
   PresentationResponseMessage,
-  QueryResponseMessage,
 } from "../../types";
-import { generateKeyPair, pollRequest } from "../../utils";
+import { documentLoader, generateKeyPair, pollRequest } from "../../utils";
+import { createAuthDetails } from "../../utils/createAuthDetails";
 
 interface RequestProps {
   credential: any;
@@ -37,8 +39,9 @@ const Request: React.FC<RequestProps> = ({
   const [presentationResponse, setPresentationResponse] = useState<any>();
   const [responderDids, setResponderDids] = useState<string[] | []>([]);
   const [vcId, setvcId] = useState("");
+  const [contents, setContents] = useState<any>();
 
-  const handleGenKeyPair = async (id: string) => {
+  const handleGenKeyPair = async () => {
     const keyPair = await generateKeyPair({
       credentialSubject: credential.credentialSubject,
       publicKeyHex: credPublicKey,
@@ -47,11 +50,15 @@ const Request: React.FC<RequestProps> = ({
     return keyPair;
   };
 
-  const getFormattedCredential = (
-    issuer: any,
-    credentialSubject: any,
-    validUntil: string
-  ) => {
+  const getFormattedCredential = ({
+    issuer,
+    credentialSubject,
+    validUntil,
+  }: {
+    issuer: any;
+    credentialSubject: any;
+    validUntil: string;
+  }) => {
     const newCredential = {
       ...credential,
       "@context": [
@@ -77,18 +84,35 @@ const Request: React.FC<RequestProps> = ({
     return newCredential;
   };
 
+  // Send presentation request to HCS
+  const handleSendPresentationRequest = async (responderDid: string) => {
+    // Create file in HFS
+    const presentationResponse = await createFile(
+      client,
+      process.env.REACT_APP_RESPONDER_DID_PRIVATE_KEY_HEX || "",
+      process.env.REACT_APP_RESPONDER_DID_PUBLIC_KEY_HEX || "",
+      JSON.stringify(contents)
+    ).then(async (fileId) => {
+      return await handleGetPresentationResponse({ fileId, responderDid });
+    });
+
+    return presentationResponse;
+  };
+
   // Get presentation response from HCS
-  const handleGetPresentationResponse = async (
-    fileId?: FileId | null,
-    queryResponseMessage?: QueryResponseMessage | PresentationResponseMessage
-  ) => {
+  const handleGetPresentationResponse = async ({
+    responderDid,
+    fileId,
+  }: {
+    fileId?: FileId | null;
+    responderDid: string;
+  }) => {
     const requestId = uuidv4();
 
     const presentationRequest: PresentationRequestMessage = {
       operation: MessageType.PRESENTATION_REQUEST,
       request_id: requestId,
-      recipient_did:
-        (queryResponseMessage as QueryResponseMessage)?.responder_did || "",
+      recipient_did: responderDid,
       request_file_id: fileId?.toString() || "",
       // TODO: Update this field later
       request_file_dek_encrypted_base64: "",
@@ -114,35 +138,17 @@ const Request: React.FC<RequestProps> = ({
       return message;
     }, 15000);
 
+    // console.log({ presentationResponseMessage });
     // get response file's contents
     const responseFileId =
       (presentationResponseMessage as PresentationResponseMessage | undefined)
         ?.response_file_id || "";
 
     const fileContents = await getFileContents(client, responseFileId);
-
-    return fileContents;
+    setPresentationResponse(fileContents);
   };
 
-  // Send presentation request to HCS
-  const handleSendPresentationRequest = async (
-    contents: any,
-    queryResponseMessage?: QueryResponseMessage | PresentationResponseMessage
-  ) => {
-    // Create file in HFS
-    const presentationResponse = await createFile(
-      client,
-      process.env.REACT_APP_RESPONDER_DID_PRIVATE_KEY_HEX || "",
-      process.env.REACT_APP_RESPONDER_DID_PUBLIC_KEY_HEX || "",
-      JSON.stringify(contents)
-    ).then(async (fileId) => {
-      return await handleGetPresentationResponse(fileId, queryResponseMessage);
-    });
-
-    return presentationResponse;
-  };
-
-  const queryResponders = async () => {
+  const handleQueryResponders = async () => {
     try {
       setLoading(true);
 
@@ -170,39 +176,48 @@ const Request: React.FC<RequestProps> = ({
             );
 
             return messages;
-          }, 10000);
-
-          console.log({ queryRespondersMessages });
+          }, 15000);
 
           const responderDids = queryRespondersMessages.map(
             (item: any) => item.responder_did
           );
 
           setResponderDids(responderDids);
-          setLoading(false);
 
-          // const { credentialSubject, issuer } = credential;
+          const { credentialSubject, issuer } = credential;
+
+          const validUntil = format(
+            add(new Date(credentialSubject.valid_until), { years: 1 }),
+            "yyyy-MM-dd"
+          );
+
+          const formattedCredential = getFormattedCredential({
+            issuer,
+            credentialSubject,
+            validUntil: validUntil,
+          });
+
+          const key = await handleGenKeyPair();
 
           // create authorization_details
-          // const authDetails = await createAuthDetails(credentialSubject, issuer);
+          const authDetails = await createAuthDetails({
+            verifiableCredential: formattedCredential,
+            challenge: "challenge",
+            documentLoader,
+            key,
+          });
 
           // create presentation query file
-          // const contents = {
-          //   ...presentationDefinition,
-          //   authorization_details: {
-          //     ...authDetails,
-          //     // TODO: update this to use credential's did
-          //     did: process.env.REACT_APP_REQUESTER_DID,
-          //   },
-          // };
+          const contents = {
+            ...presentationDefinition,
+            authorization_details: {
+              ...authDetails,
+              did: credentialSubject.id,
+            },
+          };
 
-          // const res = await handleSendPresentationRequest(
-          //   contents,
-          //   queryResponseMessage
-          // );
-
-          // setPresentationResponse(res);
-          // setLoading(false);
+          setContents(contents);
+          setLoading(false);
         }
       );
     } catch (error) {
@@ -226,18 +241,26 @@ const Request: React.FC<RequestProps> = ({
       />
       {selectedMethod && (
         <div className="request-button">
-          <Button onClick={queryResponders} disabled={vcId === ""}>
+          <Button onClick={handleQueryResponders} disabled={vcId === ""}>
             Query Responders
           </Button>
         </div>
       )}
       {responderDids && (
         <Accordion defaultActiveKey={responderDids[0]}>
-          {responderDids.map((item) => (
-            <Accordion.Item className="mt-4" key={item} eventKey={item}>
-              <Accordion.Header>{item}</Accordion.Header>
+          {responderDids.map((responderDid) => (
+            <Accordion.Item
+              className="mt-4"
+              key={responderDid}
+              eventKey={responderDid}
+            >
+              <Accordion.Header>{responderDid}</Accordion.Header>
               <Accordion.Body>
-                <Button>Send request</Button>
+                <Button
+                  onClick={() => handleSendPresentationRequest(responderDid)}
+                >
+                  Send request
+                </Button>
                 {presentationResponse && (
                   <div className="mt-4">
                     <ReactJson
