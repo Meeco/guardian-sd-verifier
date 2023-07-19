@@ -2,13 +2,12 @@ import { createPresentation, issue, signPresentation } from "@digitalbazaar/vc";
 import { Client, FileId } from "@hashgraph/sdk";
 import { add, format } from "date-fns";
 import { useState } from "react";
-import { Button } from "react-bootstrap";
+import { Accordion, Button, Form } from "react-bootstrap";
 import ReactJson from "react-json-view";
 import { v4 as uuidv4 } from "uuid";
 import { submitMessage } from "../../consensusService";
 import { createFile, getFileContents } from "../../fileService";
 import { getTopicMessages } from "../../hederaService";
-import presentationDefinition from "../../mock/presentation_definition.json";
 import {
   MessageType,
   PresentationQueryMessage,
@@ -39,6 +38,8 @@ const Request: React.FC<RequestProps> = ({
   selectedMethod,
 }) => {
   const [presentationResponse, setPresentationResponse] = useState<any>();
+  const [responderDids, setResponderDids] = useState<string[] | []>([]);
+  const [vcId, setvcId] = useState("");
 
   const handleGenKeyPair = async (id: string) => {
     const keyPair = await generateKeyPair(id);
@@ -179,73 +180,116 @@ const Request: React.FC<RequestProps> = ({
     return presentationResponse;
   };
 
-  const getPresentationResponse = async () => {
-    setLoading(true);
-    const { credentialSubject, issuer } = credential;
-    // create authorization_details
-    const authDetails = await createAuthDetails(credentialSubject, issuer);
-    const requestId = uuidv4();
-    // create presentation query message
-    const presentationQuery: PresentationQueryMessage = {
-      operation: MessageType.PRESENTATION_QUERY,
-      request_id: requestId,
-      // TODO: get vc_id from UI instead of hardcode
-      vc_id: "urn:uuid:81348e38-db35-4e5a-bcce-1644422cedd9",
-      requester_did: process.env.REACT_APP_REQUESTER_DID || "",
-      limit_hbar: 1,
-    };
+  const queryResponders = async () => {
+    try {
+      setLoading(true);
 
-    const presentationQueryMessage = JSON.stringify(presentationQuery);
-    // Send query message to HCS
-    submitMessage(presentationQueryMessage, client, topicId).then(async () => {
-      const queryResponseMessage = await pollRequest(async () => {
-        // Get query response from mirror node
-        const topicMessages = await getTopicMessages(topicId || "");
-        const message = topicMessages?.filter(
-          (msg) =>
-            msg.request_id === requestId &&
-            msg.operation === MessageType.QUERY_RESPONSE
-        )[0];
-
-        return message;
-      }, 10000);
-
-      // create presentation query file
-      const contents = {
-        ...presentationDefinition,
-        authorization_details: {
-          ...authDetails,
-          // TODO: update this to use credential's did
-          did: process.env.REACT_APP_REQUESTER_DID,
-        },
+      const requestId = uuidv4();
+      // create presentation query message
+      const presentationQuery: PresentationQueryMessage = {
+        operation: MessageType.PRESENTATION_QUERY,
+        request_id: requestId,
+        vc_id: vcId,
+        requester_did: process.env.REACT_APP_REQUESTER_DID || "",
+        limit_hbar: 1,
       };
 
-      const res = await handleSendPresentationRequest(
-        contents,
-        queryResponseMessage
-      );
+      const presentationQueryMessage = JSON.stringify(presentationQuery);
+      // Send query message to HCS
+      submitMessage(presentationQueryMessage, client, topicId).then(
+        async () => {
+          const queryRespondersMessages = await pollRequest(async () => {
+            // Get query response from mirror node
+            const topicMessages = await getTopicMessages(topicId || "");
+            const messages = topicMessages?.filter(
+              (msg) =>
+                msg.request_id === requestId &&
+                msg.operation === MessageType.QUERY_RESPONSE
+            );
 
-      setPresentationResponse(res);
+            return messages;
+          }, 10000);
+
+          console.log({ queryRespondersMessages });
+
+          const responderDids = queryRespondersMessages.map(
+            (item: any) => item.responder_did
+          );
+
+          setResponderDids(responderDids);
+          setLoading(false);
+
+          // const { credentialSubject, issuer } = credential;
+
+          // create authorization_details
+          // const authDetails = await createAuthDetails(credentialSubject, issuer);
+
+          // create presentation query file
+          // const contents = {
+          //   ...presentationDefinition,
+          //   authorization_details: {
+          //     ...authDetails,
+          //     // TODO: update this to use credential's did
+          //     did: process.env.REACT_APP_REQUESTER_DID,
+          //   },
+          // };
+
+          // const res = await handleSendPresentationRequest(
+          //   contents,
+          //   queryResponseMessage
+          // );
+
+          // setPresentationResponse(res);
+          // setLoading(false);
+        }
+      );
+    } catch (error) {
+      console.log({ error });
       setLoading(false);
-    });
+    }
+  };
+
+  const handleChangeVcId = (e: React.ChangeEvent<any>) => {
+    e.preventDefault();
+    setvcId(e.target.value);
   };
 
   return (
     <div>
+      <Form.Label>vc_id</Form.Label>
+      <Form.Control
+        type="text"
+        placeholder="vc_id"
+        onChange={handleChangeVcId}
+      />
       {selectedMethod && (
         <div className="request-button">
-          <Button onClick={getPresentationResponse}>Request</Button>
+          <Button onClick={queryResponders} disabled={vcId === ""}>
+            Query Responders
+          </Button>
         </div>
       )}
-      {presentationResponse && (
-        <div className="mt-4">
-          <ReactJson
-            src={presentationResponse}
-            name="presentation_response"
-            collapsed
-            theme={"monokai"}
-          />
-        </div>
+      {responderDids && (
+        <Accordion defaultActiveKey={responderDids[0]}>
+          {responderDids.map((item) => (
+            <Accordion.Item className="mt-4" key={item} eventKey={item}>
+              <Accordion.Header>{item}</Accordion.Header>
+              <Accordion.Body>
+                <Button>Send request</Button>
+                {presentationResponse && (
+                  <div className="mt-4">
+                    <ReactJson
+                      src={presentationResponse}
+                      name="presentation_response"
+                      collapsed
+                      theme={"monokai"}
+                    />
+                  </div>
+                )}
+              </Accordion.Body>
+            </Accordion.Item>
+          ))}
+        </Accordion>
       )}
     </div>
   );

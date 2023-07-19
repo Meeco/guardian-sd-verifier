@@ -44,7 +44,7 @@ function App() {
           </Accordion.Body>
         </Accordion.Item>
         <Accordion.Item eventKey="wallet">
-          <Accordion.Header>WalletInfo</Accordion.Header>
+          <Accordion.Header>Hedera Wallet</Accordion.Header>
           <Accordion.Body>
             <WalletInfo
               setAccountId={setAccountId}

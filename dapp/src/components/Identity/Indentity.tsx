@@ -51,6 +51,11 @@ const Indentity: React.FC<IndentityProps> = ({
       };
     }
   };
+
+  const handlePrivateKeyChange = (e: ChangeEvent<any>) => {
+    e.preventDefault();
+    // set credential private key
+  };
   return (
     <div>
       <div className="file">
@@ -69,11 +74,17 @@ const Indentity: React.FC<IndentityProps> = ({
               Get verification Method(s)
             </Button>
             {verificationMethods && (
-              <VerificationMethods
-                selectedMethod={selectedMethod}
-                setSelectedMethod={setSelectedMethod}
-                verificationMethods={verificationMethods}
-              />
+              <>
+                <VerificationMethods
+                  selectedMethod={selectedMethod}
+                  setSelectedMethod={setSelectedMethod}
+                  verificationMethods={verificationMethods}
+                />
+                <>
+                  <Form.Label>Credential Private Key</Form.Label>
+                  <Form.Control type="text" onChange={handlePrivateKeyChange} />
+                </>
+              </>
             )}
           </div>
         </>

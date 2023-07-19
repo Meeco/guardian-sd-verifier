@@ -1,17 +1,12 @@
-import { PresentationResponseMessage, QueryResponseMessage } from "../types";
-
 const pollRequest = (
-  func: () => Promise<
-    QueryResponseMessage | PresentationResponseMessage | undefined
-  >,
+  func: () => Promise<any>,
   timeOut: number
-): Promise<QueryResponseMessage | PresentationResponseMessage | undefined> => {
+): Promise<any> => {
   return new Promise((resolve) => {
     // Run the function every 3 seconds
     const interval = setInterval(async () => {
       const res = await func();
-      console.log({ res });
-      if (res) {
+      if (res.length > 0) {
         clearInterval(interval);
         resolve(res);
       }
