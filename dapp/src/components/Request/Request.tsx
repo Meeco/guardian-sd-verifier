@@ -14,7 +14,13 @@ import {
   PresentationRequestMessage,
   PresentationResponseMessage,
 } from "../../types";
-import { documentLoader, generateKeyPair, pollRequest } from "../../utils";
+import {
+  ResultType,
+  documentLoader,
+  fetchIPFSFile,
+  generateKeyPair,
+  pollRequest,
+} from "../../utils";
 import { createAuthDetails } from "../../utils/createAuthDetails";
 
 interface RequestProps {
@@ -38,7 +44,7 @@ const Request: React.FC<RequestProps> = ({
 }) => {
   const [presentationResponse, setPresentationResponse] = useState<any>();
   const [responderDids, setResponderDids] = useState<string[] | []>([]);
-  const [vcId, setvcId] = useState("");
+  const [cid, setCid] = useState("");
   const [contents, setContents] = useState<any>();
 
   const handleGenKeyPair = async () => {
@@ -151,13 +157,13 @@ const Request: React.FC<RequestProps> = ({
   const handleQueryResponders = async () => {
     try {
       setLoading(true);
-
       const requestId = uuidv4();
+      const { id } = await fetchIPFSFile(cid, { resultType: ResultType.JSON });
       // create presentation query message
       const presentationQuery: PresentationQueryMessage = {
         operation: MessageType.PRESENTATION_QUERY,
         request_id: requestId,
-        vc_id: vcId,
+        vc_id: id,
         requester_did: process.env.REACT_APP_REQUESTER_DID || "",
         limit_hbar: 1,
       };
@@ -178,45 +184,47 @@ const Request: React.FC<RequestProps> = ({
             return messages;
           }, 15000);
 
-          const responderDids = queryRespondersMessages.map(
-            (item: any) => item.responder_did
-          );
+          if (queryRespondersMessages) {
+            const responderDids = queryRespondersMessages.map(
+              (item: any) => item.responder_did
+            );
 
-          setResponderDids(responderDids);
+            setResponderDids(responderDids);
 
-          const { credentialSubject, issuer } = credential;
+            const { credentialSubject, issuer } = credential;
 
-          const validUntil = format(
-            add(new Date(credentialSubject.valid_until), { years: 1 }),
-            "yyyy-MM-dd"
-          );
+            const validUntil = format(
+              add(new Date(credentialSubject.valid_until), { years: 1 }),
+              "yyyy-MM-dd"
+            );
 
-          const formattedCredential = getFormattedCredential({
-            issuer,
-            credentialSubject,
-            validUntil: validUntil,
-          });
+            const formattedCredential = getFormattedCredential({
+              issuer,
+              credentialSubject,
+              validUntil: validUntil,
+            });
 
-          const key = await handleGenKeyPair();
+            const key = await handleGenKeyPair();
 
-          // create authorization_details
-          const authDetails = await createAuthDetails({
-            verifiableCredential: formattedCredential,
-            challenge: "challenge",
-            documentLoader,
-            key,
-          });
+            // create authorization_details
+            const authDetails = await createAuthDetails({
+              verifiableCredential: formattedCredential,
+              challenge: "challenge",
+              documentLoader,
+              key,
+            });
 
-          // create presentation query file
-          const contents = {
-            ...presentationDefinition,
-            authorization_details: {
-              ...authDetails,
-              did: credentialSubject.id,
-            },
-          };
+            // create presentation query file
+            const contents = {
+              ...presentationDefinition,
+              authorization_details: {
+                ...authDetails,
+                did: credentialSubject.id,
+              },
+            };
 
-          setContents(contents);
+            setContents(contents);
+          }
           setLoading(false);
         }
       );
@@ -226,22 +234,18 @@ const Request: React.FC<RequestProps> = ({
     }
   };
 
-  const handleChangeVcId = (e: React.ChangeEvent<any>) => {
+  const handleChangeCid = (e: React.ChangeEvent<any>) => {
     e.preventDefault();
-    setvcId(e.target.value);
+    setCid(e.target.value);
   };
 
   return (
     <div>
-      <Form.Label>vc_id</Form.Label>
-      <Form.Control
-        type="text"
-        placeholder="vc_id"
-        onChange={handleChangeVcId}
-      />
+      <Form.Label>CID</Form.Label>
+      <Form.Control type="text" placeholder="CID" onChange={handleChangeCid} />
       {selectedMethod && (
         <div className="request-button">
-          <Button onClick={handleQueryResponders} disabled={vcId === ""}>
+          <Button onClick={handleQueryResponders} disabled={cid === ""}>
             Query Responders
           </Button>
         </div>
