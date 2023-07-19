@@ -262,14 +262,23 @@ const Request: React.FC<RequestProps> = ({
                   Send request
                 </Button>
                 {presentationResponse && (
-                  <div className="mt-4">
-                    <ReactJson
-                      src={presentationResponse}
-                      name="presentation_response"
-                      collapsed
-                      theme={"monokai"}
-                    />
-                  </div>
+                  <Accordion
+                    className="mt-4"
+                    defaultActiveKey={`${responderDid}-response`}
+                  >
+                    <Accordion.Item eventKey={`${responderDid}-response`}>
+                      <Accordion.Header>Response</Accordion.Header>
+                      <Accordion.Body>
+                        {presentationResponse && (
+                          <ReactJson
+                            src={presentationResponse}
+                            name="presentation_response"
+                            theme={"monokai"}
+                          />
+                        )}
+                      </Accordion.Body>
+                    </Accordion.Item>
+                  </Accordion>
                 )}
               </Accordion.Body>
             </Accordion.Item>
