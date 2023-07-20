@@ -90,8 +90,6 @@ const Request: React.FC<RequestProps> = ({
     // Create file in HFS
     const presentationResponse = await createFile(
       signer,
-      process.env.REACT_APP_RESPONDER_DID_PRIVATE_KEY_HEX || "",
-      process.env.REACT_APP_RESPONDER_DID_PUBLIC_KEY_HEX || "",
       JSON.stringify(contents)
     ).then(async (fileId) => {
       return await handleGetPresentationResponse({ fileId, responderDid });

@@ -1,12 +1,7 @@
 import { BladeSigner } from "@bladelabs/blade-web3.js";
 import { FileCreateTransaction, Hbar } from "@hashgraph/sdk";
 
-const createFile = async (
-  bladeSigner: BladeSigner,
-  privateKeyStr: string,
-  publicKeyStr: string,
-  contents: string
-) => {
+const createFile = async (bladeSigner: BladeSigner, contents: string) => {
   try {
     //Create the transaction
     const transaction = await new FileCreateTransaction()
@@ -23,11 +18,10 @@ const createFile = async (
 
     // call executes the transaction
     const result = await bladeSigner.call(signedTransaction);
+
     // //Request the receipt
     const receipt = await result.getReceiptWithSigner(bladeSigner);
-
     const { fileId } = receipt;
-    console.log({ receipt });
     return fileId;
   } catch (error) {
     console.log("Create file transaction failed", error);
