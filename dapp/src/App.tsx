@@ -1,9 +1,10 @@
-import { Client } from "@hashgraph/sdk";
+import { BladeConnector, BladeSigner } from "@bladelabs/blade-web3.js";
 import { useEffect, useState } from "react";
-import { Accordion } from "react-bootstrap";
+import { Accordion, Button } from "react-bootstrap";
 import "./App.css";
-import { Indentity, Loader, Request, WalletInfo } from "./components";
-import { createHederaClient } from "./hederaService";
+import initConnection from "./bladeWeb3Service/initConnection";
+import pairWallet from "./bladeWeb3Service/pairWallet";
+import { Indentity, Loader, Request } from "./components";
 
 function App() {
   // Loading status
@@ -12,29 +13,45 @@ function App() {
   const [credential, setCredential] = useState<any>();
   // Selected verification method
   const [selectedMethod, setSelectedMethod] = useState<any>();
-  // User's account ID
-  const [accountId, setAccountId] = useState("");
-  // User's private key
-  const [privateKey, setPrivateKey] = useState("");
-  // Hedera client
-  const [client, setClient] = useState<Client | undefined>();
   // Credential's private key
   const [credPrivateKey, setCredPrivateKey] = useState("");
   // Credential's public key
   const [credPublicKey, setCredPublicKey] = useState("");
   // Topic ID for sending/receiving message
   const topicId = process.env.REACT_APP_TOPIC_ID;
+  // Blade wallet connector
+  const [bladeConnector, setBladeConnector] = useState<
+    BladeConnector | undefined
+  >();
+  // Blade wallet signer(user)
+  const [signer, setSigner] = useState<BladeSigner | null>(null);
+
+  console.log({ bladeConnector });
+
+  const handleConnectWallet = () => {
+    if (bladeConnector) {
+      pairWallet(bladeConnector).then(() => {
+        const signer = bladeConnector.getSigner();
+        if (signer) {
+          setSigner(signer);
+        }
+      });
+    } else {
+      console.log("bladeConnector is not found");
+    }
+  };
 
   useEffect(() => {
-    if (accountId && privateKey) {
-      const client = createHederaClient(accountId, privateKey);
-      setClient(client);
-    }
-  }, [accountId, privateKey]);
+    const connector = initConnection();
+    setBladeConnector(connector);
+  }, []);
 
   return (
     <div className="App">
       {loading && <Loader />}
+      <div>
+        <Button onClick={handleConnectWallet}>connect wallet</Button>
+      </div>
       <Accordion defaultActiveKey="identity">
         <Accordion.Item eventKey="identity">
           <Accordion.Header>Identity</Accordion.Header>
@@ -49,21 +66,12 @@ function App() {
             />
           </Accordion.Body>
         </Accordion.Item>
-        <Accordion.Item eventKey="wallet">
-          <Accordion.Header>Hedera Wallet</Accordion.Header>
-          <Accordion.Body>
-            <WalletInfo
-              setAccountId={setAccountId}
-              setPrivateKey={setPrivateKey}
-            />
-          </Accordion.Body>
-        </Accordion.Item>
         <Accordion.Item eventKey="request">
           <Accordion.Header>Request</Accordion.Header>
           <Accordion.Body>
-            {client ? (
+            {signer ? (
               <Request
-                client={client}
+                signer={signer}
                 credential={credential}
                 topicId={topicId}
                 setLoading={setLoading}

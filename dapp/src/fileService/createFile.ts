@@ -1,38 +1,33 @@
-import {
-  Client,
-  FileCreateTransaction,
-  Hbar,
-  PrivateKey,
-  PublicKey,
-} from "@hashgraph/sdk";
+import { BladeSigner } from "@bladelabs/blade-web3.js";
+import { FileCreateTransaction, Hbar } from "@hashgraph/sdk";
 
 const createFile = async (
-  client: Client,
+  bladeSigner: BladeSigner,
   privateKeyStr: string,
   publicKeyStr: string,
   contents: string
 ) => {
   try {
-    const publicKey = PublicKey.fromString(publicKeyStr);
-    const privateKey = PrivateKey.fromString(privateKeyStr);
     //Create the transaction
     const transaction = await new FileCreateTransaction()
-      .setKeys([publicKey]) //A different key then the client operator key
       .setContents(contents)
-      .setMaxTransactionFee(new Hbar(2))
-      .freezeWith(client);
+      .setMaxTransactionFee(new Hbar(2));
 
-    //Sign with the file private key
-    const signTx = await transaction.sign(privateKey);
+    // populate adds transaction ID and node IDs to the transaction
+    const populatedTransaction = await bladeSigner.populateTransaction(
+      transaction
+    );
+    const signedTransaction = await bladeSigner.signTransaction(
+      populatedTransaction.freeze()
+    );
 
-    //Sign with the client operator private key and submit to a Hedera network
-    const submitTx = await signTx.execute(client);
+    // call executes the transaction
+    const result = await bladeSigner.call(signedTransaction);
+    // //Request the receipt
+    const receipt = await result.getReceiptWithSigner(bladeSigner);
 
-    //Request the receipt
-    const receipt = await submitTx.getReceipt(client);
-
-    //Get the file ID
     const { fileId } = receipt;
+    console.log({ receipt });
     return fileId;
   } catch (error) {
     console.log("Create file transaction failed", error);

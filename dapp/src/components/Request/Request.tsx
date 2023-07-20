@@ -1,4 +1,5 @@
-import { Client, FileId } from "@hashgraph/sdk";
+import { BladeSigner } from "@bladelabs/blade-web3.js";
+import { FileId } from "@hashgraph/sdk";
 import { add, format } from "date-fns";
 import { useState } from "react";
 import { Accordion, Button, Form } from "react-bootstrap";
@@ -25,17 +26,17 @@ import { createAuthDetails } from "../../utils/createAuthDetails";
 
 interface RequestProps {
   credential: any;
-  client: Client;
   setLoading: React.Dispatch<React.SetStateAction<boolean>>;
   selectedMethod: any;
   credPrivateKey: string;
   credPublicKey: string;
+  signer: BladeSigner;
   topicId?: string;
 }
 
 const Request: React.FC<RequestProps> = ({
   credential,
-  client,
+  signer,
   topicId,
   setLoading,
   selectedMethod,
@@ -92,9 +93,10 @@ const Request: React.FC<RequestProps> = ({
 
   // Send presentation request to HCS
   const handleSendPresentationRequest = async (responderDid: string) => {
+    setLoading(true);
     // Create file in HFS
     const presentationResponse = await createFile(
-      client,
+      signer,
       process.env.REACT_APP_RESPONDER_DID_PRIVATE_KEY_HEX || "",
       process.env.REACT_APP_RESPONDER_DID_PUBLIC_KEY_HEX || "",
       JSON.stringify(contents)
@@ -102,6 +104,7 @@ const Request: React.FC<RequestProps> = ({
       return await handleGetPresentationResponse({ fileId, responderDid });
     });
 
+    setLoading(false);
     return presentationResponse;
   };
 
@@ -128,7 +131,7 @@ const Request: React.FC<RequestProps> = ({
 
     // send presentation request to HCS
     const presentationRequestMessage = JSON.stringify(presentationRequest);
-    submitMessage(presentationRequestMessage, client, topicId);
+    submitMessage(presentationRequestMessage, signer, topicId);
 
     const presentationResponseMessage = await pollRequest(async () => {
       // Get presentation response from mirror node
@@ -142,7 +145,7 @@ const Request: React.FC<RequestProps> = ({
       )[0];
 
       return message;
-    }, 15000);
+    }, 60000);
 
     // console.log({ presentationResponseMessage });
     // get response file's contents
@@ -150,7 +153,7 @@ const Request: React.FC<RequestProps> = ({
       (presentationResponseMessage as PresentationResponseMessage | undefined)
         ?.response_file_id || "";
 
-    const fileContents = await getFileContents(client, responseFileId);
+    const fileContents = await getFileContents(signer, responseFileId);
     setPresentationResponse(fileContents);
   };
 
@@ -170,7 +173,7 @@ const Request: React.FC<RequestProps> = ({
 
       const presentationQueryMessage = JSON.stringify(presentationQuery);
       // Send query message to HCS
-      submitMessage(presentationQueryMessage, client, topicId).then(
+      submitMessage(presentationQueryMessage, signer, topicId).then(
         async () => {
           const queryRespondersMessages = await pollRequest(async () => {
             // Get query response from mirror node

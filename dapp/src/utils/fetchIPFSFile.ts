@@ -23,7 +23,6 @@ export async function fetchIPFSFile(
   }: { resultType?: ResultType; httpProxy?: string } = {}
 ) {
   return fetch(`${httpProxy}${cid}`).then((result) => {
-    console.log({ result });
     if (result.ok) {
       switch (resultType) {
         case ResultType.TEXT:
