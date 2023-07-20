@@ -64,15 +64,10 @@ const Request: React.FC<RequestProps> = ({
   }: {
     issuer: any;
     credentialSubject: any;
-    validUntil: string;
+    validUntil?: string;
   }) => {
     const newCredential = {
       ...credential,
-      "@context": [
-        "https://www.w3.org/2018/credentials/v1",
-        // TODO: Update hardcoded context
-        "https://ipfs.io/ipfs/QmdafSLzFLrTSp3fPG8CpcjH5MehtDFY4nxjr5CVq3z1rz",
-      ],
       issuer: {
         ...issuer,
         id: credentialSubject.id,
@@ -80,8 +75,6 @@ const Request: React.FC<RequestProps> = ({
       },
       credentialSubject: {
         ...credentialSubject,
-        // TODO: Update hardcoded type
-        type: "auditor_template",
         valid_until: validUntil,
       },
     };
@@ -196,10 +189,12 @@ const Request: React.FC<RequestProps> = ({
 
             const { credentialSubject, issuer } = credential;
 
-            const validUntil = format(
-              add(new Date(credentialSubject.valid_until), { years: 1 }),
-              "yyyy-MM-dd"
-            );
+            const validUntil = credentialSubject.valid_until
+              ? format(
+                  add(new Date(credentialSubject.valid_until), { years: 1 }),
+                  "yyyy-MM-dd"
+                )
+              : undefined;
 
             const formattedCredential = getFormattedCredential({
               issuer,
