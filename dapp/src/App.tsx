@@ -25,15 +25,16 @@ function App() {
   >();
   // Blade wallet signer(user)
   const [signer, setSigner] = useState<BladeSigner | null>(null);
-
-  console.log({ bladeConnector });
+  // Blade wallet account ID
+  const [accountID, setaccountID] = useState("");
 
   const handleConnectWallet = () => {
     if (bladeConnector) {
-      pairWallet(bladeConnector).then(() => {
+      pairWallet(bladeConnector).then(async (accId) => {
         const signer = bladeConnector.getSigner();
         if (signer) {
           setSigner(signer);
+          setaccountID(accId);
         }
       });
     } else {
@@ -48,45 +49,52 @@ function App() {
 
   return (
     <div className="App">
+      <h1>Verifier App</h1>
+      {accountID && <p>Account ID: {accountID}</p>}
       {loading && <Loader />}
-      <div>
-        <Button onClick={handleConnectWallet}>connect wallet</Button>
+      <div className="mb-4">
+        {!signer && (
+          <>
+            <p>Please connect the wallet to continue</p>
+          </>
+        )}
+        <Button onClick={handleConnectWallet} disabled={!!signer}>
+          Connect to the wallet
+        </Button>
       </div>
-      <Accordion defaultActiveKey="identity">
-        <Accordion.Item eventKey="identity">
-          <Accordion.Header>Identity</Accordion.Header>
-          <Accordion.Body>
-            <Indentity
-              setLoading={setLoading}
-              setCredential={setCredential}
-              selectedMethod={selectedMethod}
-              setSelectedMethod={setSelectedMethod}
-              setCredPrivateKey={setCredPrivateKey}
-              setCredPublicKey={setCredPublicKey}
-            />
-          </Accordion.Body>
-        </Accordion.Item>
-        <Accordion.Item eventKey="request">
-          <Accordion.Header>Request</Accordion.Header>
-          <Accordion.Body>
-            {signer ? (
-              <Request
-                signer={signer}
-                credential={credential}
-                topicId={topicId}
+      {signer && (
+        <Accordion defaultActiveKey="identity">
+          <Accordion.Item eventKey="identity">
+            <Accordion.Header>Identity</Accordion.Header>
+            <Accordion.Body>
+              <Indentity
                 setLoading={setLoading}
+                setCredential={setCredential}
                 selectedMethod={selectedMethod}
-                credPrivateKey={credPrivateKey}
-                credPublicKey={credPublicKey}
+                setSelectedMethod={setSelectedMethod}
+                setCredPrivateKey={setCredPrivateKey}
+                setCredPublicKey={setCredPublicKey}
               />
-            ) : (
-              <>
-                <p>Please enter wallet info first</p>
-              </>
-            )}
-          </Accordion.Body>
-        </Accordion.Item>
-      </Accordion>
+            </Accordion.Body>
+          </Accordion.Item>
+          {credPrivateKey && (
+            <Accordion.Item eventKey="request">
+              <Accordion.Header>Request</Accordion.Header>
+              <Accordion.Body>
+                <Request
+                  signer={signer}
+                  credential={credential}
+                  topicId={topicId}
+                  setLoading={setLoading}
+                  selectedMethod={selectedMethod}
+                  credPrivateKey={credPrivateKey}
+                  credPublicKey={credPublicKey}
+                />
+              </Accordion.Body>
+            </Accordion.Item>
+          )}
+        </Accordion>
+      )}
     </div>
   );
 }

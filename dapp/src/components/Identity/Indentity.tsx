@@ -102,10 +102,15 @@ const Indentity: React.FC<IndentityProps> = ({
                   setSelectedMethod={setSelectedMethod}
                   verificationMethods={verificationMethods}
                 />
-                <div className="mt-4">
-                  <Form.Label>Credential Private Key</Form.Label>
-                  <Form.Control type="text" onChange={handlePrivateKeyChange} />
-                </div>
+                {selectedMethod && (
+                  <div className="mt-4">
+                    <Form.Label>Credential Private Key</Form.Label>
+                    <Form.Control
+                      type="text"
+                      onChange={handlePrivateKeyChange}
+                    />
+                  </div>
+                )}
               </>
             )}
           </div>

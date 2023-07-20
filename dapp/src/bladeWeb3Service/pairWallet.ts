@@ -9,7 +9,7 @@ const pairWallet = async (bladeConnector: BladeConnector) => {
 
   const pairedAccountIds = await bladeConnector.createSession(params);
 
-  console.log({ pairedAccountIds });
+  return pairedAccountIds[0];
 };
 
 export default pairWallet;

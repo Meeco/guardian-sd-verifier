@@ -281,6 +281,7 @@ const Request: React.FC<RequestProps> = ({
                             src={presentationResponse}
                             name="presentation_response"
                             theme={"monokai"}
+                            collapseStringsAfterLength={30}
                           />
                         )}
                       </Accordion.Body>
