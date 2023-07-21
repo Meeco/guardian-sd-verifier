@@ -1,16 +1,40 @@
-import jsonldSignatures from "jsonld-signatures";
+import { fetchResolveDid } from "../didService";
+import { ResultType, fetchIPFSFile } from "./fetchIPFSFile";
 
-const { extendContextLoader } = jsonldSignatures;
+const wrapResponse = (url: string, document: any) => {
+  return {
+    contextUrl: null,
+    document,
+    documentUrl: url,
+  };
+};
 
-export const documentLoader = extendContextLoader(async (url: string) => {
-  if (
-    url ===
-    "https://ipfs.io/ipfs/QmdafSLzFLrTSp3fPG8CpcjH5MehtDFY4nxjr5CVq3z1rz"
-  ) {
-    return {
-      contextUrl: null,
-      documentUrl: url,
-      document: {
+const fetchJson = async (url: string) => {
+  return fetch(url)
+    .then(async (result) => {
+      if (result.ok) {
+        return await result.json();
+      }
+
+      throw new Error(
+        `Could not fetch "${url}" - status was "${result.status}"`
+      );
+    })
+    .catch((err) => {
+      console.log(err);
+      throw new Error(`Could not fetch from "${url}"`);
+    });
+};
+
+export const documentLoader = async (url: string) => {
+  try {
+    const [protocol] = url.split(":");
+
+    if (
+      url ===
+      "https://ipfs.io/ipfs/QmdafSLzFLrTSp3fPG8CpcjH5MehtDFY4nxjr5CVq3z1rz"
+    ) {
+      return wrapResponse(url, {
         "@context": {
           "@version": 1.1,
           "@protected": true,
@@ -44,12 +68,33 @@ export const documentLoader = extendContextLoader(async (url: string) => {
             },
           },
         },
-      },
-    };
+      });
+    }
+
+    let document: any;
+    switch (protocol) {
+      case "did":
+        document = await fetchResolveDid(url);
+        break;
+      case "ipfs":
+        document = await fetchIPFSFile(url, { resultType: ResultType.JSON });
+        break;
+      case "https":
+        document = await fetchJson(url);
+        break;
+      default:
+        throw new Error(
+          `Refused to load document "${url}" - unsupported protocol`
+        );
+    }
+
+    if (!document) {
+      const error = `Failed to load document at: "${url}"`;
+      throw new Error(error);
+    }
+
+    return wrapResponse(url, document);
+  } catch (error) {
+    console.log({ error });
   }
-  return {
-    contextUrl: null,
-    documentUrl: url,
-    document: await await fetch(url).then((res) => res.json()),
-  };
-});
+};
