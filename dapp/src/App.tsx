@@ -10,7 +10,7 @@ function App() {
   // Loading status
   const [loading, setLoading] = useState(false);
   // User uploaded credential
-  const [credential, setCredential] = useState<any>();
+  const [verifiableCredential, setVerifiableCredential] = useState<any>();
   // Selected verification method
   const [selectedMethod, setSelectedMethod] = useState<any>();
   // Credential's private key
@@ -69,7 +69,8 @@ function App() {
             <Accordion.Body>
               <Indentity
                 setLoading={setLoading}
-                setCredential={setCredential}
+                verifiableCredential={verifiableCredential}
+                setVerifiableCredential={setVerifiableCredential}
                 selectedMethod={selectedMethod}
                 setSelectedMethod={setSelectedMethod}
                 setCredPrivateKey={setCredPrivateKey}
@@ -83,7 +84,7 @@ function App() {
               <Accordion.Body>
                 <Request
                   signer={signer}
-                  credential={credential}
+                  verifiableCredential={verifiableCredential}
                   topicId={topicId}
                   setLoading={setLoading}
                   selectedMethod={selectedMethod}

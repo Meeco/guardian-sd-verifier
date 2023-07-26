@@ -26,27 +26,37 @@ export const createAuthDetails = async ({
   verifiableCredential,
   challenge,
   documentLoader,
-  key,
+  keyData,
+  suite,
 }: {
   verifiableCredential: any;
   challenge: string;
   documentLoader: any;
-  key: Ed25519VerificationKey2018;
+  keyData: Ed25519VerificationKey2018;
+  suite: Ed25519Signature2018;
 }) => {
-  const suite = new Ed25519Signature2018({
-    key,
-  });
   const presentation = vc.createPresentation({
     verifiableCredential,
     id: `urn:uuid:${v4()}`,
-    holder: key.controller,
+    holder: keyData.controller,
   });
+
+  console.log({ presentation });
+
   const vp = await vc.signPresentation({
     presentation,
     suite,
     challenge,
     documentLoader,
   });
+
+  console.log({ vp });
+
+  const authDetails = {
+    verifiablePresentation: {
+      ...vp,
+    },
+  };
 
   // Optionally assert that the credential verifies
   // const resultVp = await vc.verify({
@@ -56,5 +66,7 @@ export const createAuthDetails = async ({
   //   documentLoader,
   // });
 
-  return vp;
+  // console.log({ resultVp });
+
+  return authDetails;
 };

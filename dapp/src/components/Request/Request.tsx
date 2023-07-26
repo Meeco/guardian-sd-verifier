@@ -1,14 +1,13 @@
 import { BladeSigner } from "@bladelabs/blade-web3.js";
 import { FileId } from "@hashgraph/sdk";
-import { add, format } from "date-fns";
+import { Ed25519VerificationKey2018 } from "@transmute/ed25519-signature-2018";
 import { useState } from "react";
-import { Accordion, Button, Form } from "react-bootstrap";
+import { Accordion, Button, Form, FormCheck, FormGroup } from "react-bootstrap";
 import ReactJson from "react-json-view";
 import { v4 as uuidv4 } from "uuid";
 import { submitMessage } from "../../consensusService";
 import { createFile, getFileContents } from "../../fileService";
 import { getTopicMessages } from "../../hederaService";
-import presentationDefinition from "../../mock/presentation_definition.json";
 import {
   MessageType,
   PresentationQueryMessage,
@@ -25,7 +24,7 @@ import {
 import { createAuthDetails } from "../../utils/createAuthDetails";
 
 interface RequestProps {
-  credential: any;
+  verifiableCredential: any;
   setLoading: React.Dispatch<React.SetStateAction<boolean>>;
   selectedMethod: any;
   credPrivateKey: string;
@@ -35,7 +34,7 @@ interface RequestProps {
 }
 
 const Request: React.FC<RequestProps> = ({
-  credential,
+  verifiableCredential,
   signer,
   topicId,
   setLoading,
@@ -44,59 +43,80 @@ const Request: React.FC<RequestProps> = ({
   credPublicKey,
 }) => {
   const [presentationResponse, setPresentationResponse] = useState<any>();
-  const [responderDids, setResponderDids] = useState<string[] | []>([]);
+  const [responderDids, setResponderDids] = useState<string[]>([]);
   const [cid, setCid] = useState("");
   const [contents, setContents] = useState<any>();
+  const [ipfsFile, setIpfsFile] = useState<any>();
+  const [selectedFields, setSelectedFields] = useState<string[]>([]);
+  const [selectableFields, setSelectableFields] = useState<string[]>([]);
+  const [fileId, setFileId] = useState<FileId | null | undefined>();
+  // TODO: Update this field
+  const credentialType = "8851425a-8dee-4e0f-a044-dba63cf84eb2&1.0.0";
 
   const handleGenKeyPair = async () => {
     const keyPair = await generateKeyPair({
-      credentialSubject: credential.credentialSubject,
-      publicKeyHex: credPublicKey,
       privateKeyHex: credPrivateKey,
     });
+
     return keyPair;
   };
 
-  const getFormattedCredential = ({
-    issuer,
-    credentialSubject,
-    validUntil,
-  }: {
-    issuer: any;
-    credentialSubject: any;
-    validUntil?: string;
-  }) => {
-    const newCredential = {
-      ...credential,
-      issuer: {
-        ...issuer,
-        id: credentialSubject.id,
-        name: "Self Asserted",
-      },
-      credentialSubject: {
-        ...credentialSubject,
-        valid_until: validUntil,
-      },
-    };
-    // Remove `credentialStatus` field from the formated credential
-    delete newCredential.credentialStatus;
+  // Create file in HFS
 
-    return newCredential;
+  const handleCreateFile = async (responderDid: string) => {
+    setLoading(true);
+    const fileId = await createFile(signer, JSON.stringify(contents));
+    setFileId(fileId);
+    // TODO: Remove hardcode
+    // setFileId("fileId" as unknown as FileId);
+    setLoading(false);
   };
 
   // Send presentation request to HCS
-  const handleSendPresentationRequest = async (responderDid: string) => {
+  const handleSendRequest = async ({
+    responderDid,
+  }: {
+    responderDid: string;
+  }) => {
     setLoading(true);
-    // Create file in HFS
-    const presentationResponse = await createFile(
-      signer,
-      JSON.stringify(contents)
-    ).then(async (fileId) => {
-      return await handleGetPresentationResponse({ fileId, responderDid });
-    });
 
+    const presentationResponse = await handleGetPresentationResponse({
+      fileId,
+      responderDid,
+    });
     setLoading(false);
-    return presentationResponse;
+    setPresentationResponse(presentationResponse);
+  };
+
+  const createPresentationDefinition = (id: string) => {
+    const path = selectedFields.map((field) => `$.credentialSubject.${field}`);
+    return {
+      comment: "Note: VP, OIDC, DIDComm, or CHAPI outer wrapper would be here.",
+      presentation_definition: {
+        id: uuidv4(),
+        input_descriptors: [
+          {
+            id: "audit",
+            name: "Audit Report Request",
+            purpose: "Require further information to complete audit report.",
+            constraints: {
+              fields: [
+                {
+                  path: ["$.id"],
+                  filter: {
+                    type: "string",
+                    const: id, //vc.id
+                  },
+                },
+                {
+                  path,
+                },
+              ],
+            },
+          },
+        ],
+      },
+    };
   };
 
   // Get presentation response from HCS
@@ -148,11 +168,45 @@ const Request: React.FC<RequestProps> = ({
     setPresentationResponse(fileContents);
   };
 
+  const handleGetFields = async () => {
+    try {
+      setLoading(true);
+      const file = await fetchIPFSFile(cid, { resultType: ResultType.JSON });
+      setIpfsFile(file);
+
+      const selectedContext = file["@context"].filter((context: string) =>
+        context.startsWith("https://ipfs.io/ipfs/")
+      )[0];
+
+      const contextDocument = await (await fetch(selectedContext)).json();
+      const credentialContext =
+        contextDocument["@context"][credentialType]["@context"];
+      const contextFields = Object.keys(credentialContext);
+      const preservedFields = [
+        "@version",
+        "@protected",
+        "id",
+        "type",
+        "schema",
+      ];
+      const selectableFields = contextFields.filter(
+        (field) => !preservedFields.includes(field)
+      );
+      setSelectableFields(selectableFields);
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+      console.log({ error });
+    }
+  };
+
   const handleQueryResponders = async () => {
     try {
       setLoading(true);
       const requestId = uuidv4();
-      const { id } = await fetchIPFSFile(cid, { resultType: ResultType.JSON });
+      const id = ipfsFile.id;
+
+      const presentationDefinition = createPresentationDefinition(id);
       // create presentation query message
       const presentationQuery: PresentationQueryMessage = {
         operation: MessageType.PRESENTATION_QUERY,
@@ -185,41 +239,33 @@ const Request: React.FC<RequestProps> = ({
 
             setResponderDids(responderDids);
 
-            const { credentialSubject, issuer } = credential;
+            const { credentialSubject } = verifiableCredential;
 
-            const validUntil = credentialSubject.valid_until
-              ? format(
-                  add(new Date(credentialSubject.valid_until), { years: 1 }),
-                  "yyyy-MM-dd"
-                )
-              : undefined;
+            const keyPair = await handleGenKeyPair();
+            if (keyPair) {
+              const { keyData, suite } = keyPair;
+              // create authorization_details
+              const authDetails = await createAuthDetails({
+                verifiableCredential,
+                challenge: "challenge",
+                documentLoader,
+                keyData: keyData as unknown as Ed25519VerificationKey2018,
+                suite,
+              });
 
-            const formattedCredential = getFormattedCredential({
-              issuer,
-              credentialSubject,
-              validUntil: validUntil,
-            });
+              // create presentation query file
+              const contents = {
+                ...presentationDefinition,
+                authorization_details: {
+                  ...authDetails,
+                  did: credentialSubject.id,
+                },
+              };
 
-            const key = await handleGenKeyPair();
-
-            // create authorization_details
-            const authDetails = await createAuthDetails({
-              verifiableCredential: formattedCredential,
-              challenge: "challenge",
-              documentLoader,
-              key,
-            });
-
-            // create presentation query file
-            const contents = {
-              ...presentationDefinition,
-              authorization_details: {
-                ...authDetails,
-                did: credentialSubject.id,
-              },
-            };
-
-            setContents(contents);
+              setContents(contents);
+            } else {
+              throw new Error("Key data is required");
+            }
           }
           setLoading(false);
         }
@@ -235,12 +281,44 @@ const Request: React.FC<RequestProps> = ({
     setCid(e.target.value);
   };
 
+  const handleSelectField = (e: React.ChangeEvent<any>) => {
+    if (selectedFields.includes(e?.target.id)) {
+      setSelectedFields((prevFields) =>
+        prevFields.filter((field) => e.target.id !== field)
+      );
+    } else {
+      setSelectedFields((prevFields) => [...prevFields, e.target.id]);
+    }
+  };
+
   return (
     <div>
       <Form.Label>CID</Form.Label>
       <Form.Control type="text" placeholder="CID" onChange={handleChangeCid} />
       {selectedMethod && (
-        <div className="request-button">
+        <div className="mt-3">
+          <Button onClick={handleGetFields} disabled={cid === ""}>
+            Query fields
+          </Button>
+        </div>
+      )}
+      {selectableFields && (
+        <FormGroup className="mt-3">
+          {selectableFields.map((field: string) => (
+            <FormCheck
+              key={field}
+              id={field}
+              type="checkbox"
+              as="input"
+              label={field}
+              onChange={handleSelectField}
+              checked={selectedFields.includes(field)}
+            />
+          ))}
+        </FormGroup>
+      )}
+      {selectedFields.length > 0 && (
+        <div className="mt-3">
           <Button onClick={handleQueryResponders} disabled={cid === ""}>
             Query Responders
           </Button>
@@ -256,11 +334,18 @@ const Request: React.FC<RequestProps> = ({
             >
               <Accordion.Header>{responderDid}</Accordion.Header>
               <Accordion.Body>
-                <Button
-                  onClick={() => handleSendPresentationRequest(responderDid)}
-                >
-                  Send request
+                <Button onClick={() => handleCreateFile(responderDid)}>
+                  Create presentation
                 </Button>
+                <div className="mt-3">
+                  <Button
+                    onClick={() => handleSendRequest({ responderDid })}
+                    disabled={!fileId}
+                  >
+                    Send request
+                  </Button>
+                </div>
+
                 {presentationResponse && (
                   <Accordion
                     className="mt-4"

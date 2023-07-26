@@ -1,33 +1,39 @@
-import { Ed25519VerificationKey2018 } from "@digitalbazaar/ed25519-verification-key-2018";
-import bs58 from "bs58";
+import { Ed25519KeyPair } from "@transmute/did-key-ed25519";
+import {
+  Ed25519Signature2018,
+  Ed25519VerificationKey2018,
+} from "@transmute/ed25519-signature-2018";
 import { Buffer } from "buffer";
 // To fix "Buffer is not defined" error from Ed25519Signature2018
 global.Buffer = Buffer;
 
 export const generateKeyPair = async ({
-  credentialSubject,
-  publicKeyHex,
   privateKeyHex,
 }: {
-  credentialSubject: any;
-  publicKeyHex: string;
   privateKeyHex: string;
 }) => {
   try {
-    const publicKeyBase58 = bs58.encode(Buffer.from(publicKeyHex, "hex"));
-    const privateKeyBase58 = bs58.encode(Buffer.from(privateKeyHex, "hex"));
-
-    const { id, controller } = credentialSubject;
-
-    const key = await Ed25519VerificationKey2018.from({
-      id,
-      type: "Ed25519VerificationKey2018",
-      controller,
-      publicKeyBase58,
-      privateKeyBase58,
+    const key = await Ed25519KeyPair.generate({
+      secureRandom: () => {
+        return Buffer.from(privateKeyHex, "hex");
+      },
     });
 
-    return key;
+    const keyData = await key.export({
+      type: "Ed25519VerificationKey2018",
+      privateKey: true,
+    });
+
+    const suite = new Ed25519Signature2018({
+      key: await Ed25519VerificationKey2018.from(
+        await key.export({
+          type: "Ed25519VerificationKey2018",
+          privateKey: true,
+        })
+      ),
+    });
+
+    return { keyData, suite };
   } catch (error) {
     console.log("generateKeyPair failed: ", error);
   }

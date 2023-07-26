@@ -6,7 +6,8 @@ import VerificationMethods from "./VerificationMethods";
 
 interface IndentityProps {
   setLoading: React.Dispatch<React.SetStateAction<boolean>>;
-  setCredential: React.Dispatch<any>;
+  verifiableCredential: any;
+  setVerifiableCredential: React.Dispatch<any>;
   selectedMethod: any;
   setSelectedMethod: React.Dispatch<any>;
   setCredPrivateKey: React.Dispatch<React.SetStateAction<string>>;
@@ -15,7 +16,8 @@ interface IndentityProps {
 
 const Indentity: React.FC<IndentityProps> = ({
   setLoading,
-  setCredential,
+  verifiableCredential,
+  setVerifiableCredential,
   selectedMethod,
   setSelectedMethod,
   setCredPrivateKey,
@@ -63,11 +65,12 @@ const Indentity: React.FC<IndentityProps> = ({
     if (e.target.files?.length) {
       const fileReader = new FileReader();
       fileReader.readAsText(e.target.files[0], "UTF-8");
-      fileReader.onload = (e) => {
+      fileReader.onload = async (e) => {
         const str: string = (e.target?.result as string) || "";
         if (str) {
-          handleExtractDid(JSON.parse(str));
-          setCredential(JSON.parse(str));
+          const credential = JSON.parse(str);
+          handleExtractDid(credential);
+          setVerifiableCredential(credential);
         }
       };
     }
@@ -75,9 +78,26 @@ const Indentity: React.FC<IndentityProps> = ({
 
   const handlePrivateKeyChange = (e: ChangeEvent<any>) => {
     e.preventDefault();
-    setCredPrivateKey(e.target.value);
     // set credential private key
+    const privateKey = e.target.value;
+    setCredPrivateKey(privateKey);
+    // verifyCredential(privateKey);
   };
+
+  // const verifyCredential = async (privateKey: string) => {
+  //   const keyPair = await generateKeyPair({ privateKeyHex: privateKey });
+  //   if (keyPair) {
+  //     const { suite } = keyPair;
+  //     const resultVc = await verifiable.credential.verify({
+  //       credential: verifiableCredential,
+  //       suite,
+  //       documentLoader: documentLoader as any,
+  //     });
+
+  //     console.log({ resultVc });
+  //   }
+  // };
+
   return (
     <div>
       <div className="file">

@@ -1,5 +1,6 @@
-import { fetchResolveDid } from "../didService";
 import { ResultType, fetchIPFSFile } from "./fetchIPFSFile";
+import fetchJson from "./fetchJson";
+import resolveDidDocument from "./resolveDid";
 
 const wrapResponse = (url: string, document: any) => {
   return {
@@ -7,23 +8,6 @@ const wrapResponse = (url: string, document: any) => {
     document,
     documentUrl: url,
   };
-};
-
-const fetchJson = async (url: string) => {
-  return fetch(url)
-    .then(async (result) => {
-      if (result.ok) {
-        return await result.json();
-      }
-
-      throw new Error(
-        `Could not fetch "${url}" - status was "${result.status}"`
-      );
-    })
-    .catch((err) => {
-      console.log(err);
-      throw new Error(`Could not fetch from "${url}"`);
-    });
 };
 
 export const documentLoader = async (url: string) => {
@@ -74,7 +58,7 @@ export const documentLoader = async (url: string) => {
     let document: any;
     switch (protocol) {
       case "did":
-        document = await fetchResolveDid(url);
+        document = await resolveDidDocument(url);
         break;
       case "ipfs":
         document = await fetchIPFSFile(url, { resultType: ResultType.JSON });
