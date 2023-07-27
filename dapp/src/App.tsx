@@ -1,10 +1,10 @@
 import { BladeConnector, BladeSigner } from "@bladelabs/blade-web3.js";
 import { useEffect, useState } from "react";
-import { Accordion, Button } from "react-bootstrap";
+import { Accordion } from "react-bootstrap";
 import "./App.css";
 import initConnection from "./bladeWeb3Service/initConnection";
 import pairWallet from "./bladeWeb3Service/pairWallet";
-import { Indentity, Loader, Request } from "./components";
+import { HederaAccount, Indentity, Loader, Request } from "./components";
 
 function App() {
   // Loading status
@@ -49,39 +49,50 @@ function App() {
 
   return (
     <div className="App">
-      <h1>Verifier App</h1>
-      {accountID && <p>Account ID: {accountID}</p>}
-      {loading && <Loader />}
-      <div className="mb-4">
-        {!signer && (
-          <>
-            <p>Please connect the wallet to continue</p>
-          </>
-        )}
-        <Button onClick={handleConnectWallet} disabled={!!signer}>
-          Connect to the wallet
-        </Button>
+      <div className="d-flex align-items-center">
+        <img
+          src="/hedera_guardian_logo.png"
+          alt="hedera_guardian_logo"
+          className="app-icon"
+        />
+        <div>
+          <h1>Verifier</h1>
+          <h3>Hedera Guardian Selective Disclosure</h3>
+        </div>
       </div>
-      {signer && (
-        <Accordion defaultActiveKey="identity">
-          <Accordion.Item eventKey="identity">
-            <Accordion.Header>Identity</Accordion.Header>
+      {loading && <Loader />}
+      <Accordion className="mt-4" defaultActiveKey="account">
+        <Accordion.Item eventKey="account">
+          <Accordion.Header>
+            Hedera Account {accountID ? `(${accountID})` : undefined}
+          </Accordion.Header>
+          <Accordion.Body>
+            <HederaAccount
+              handleConnectWallet={handleConnectWallet}
+              signer={signer}
+              accountID={accountID}
+            />
+          </Accordion.Body>
+        </Accordion.Item>
+        <Accordion.Item eventKey="identity">
+          <Accordion.Header>Identity</Accordion.Header>
+          <Accordion.Body>
+            <Indentity
+              setLoading={setLoading}
+              verifiableCredential={verifiableCredential}
+              setVerifiableCredential={setVerifiableCredential}
+              selectedMethod={selectedMethod}
+              setSelectedMethod={setSelectedMethod}
+              setCredPrivateKey={setCredPrivateKey}
+              setCredPublicKey={setCredPublicKey}
+            />
+          </Accordion.Body>
+        </Accordion.Item>
+        {credPrivateKey && (
+          <Accordion.Item eventKey="request">
+            <Accordion.Header>Request</Accordion.Header>
             <Accordion.Body>
-              <Indentity
-                setLoading={setLoading}
-                verifiableCredential={verifiableCredential}
-                setVerifiableCredential={setVerifiableCredential}
-                selectedMethod={selectedMethod}
-                setSelectedMethod={setSelectedMethod}
-                setCredPrivateKey={setCredPrivateKey}
-                setCredPublicKey={setCredPublicKey}
-              />
-            </Accordion.Body>
-          </Accordion.Item>
-          {credPrivateKey && (
-            <Accordion.Item eventKey="request">
-              <Accordion.Header>Request</Accordion.Header>
-              <Accordion.Body>
+              {signer && (
                 <Request
                   signer={signer}
                   verifiableCredential={verifiableCredential}
@@ -91,11 +102,11 @@ function App() {
                   credPrivateKey={credPrivateKey}
                   credPublicKey={credPublicKey}
                 />
-              </Accordion.Body>
-            </Accordion.Item>
-          )}
-        </Accordion>
-      )}
+              )}
+            </Accordion.Body>
+          </Accordion.Item>
+        )}
+      </Accordion>
     </div>
   );
 }

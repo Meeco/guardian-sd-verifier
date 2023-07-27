@@ -2,6 +2,16 @@
   padding: 2em;
 }
 
+.app-icon {
+  width: 5em;
+  margin-right: 10px;
+}
+
+.wallet-connect-icon {
+  width: 24px;
+  margin-right: 6px;
+}
+
 .Spinner {
   position: fixed;
   top: 0;
@@ -15,9 +25,5 @@
 }
 
 .verification-method {
-  margin-top: 16px;
-}
-
-.request-button {
   margin-top: 16px;
 }
