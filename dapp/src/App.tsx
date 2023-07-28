@@ -62,50 +62,36 @@ function App() {
       </div>
       {loading && <Loader />}
       <Accordion className="mt-4" defaultActiveKey="account">
-        <Accordion.Item eventKey="account">
-          <Accordion.Header>
-            Hedera Account {accountID ? `(${accountID})` : undefined}
-          </Accordion.Header>
+        <HederaAccount
+          handleConnectWallet={handleConnectWallet}
+          signer={signer}
+          accountID={accountID}
+        />
+        <Indentity
+          setLoading={setLoading}
+          verifiableCredential={verifiableCredential}
+          setVerifiableCredential={setVerifiableCredential}
+          selectedMethod={selectedMethod}
+          setSelectedMethod={setSelectedMethod}
+          setCredPrivateKey={setCredPrivateKey}
+          setCredPublicKey={setCredPublicKey}
+        />
+        <Accordion.Item eventKey="request">
+          <Accordion.Header>Request</Accordion.Header>
           <Accordion.Body>
-            <HederaAccount
-              handleConnectWallet={handleConnectWallet}
-              signer={signer}
-              accountID={accountID}
-            />
+            {signer && credPrivateKey && (
+              <Request
+                signer={signer}
+                verifiableCredential={verifiableCredential}
+                topicId={topicId}
+                setLoading={setLoading}
+                selectedMethod={selectedMethod}
+                credPrivateKey={credPrivateKey}
+                credPublicKey={credPublicKey}
+              />
+            )}
           </Accordion.Body>
         </Accordion.Item>
-        <Accordion.Item eventKey="identity">
-          <Accordion.Header>Identity</Accordion.Header>
-          <Accordion.Body>
-            <Indentity
-              setLoading={setLoading}
-              verifiableCredential={verifiableCredential}
-              setVerifiableCredential={setVerifiableCredential}
-              selectedMethod={selectedMethod}
-              setSelectedMethod={setSelectedMethod}
-              setCredPrivateKey={setCredPrivateKey}
-              setCredPublicKey={setCredPublicKey}
-            />
-          </Accordion.Body>
-        </Accordion.Item>
-        {credPrivateKey && (
-          <Accordion.Item eventKey="request">
-            <Accordion.Header>Request</Accordion.Header>
-            <Accordion.Body>
-              {signer && (
-                <Request
-                  signer={signer}
-                  verifiableCredential={verifiableCredential}
-                  topicId={topicId}
-                  setLoading={setLoading}
-                  selectedMethod={selectedMethod}
-                  credPrivateKey={credPrivateKey}
-                  credPublicKey={credPublicKey}
-                />
-              )}
-            </Accordion.Body>
-          </Accordion.Item>
-        )}
       </Accordion>
     </div>
   );
