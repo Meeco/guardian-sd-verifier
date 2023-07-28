@@ -4,7 +4,7 @@ import { Accordion } from "react-bootstrap";
 import "./App.css";
 import initConnection from "./bladeWeb3Service/initConnection";
 import pairWallet from "./bladeWeb3Service/pairWallet";
-import { HederaAccount, Identity, Request } from "./components";
+import { HederaAccount, Identity, VcQuery } from "./components";
 
 function App() {
   // Loading status
@@ -76,22 +76,15 @@ function App() {
           setCredPrivateKey={setCredPrivateKey}
           setCredPublicKey={setCredPublicKey}
         />
-        <Accordion.Item eventKey="request">
-          <Accordion.Header>Request</Accordion.Header>
-          <Accordion.Body>
-            {signer && credPrivateKey && (
-              <Request
-                signer={signer}
-                verifiableCredential={verifiableCredential}
-                topicId={topicId}
-                setLoading={setLoading}
-                selectedMethod={selectedMethod}
-                credPrivateKey={credPrivateKey}
-                credPublicKey={credPublicKey}
-              />
-            )}
-          </Accordion.Body>
-        </Accordion.Item>
+        <VcQuery
+          signer={signer}
+          verifiableCredential={verifiableCredential}
+          topicId={topicId}
+          setLoading={setLoading}
+          selectedMethod={selectedMethod}
+          credPrivateKey={credPrivateKey}
+          credPublicKey={credPublicKey}
+        />
       </Accordion>
     </div>
   );

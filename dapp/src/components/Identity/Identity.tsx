@@ -134,7 +134,7 @@ const Identity: React.FC<IdentityProps> = ({
           Set your DID, and authorisation Verifiable Credential to send your
           presentation request from.
         </p>
-        <div className="d-flex">
+        <div className="d-flex mt-4">
           <Form.Control
             className="w-50"
             type="file"
@@ -153,7 +153,7 @@ const Identity: React.FC<IdentityProps> = ({
               </p>
             </div>
             <div>
-              <div className="d-flex">
+              <div className="d-flex  mt-4">
                 <Button
                   onClick={getVerificationMethods}
                   text=" Get verification Method(s)"
@@ -169,24 +169,24 @@ const Identity: React.FC<IdentityProps> = ({
                 />
               </div>
 
-              {verificationMethods && (
-                <>
+              {verificationMethods.length > 0 && (
+                <div className="mt-4">
                   <VerificationMethods
                     selectedMethod={selectedMethod}
                     setSelectedMethod={setSelectedMethod}
                     verificationMethods={verificationMethods}
                   />
-                  {selectedMethod && (
-                    <div className="mt-4">
-                      <Form.Label>Credential Private Key</Form.Label>
-                      <Form.Control
-                        type="text"
-                        onChange={handlePrivateKeyChange}
-                      />
-                    </div>
-                  )}
-                </>
+                </div>
               )}
+              <div className="mt-4">
+                <Form.Label>Credential Private Key</Form.Label>
+                <Form.Control
+                  className="w-50"
+                  type="text"
+                  onChange={handlePrivateKeyChange}
+                  disabled={!selectedMethod}
+                />
+              </div>
             </div>
           </>
         ) : null}
