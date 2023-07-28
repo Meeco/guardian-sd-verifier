@@ -1,1 +1,1 @@
-export { ActionStatus, default as StatusLabel } from "./ActionStatus";
+export { ActionStatus, default as StatusLabel } from "./StatusLabel";
