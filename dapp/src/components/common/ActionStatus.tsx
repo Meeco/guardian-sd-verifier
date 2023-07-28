@@ -1,18 +1,28 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { CheckCircle, XCircle } from "react-bootstrap-icons";
 
 export enum ActionStatus {
+  Idle = "Idle",
   Success = "Success",
   Failed = "Failed",
 }
 
 interface StatusLabelProps {
-  status: ActionStatus;
+  isSuccess: boolean | undefined;
   text: string;
 }
 
-const StatusLabel: React.FC<StatusLabelProps> = ({ status, text }) => {
-  return (
+const StatusLabel: React.FC<StatusLabelProps> = ({ isSuccess, text }) => {
+  const status = useMemo(() => {
+    if (isSuccess) {
+      return ActionStatus.Success;
+    }
+    if (isSuccess === false) {
+      return ActionStatus.Failed;
+    } else return ActionStatus.Idle;
+  }, [isSuccess]);
+
+  return status === ActionStatus.Idle ? null : (
     <div className="d-flex algin-items-center mx-2">
       <div className="d-flex align-items-center">
         {status === ActionStatus.Success ? (

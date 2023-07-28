@@ -1,6 +1,7 @@
 import { BladeSigner } from "@bladelabs/blade-web3.js";
+import { useMemo } from "react";
 import { Button } from "react-bootstrap";
-import { ActionStatus, StatusLabel } from "../common";
+import { StatusLabel } from "../common";
 
 interface HederaAccountProps {
   handleConnectWallet: () => void;
@@ -13,6 +14,11 @@ const HederaAccount: React.FC<HederaAccountProps> = ({
   signer,
   accountID,
 }) => {
+  const isSuccess = useMemo(() => {
+    if (signer) return true;
+    else return undefined;
+  }, [signer]);
+
   return (
     <div>
       <p>
@@ -37,7 +43,7 @@ const HederaAccount: React.FC<HederaAccountProps> = ({
             </div>
           )}
         </Button>
-        <StatusLabel status={ActionStatus.Success} text="Connected" />
+        <StatusLabel isSuccess={isSuccess} text="Connected" />
       </div>
     </div>
   );
