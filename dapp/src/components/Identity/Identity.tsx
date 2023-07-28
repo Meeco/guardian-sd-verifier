@@ -1,14 +1,14 @@
 import { ChangeEvent, useMemo, useState } from "react";
 import { Accordion, Form } from "react-bootstrap";
+import { LoadingState } from "../../App";
 import { fetchResolveDid } from "../../didService";
 import getPublicKeyHexFromJwk from "../../utils/getPublicKeyHexFromJwk";
 import { Button, StatusLabel } from "../common";
 import VerificationMethods from "./VerificationMethods";
 
 interface IdentityProps {
-  loading: boolean;
-  setLoading: React.Dispatch<React.SetStateAction<boolean>>;
-  verifiableCredential: any;
+  loading: LoadingState;
+  setLoading: React.Dispatch<React.SetStateAction<LoadingState>>;
   setVerifiableCredential: React.Dispatch<any>;
   selectedMethod: any;
   setSelectedMethod: React.Dispatch<any>;
@@ -19,7 +19,6 @@ interface IdentityProps {
 const Identity: React.FC<IdentityProps> = ({
   loading,
   setLoading,
-  verifiableCredential,
   setVerifiableCredential,
   selectedMethod,
   setSelectedMethod,
@@ -51,7 +50,7 @@ const Identity: React.FC<IdentityProps> = ({
   // Get verification method from user uploaded credential
   const getVerificationMethods = async () => {
     try {
-      setLoading(true);
+      setLoading({ id: "getVerificationMethods" });
       setGetVerificationMethodsSuccess(undefined);
       // Get verification method
       const { didDocument } = await fetchResolveDid(credentialDid);
@@ -60,9 +59,9 @@ const Identity: React.FC<IdentityProps> = ({
       // Get public key
       await getPublicKey();
       setGetVerificationMethodsSuccess(true);
-      setLoading(false);
+      setLoading({ id: undefined });
     } catch (error) {
-      setLoading(false);
+      setLoading({ id: undefined });
       setGetVerificationMethodsSuccess(false);
       console.log({ error });
     }
@@ -157,7 +156,7 @@ const Identity: React.FC<IdentityProps> = ({
                 <Button
                   onClick={getVerificationMethods}
                   text=" Get verification Method(s)"
-                  loading={loading}
+                  loading={loading.id === "getVerificationMethods"}
                 />
                 <StatusLabel
                   isSuccess={getVerificationMethodsSuccess}

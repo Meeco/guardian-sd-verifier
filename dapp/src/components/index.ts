@@ -1,5 +1,4 @@
+export * from "./DisclosureRequest";
 export * from "./HederaAccount";
 export * from "./Identity";
-export { default as Loader } from "./Loader";
-export * from "./Request";
-export * from "./WalletInfo";
+export * from "./VcQuery";

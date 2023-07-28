@@ -4,11 +4,22 @@ import { Accordion } from "react-bootstrap";
 import "./App.css";
 import initConnection from "./bladeWeb3Service/initConnection";
 import pairWallet from "./bladeWeb3Service/pairWallet";
-import { HederaAccount, Identity, VcQuery } from "./components";
+import {
+  DisclosureRequest,
+  HederaAccount,
+  Identity,
+  VcQuery,
+} from "./components";
+
+export interface LoadingState {
+  id?: string;
+}
 
 function App() {
   // Loading status
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<LoadingState>({
+    id: undefined,
+  });
   // User uploaded credential
   const [verifiableCredential, setVerifiableCredential] = useState<any>();
   // Selected verification method
@@ -27,6 +38,8 @@ function App() {
   const [signer, setSigner] = useState<BladeSigner | null>(null);
   // Blade wallet account ID
   const [accountID, setaccountID] = useState("");
+  const [vcFile, setVcFile] = useState<any>();
+  const [responderDids, setResponderDids] = useState<string[]>([]);
 
   const handleConnectWallet = () => {
     if (bladeConnector) {
@@ -69,7 +82,6 @@ function App() {
         <Identity
           loading={loading}
           setLoading={setLoading}
-          verifiableCredential={verifiableCredential}
           setVerifiableCredential={setVerifiableCredential}
           selectedMethod={selectedMethod}
           setSelectedMethod={setSelectedMethod}
@@ -78,12 +90,24 @@ function App() {
         />
         <VcQuery
           signer={signer}
-          verifiableCredential={verifiableCredential}
           topicId={topicId}
+          loading={loading}
           setLoading={setLoading}
+          credPrivateKey={credPrivateKey}
+          setVcFile={setVcFile}
+          responderDids={responderDids}
+          setResponderDids={setResponderDids}
+        />
+        <DisclosureRequest
+          signer={signer}
+          topicId={topicId}
+          loading={loading}
+          setLoading={setLoading}
+          verifiableCredential={verifiableCredential}
           selectedMethod={selectedMethod}
           credPrivateKey={credPrivateKey}
-          credPublicKey={credPublicKey}
+          vcFile={vcFile}
+          responderDids={responderDids}
         />
       </Accordion>
     </div>

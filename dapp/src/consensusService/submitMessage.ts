@@ -28,8 +28,10 @@ const submitMessage = async (
 
     console.log("The message transaction status: " + transactionStatus);
     console.log("Complete");
+    return true;
   } catch (error) {
     console.log("Submit message failed", error);
+    return false;
   }
 };
 
