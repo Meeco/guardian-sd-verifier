@@ -62,7 +62,7 @@ const DisclosureRequest: React.FC<DisclosureRequestProps> = ({
 
   if (!signer || !credPrivateKey) {
     return (
-      <Accordion.Item eventKey="request">
+      <Accordion.Item eventKey="disclosure-request">
         <Accordion.Header>
           <b>Disclosure Request</b>
         </Accordion.Header>
@@ -275,7 +275,7 @@ const DisclosureRequest: React.FC<DisclosureRequestProps> = ({
     };
 
     return (
-      <Accordion.Item eventKey="request">
+      <Accordion.Item eventKey="disclosure-request">
         <Accordion.Header>
           <b>Disclosure Request</b>
         </Accordion.Header>

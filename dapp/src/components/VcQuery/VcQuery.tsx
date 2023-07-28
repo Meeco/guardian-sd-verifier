@@ -42,7 +42,7 @@ const VcQuery: React.FC<VcQueryProps> = ({
 
   if (!signer || !credPrivateKey) {
     return (
-      <Accordion.Item eventKey="request">
+      <Accordion.Item eventKey="vc-query">
         <Accordion.Header>
           <b>VC Query</b>
         </Accordion.Header>
@@ -125,7 +125,7 @@ const VcQuery: React.FC<VcQueryProps> = ({
     };
 
     return (
-      <Accordion.Item eventKey="request">
+      <Accordion.Item eventKey="vc-query">
         <Accordion.Header>
           <b>VC Query </b> {vcId ? `(${vcId})` : undefined}
         </Accordion.Header>
