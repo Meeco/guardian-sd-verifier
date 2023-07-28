@@ -22,7 +22,7 @@ const HederaAccount: React.FC<HederaAccountProps> = ({
   return (
     <Accordion.Item eventKey="account">
       <Accordion.Header>
-        Hedera Account {accountID ? `(${accountID})` : undefined}
+        <b>Hedera Account </b> {accountID ? `(${accountID})` : undefined}
       </Accordion.Header>
       <Accordion.Body>
         <p>

@@ -4,7 +4,7 @@ import { Accordion } from "react-bootstrap";
 import "./App.css";
 import initConnection from "./bladeWeb3Service/initConnection";
 import pairWallet from "./bladeWeb3Service/pairWallet";
-import { HederaAccount, Indentity, Loader, Request } from "./components";
+import { HederaAccount, Identity, Request } from "./components";
 
 function App() {
   // Loading status
@@ -60,14 +60,14 @@ function App() {
           <h3>Hedera Guardian Selective Disclosure</h3>
         </div>
       </div>
-      {loading && <Loader />}
       <Accordion className="mt-4" defaultActiveKey="account">
         <HederaAccount
           handleConnectWallet={handleConnectWallet}
           signer={signer}
           accountID={accountID}
         />
-        <Indentity
+        <Identity
+          loading={loading}
           setLoading={setLoading}
           verifiableCredential={verifiableCredential}
           setVerifiableCredential={setVerifiableCredential}
