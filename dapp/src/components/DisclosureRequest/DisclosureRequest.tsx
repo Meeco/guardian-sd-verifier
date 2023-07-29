@@ -44,7 +44,7 @@ const DisclosureRequest: React.FC<DisclosureRequestProps> = ({
   // TODO: Update this field
   const credentialType = "8851425a-8dee-4e0f-a044-dba63cf84eb2&1.0.0";
   const [presentationResponse, setPresentationResponse] = useState<any>();
-  const [contents, setContents] = useState<any>();
+  const [presentationRequest, setPresentationRequest] = useState<any>();
   const [fileId, setFileId] = useState<FileId | null | undefined>();
 
   const [selectableFields, setSelectableFields] = useState<string[]>([]);
@@ -184,18 +184,21 @@ const DisclosureRequest: React.FC<DisclosureRequestProps> = ({
           },
         };
 
-        setContents(contents);
-        setCreatePresentationSuccess(true);
+        setPresentationRequest(contents);
+        const fileId = await createFile(signer, JSON.stringify(contents));
+        if (fileId) {
+          setFileId(fileId);
+          // TODO: Remove hardcode
+          // setFileId("fileId" as unknown as FileId);
+          setCreatePresentationSuccess(true);
+        } else {
+          setCreatePresentationSuccess(false);
+        }
+        setLoading({ id: undefined });
       } else {
         setCreatePresentationSuccess(false);
         throw new Error("Key data is required");
       }
-
-      const fileId = await createFile(signer, JSON.stringify(contents));
-      setFileId(fileId);
-      // TODO: Remove hardcode
-      // setFileId("fileId" as unknown as FileId);
-      setLoading({ id: undefined });
     };
 
     // Send presentation request to HCS
@@ -264,8 +267,12 @@ const DisclosureRequest: React.FC<DisclosureRequestProps> = ({
             )?.response_file_id || "";
 
           const fileContents = await getFileContents(signer, responseFileId);
-          setSendRequestSuccess(true);
-          return fileContents;
+          if (fileContents) {
+            setSendRequestSuccess(true);
+            return fileContents;
+          } else {
+            setSendRequestSuccess(false);
+          }
         } else {
           setSendRequestSuccess(false);
         }
@@ -297,7 +304,7 @@ const DisclosureRequest: React.FC<DisclosureRequestProps> = ({
               />
             </div>
           )}
-          {selectableFields && (
+          {selectableFields.length > 0 && (
             <>
               <FormGroup className="mt-3">
                 {selectableFields.map((field: string) => (
@@ -322,14 +329,32 @@ const DisclosureRequest: React.FC<DisclosureRequestProps> = ({
                   isSuccess={createPresentationSuccess}
                   text={
                     createPresentationSuccess
-                      ? "Get VC Scheme Success"
-                      : "Get VC Scheme Failed"
+                      ? "Created"
+                      : "Create Presentation Failed"
                   }
                 />
               </div>
+              {presentationRequest && (
+                <Accordion
+                  className="mt-4"
+                  defaultActiveKey="presentationRequest"
+                >
+                  <Accordion.Item eventKey="presentationRequest">
+                    <Accordion.Header>Presentation Request</Accordion.Header>
+                    <Accordion.Body>
+                      <ReactJson
+                        src={presentationRequest}
+                        name="request"
+                        theme={"monokai"}
+                        collapseStringsAfterLength={30}
+                      />
+                    </Accordion.Body>
+                  </Accordion.Item>
+                </Accordion>
+              )}
             </>
           )}
-          {responderDids && (
+          {responderDids && presentationRequest && (
             <Accordion defaultActiveKey={responderDids[0]}>
               {responderDids.map((responderDid) => (
                 <Accordion.Item
@@ -339,7 +364,7 @@ const DisclosureRequest: React.FC<DisclosureRequestProps> = ({
                 >
                   <Accordion.Header>{responderDid}</Accordion.Header>
                   <Accordion.Body>
-                    <div className="d-flex mt-3">
+                    <div className="d-flex mt-2">
                       <Button
                         onClick={() => handleSendRequest({ responderDid })}
                         text="Send request"

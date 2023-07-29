@@ -179,9 +179,9 @@ const VcQuery: React.FC<VcQueryProps> = ({
             </div>
           )}
           {responderDids.length > 0 && (
-            <ul>
+            <ul className="mt-3">
               {responderDids.map((item) => (
-                <li>Responder: {item}</li>
+                <li key={item}>Responder: {item}</li>
               ))}
             </ul>
           )}
