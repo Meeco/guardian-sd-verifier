@@ -267,6 +267,7 @@ const DisclosureRequest: React.FC<DisclosureRequestProps> = ({
             )?.response_file_id || "";
 
           const fileContents = await getFileContents(signer, responseFileId);
+
           if (fileContents) {
             setSendRequestSuccess(true);
             return fileContents;
@@ -340,7 +341,9 @@ const DisclosureRequest: React.FC<DisclosureRequestProps> = ({
                   defaultActiveKey="presentationRequest"
                 >
                   <Accordion.Item eventKey="presentationRequest">
-                    <Accordion.Header>Presentation Request</Accordion.Header>
+                    <Accordion.Header>
+                      Presentation Request Document
+                    </Accordion.Header>
                     <Accordion.Body>
                       <ReactJson
                         src={presentationRequest}
@@ -383,16 +386,16 @@ const DisclosureRequest: React.FC<DisclosureRequestProps> = ({
                         defaultActiveKey={`${responderDid}-response`}
                       >
                         <Accordion.Item eventKey={`${responderDid}-response`}>
-                          <Accordion.Header>Response</Accordion.Header>
+                          <Accordion.Header>
+                            Disclosed Verifiable Presentation Document
+                          </Accordion.Header>
                           <Accordion.Body>
-                            {presentationResponse && (
-                              <ReactJson
-                                src={presentationResponse}
-                                name="presentation_response"
-                                theme={"monokai"}
-                                collapseStringsAfterLength={30}
-                              />
-                            )}
+                            <ReactJson
+                              src={presentationResponse}
+                              name="presentation_response"
+                              theme={"monokai"}
+                              collapseStringsAfterLength={30}
+                            />
                           </Accordion.Body>
                         </Accordion.Item>
                       </Accordion>
