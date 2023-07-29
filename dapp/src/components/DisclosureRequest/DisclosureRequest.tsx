@@ -7,7 +7,7 @@ import ReactJson from "react-json-view";
 import { v4 as uuidv4 } from "uuid";
 import { LoadingState } from "../../App";
 import { submitMessage } from "../../consensusService";
-import { createFile, getFileContents } from "../../fileService";
+import { createFile } from "../../fileService";
 import { getTopicMessages } from "../../hederaService";
 import {
   MessageType,
@@ -266,8 +266,85 @@ const DisclosureRequest: React.FC<DisclosureRequestProps> = ({
                 | undefined
             )?.response_file_id || "";
 
-          const fileContents = await getFileContents(signer, responseFileId);
-
+          // TODO: Remove mock data
+          // const fileContents = await getFileContents(signer, responseFileId);
+          const fileContents = {
+            verifiablePresentation: {
+              "@context": [
+                "https://www.w3.org/2018/credentials/v1",
+                "https://identity.foundation/presentation-exchange/submission/v1",
+                "https://w3id.org/security/suites/ed25519-2020/v1",
+              ],
+              type: ["VerifiablePresentation", "PresentationSubmission"],
+              presentation_submission: {
+                id: "5z6Jn6YM7FQhLUvybVVej",
+                definition_id: "33bdb7eb-20fe-47dd-bed3-3f6c582d44d1",
+                descriptor_map: [
+                  {
+                    id: "audit",
+                    format: "ldp_vc",
+                    path: "$.verifiableCredential[0]",
+                  },
+                ],
+              },
+              verifiableCredential: [
+                {
+                  "@context": [
+                    "https://www.w3.org/2018/credentials/v1",
+                    "https://w3id.org/security/suites/bls12381-2020/v1",
+                    "https://ipfs.io/ipfs/QmYmAKqchE8J6feEEKwqZeJwSrC6NRQsCHx2dBs8Vs7ECe",
+                  ],
+                  id: "urn:uuid:81348e38-db35-4e5a-bcce-1644422cedd9",
+                  type: "VerifiableCredential",
+                  description: "iRec Application Details",
+                  identifier: "b5a8ec55-505b-4309-a6a1-6cd2ea270d71",
+                  name: "iRec Application Details",
+                  credentialSubject: {
+                    id: "did:hedera:testnet:DaQwTPYzrnSVBYgwNmtS4bSKQBqy4jy1XLtsQcmpVUUJ_0.0.15019570",
+                    type: "8851425a-8dee-4e0f-a044-dba63cf84eb2&1.0.0",
+                    field3: "255 345 345",
+                  },
+                  expirationDate: "2029-12-03T12:19:52Z",
+                  issuanceDate: "2019-12-03T12:19:52Z",
+                  issuer:
+                    "did:hedera:testnet:DaQwTPYzrnSVBYgwNmtS4bSKQBqy4jy1XLtsQcmpVUUJ_0.0.15019570",
+                  proof: {
+                    type: "BbsBlsSignatureProof2020",
+                    created: "2023-07-04T04:39:40Z",
+                    nonce:
+                      "lGLXeOXmKIdrT8ZYrpwJkxvWwNrYQG+SRdC0WzUiqhCLK3w+wWLTzyBI5gqsno3ogxU=",
+                    proofPurpose: "assertionMethod",
+                    proofValue:
+                      "ACAA/4CAD6sM4cCvN3LxpBkcHm0AayWjcvgfT5FdQYpGElROQWoXswChbUwebiDgTHp1aowHA41S85HUN87n5yGJGCY1vaoUc5BMBHcL9Y9eeroUdkIVUT7Se78dGdABCQc9lJyb8ZiZWhWKe+sFJwtsF0DxDsslAyh+VJ5gH+BN5mOqMIQpTAYLEeXBd2tC6x0VI9Q5NgAAAHSMnDoBQe9OmNthN3oOP7l3Vs4Ius+bU3PTXq6PktBLoNqIalBWt4GJEeal6J24lAUAAAACJdOsW/Y9Azf91Qb6KRc/xwyF0Gh4QRsq7LERreBq1v1g0RQmBk7QgmXFByo/q5EyYj/KHCnz4HX3M06OSp0F1a8LOpko/sJ8sz8vNT2RFA5p9HW+0RHUVWN5qE9zFCrllPKhKrjsvshWo9cuLnodlgAAABQ5/JLTrbW+MBNpAVm2GxPag6G/U3Z6ox1URJFMykhatzJF4MB77A84YYO2P/QJ4/riMJn0xlYgX8DcZZmAI7nwHJSYFkcUkFVSGuRLvG5ulLHdaS/FCSyYEMLCpmaUxbgPa/J6cAaVEdS7TIRrNTH6JfSGPioLnn4ijVM7kofcpRdGLseXrfUcbKUj7AQWvjLBOiikvvGzXM+A0pLA9wWJa6wLAxXVJd10BhyzgrbqR7mIRN7SVjeGs+z4gQ+9UeQfO5B01m9xzC+5TFNAw/2++6Yx8gigjHmMUkyBCZQ8nDC0d2jK3Vm/6kFnNQNNIWSXNli6OVmLjR0dtW3b19iTAkxlnXdhG84KKj8unl6BA5JbNOEDaWf/4cMjBOPjbNpSaA6q6yF25GBeWTZoaJwqdJPjjqdenFLtQEIe2h66EiqwIqQJcx/0Pvw4QiUX3kIbReK9xL3AcYH4B7ZzMIg1Kj8p0S96Wv/hWbqpVudc5VOKIhEKewS+EqLK32+psbIxr6kgfEcy85BOhna1IKmQJLpvkL+BFvr+9QyYfkwnkRHHc8BNfqgs/ua/BERPojnLuXnhkCDHszndFdGfReCjVnCGtyAZCQk4tYpOJ32v5SqPmLKn37FjsE0MMD+lzo1D9FCPuZCEgYnd4abUOIYSLLetkEB9uaO3ogJ881FOLxUfgSLEpA6aFLUKjimacTsjT+RuCOBaDyjxxiLQ8izITvpRwxTy1+MWikeu49PJr58SKAs4583kUSaqpXLHtUkwo84SfaR1Bgxfq6fj7fia+7xacYVRWJCaGPanuaqhegzO0POJCfjWiPJveQ3KPKEa36AYQRgIhRXTzDknJcCp",
+                    verificationMethod:
+                      "did:hedera:testnet:DaQwTPYzrnSVBYgwNmtS4bSKQBqy4jy1XLtsQcmpVUUJ_0.0.15019570#did-root-key-bbs",
+                  },
+                },
+              ],
+              proof: {
+                type: "Ed25519Signature2020",
+                created: "2023-07-17T08:05:47Z",
+                verificationMethod:
+                  "did:hedera:testnet:7Q43LNex593B8AQHgN3nrxYZEirrx5GSBwaZc9mbWpc2_0.0.15036794#did-root-key",
+                proofPurpose: "authentication",
+                challenge: "78",
+                proofValue:
+                  "zV8DnmbUvL15ZBNsvHYxoMDkGr5DdkBQiyusKKkxaf2k8Yv5v8mNWaHumUiNpdWGzUve7RQ5rX6EBZ12eqpkjU5n",
+              },
+            },
+            presentationSubmissionLocation: 1,
+            presentationSubmission: {
+              id: "5z6Jn6YM7FQhLUvybVVej",
+              definition_id: "33bdb7eb-20fe-47dd-bed3-3f6c582d44d1",
+              descriptor_map: [
+                {
+                  id: "audit",
+                  format: "ldp_vc",
+                  path: "$.verifiableCredential[0]",
+                },
+              ],
+            },
+          };
           if (fileContents) {
             setSendRequestSuccess(true);
             return fileContents;
