@@ -82,6 +82,7 @@ function App() {
         <Identity
           loading={loading}
           setLoading={setLoading}
+          verifiableCredential={verifiableCredential}
           setVerifiableCredential={setVerifiableCredential}
           selectedMethod={selectedMethod}
           setSelectedMethod={setSelectedMethod}

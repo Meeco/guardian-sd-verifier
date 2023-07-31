@@ -1,8 +1,5 @@
 import * as vc from "@digitalbazaar/vc";
-import {
-  Ed25519Signature2018,
-  Ed25519VerificationKey2018,
-} from "@transmute/ed25519-signature-2018";
+import { Ed25519Signature2020 } from "@transmute/ed25519-signature-2020";
 import { v4 } from "uuid";
 
 /**
@@ -32,8 +29,8 @@ export const createAuthDetails = async ({
   verifiableCredential: any;
   challenge: string;
   documentLoader: any;
-  keyData: Ed25519VerificationKey2018;
-  suite: Ed25519Signature2018;
+  keyData: any;
+  suite: Ed25519Signature2020;
 }) => {
   const presentation = vc.createPresentation({
     verifiableCredential,
@@ -59,14 +56,14 @@ export const createAuthDetails = async ({
   };
 
   // Optionally assert that the credential verifies
-  // const resultVp = await vc.verify({
-  //   presentation: vp,
-  //   challenge,
-  //   suite,
-  //   documentLoader,
-  // });
+  const resultVp = await vc.verify({
+    presentation: vp,
+    challenge,
+    suite,
+    documentLoader,
+  });
 
-  // console.log({ resultVp });
+  console.log({ resultVp });
 
   return authDetails;
 };

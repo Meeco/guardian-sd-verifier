@@ -1,7 +1,9 @@
+import * as vc from "@digitalbazaar/vc";
 import { ChangeEvent, useMemo, useState } from "react";
 import { Accordion, Form } from "react-bootstrap";
 import { LoadingState } from "../../App";
 import { fetchResolveDid } from "../../didService";
+import { documentLoader, generateKeyPair } from "../../utils";
 import getPublicKeyHexFromJwk from "../../utils/getPublicKeyHexFromJwk";
 import { Button, StatusLabel } from "../common";
 import VerificationMethods from "./VerificationMethods";
@@ -9,6 +11,7 @@ import VerificationMethods from "./VerificationMethods";
 interface IdentityProps {
   loading: LoadingState;
   setLoading: React.Dispatch<React.SetStateAction<LoadingState>>;
+  verifiableCredential: any;
   setVerifiableCredential: React.Dispatch<any>;
   selectedMethod: any;
   setSelectedMethod: React.Dispatch<any>;
@@ -19,6 +22,7 @@ interface IdentityProps {
 const Identity: React.FC<IdentityProps> = ({
   loading,
   setLoading,
+  verifiableCredential,
   setVerifiableCredential,
   selectedMethod,
   setSelectedMethod,
@@ -101,22 +105,23 @@ const Identity: React.FC<IdentityProps> = ({
     // set credential private key
     const privateKey = e.target.value;
     setCredPrivateKey(privateKey);
-    // verifyCredential(privateKey);
+    // Verify VC
+    verifyCredential(privateKey);
   };
 
-  // const verifyCredential = async (privateKey: string) => {
-  //   const keyPair = await generateKeyPair({ privateKeyHex: privateKey });
-  //   if (keyPair) {
-  //     const { suite } = keyPair;
-  //     const resultVc = await verifiable.credential.verify({
-  //       credential: verifiableCredential,
-  //       suite,
-  //       documentLoader: documentLoader as any,
-  //     });
+  const verifyCredential = async (privateKey: string) => {
+    const keyPair = await generateKeyPair({ privateKeyHex: privateKey });
+    if (keyPair) {
+      const { suite } = keyPair;
+      const resultVc = await vc.verifyCredential({
+        credential: verifiableCredential,
+        suite,
+        documentLoader,
+      });
 
-  //     console.log({ resultVc });
-  //   }
-  // };
+      console.log({ resultVc });
+    }
+  };
 
   const isExtractDidSuccess = useMemo(() => {
     if (file) return !!credentialDid;

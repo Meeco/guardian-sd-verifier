@@ -1,11 +1,6 @@
+import { Ed25519Signature2020 } from "@digitalbazaar/ed25519-signature-2020";
+import { Ed25519VerificationKey2020 } from "@digitalbazaar/ed25519-verification-key-2020";
 import { Ed25519KeyPair } from "@transmute/did-key-ed25519";
-import {
-  Ed25519Signature2018,
-  Ed25519VerificationKey2018,
-} from "@transmute/ed25519-signature-2018";
-import { Buffer } from "buffer";
-// To fix "Buffer is not defined" error from Ed25519Signature2018
-global.Buffer = Buffer;
 
 export const generateKeyPair = async ({
   privateKeyHex,
@@ -19,18 +14,27 @@ export const generateKeyPair = async ({
       },
     });
 
-    const keyData = await key.export({
+    const keyPair2018 = await key.export({
       type: "Ed25519VerificationKey2018",
       privateKey: true,
     });
 
-    const suite = new Ed25519Signature2018({
-      key: await Ed25519VerificationKey2018.from(
-        await key.export({
-          type: "Ed25519VerificationKey2018",
-          privateKey: true,
-        })
-      ),
+    const keyData = await Ed25519VerificationKey2020.from({
+      ...keyPair2018,
+      keyPair: keyPair2018,
+    });
+
+    // const suite = new JsonWebSignature({
+    //   key: await JsonWebKey.from(
+    //     await key.export({
+    //       type: "JsonWebKey2020",
+    //       privateKey: true,
+    //     })
+    //   ),
+    // });
+
+    const suite = new Ed25519Signature2020({
+      key: keyData,
     });
 
     return { keyData, suite };
