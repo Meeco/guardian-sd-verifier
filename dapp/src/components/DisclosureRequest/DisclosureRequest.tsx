@@ -184,13 +184,13 @@ const DisclosureRequest: React.FC<DisclosureRequestProps> = ({
           },
         };
 
-        setPresentationRequest(contents);
         const fileId = await createFile(signer, JSON.stringify(contents));
         if (fileId) {
           setFileId(fileId);
           // TODO: Remove hardcode
           // setFileId("fileId" as unknown as FileId);
           setCreatePresentationSuccess(true);
+          setPresentationRequest(contents);
         } else {
           setCreatePresentationSuccess(false);
         }

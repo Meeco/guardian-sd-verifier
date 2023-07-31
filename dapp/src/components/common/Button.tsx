@@ -18,7 +18,7 @@ const Button: React.FC<ButtonProps> = ({ onClick, text, loading }) => {
             role="status"
             aria-hidden="true"
           />
-          <span className="mx-2">Loading...</span>
+          <span className="mx-2">Waiting for response...</span>
         </>
       ) : (
         text
