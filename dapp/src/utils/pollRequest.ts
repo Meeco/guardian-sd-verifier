@@ -1,7 +1,7 @@
-const pollRequest = (
-  func: () => Promise<any>,
+const pollRequest = <T>(
+  func: () => Promise<T>,
   timeOut: number
-): Promise<any> => {
+): Promise<T | undefined> => {
   return new Promise((resolve) => {
     try {
       // Run the function every 3 seconds

@@ -6,16 +6,13 @@ import ReactJson from "react-json-view";
 import { v4 as uuidv4 } from "uuid";
 import { LoadingState } from "../../App";
 import { submitMessage } from "../../consensusService";
-import { createFile, getFileContents } from "../../fileService";
-import { getTopicMessages } from "../../hederaService";
-import {
-  MessageType,
-  PresentationRequestMessage,
-  PresentationResponseMessage,
-} from "../../types";
-import { documentLoader, generateKeyPair, pollRequest } from "../../utils";
+import { createFile } from "../../fileService";
+import { MessageType, PresentationRequestMessage } from "../../types";
+import { documentLoader, generateKeyPair } from "../../utils";
 import { createAuthDetails } from "../../utils/createAuthDetails";
 import { Button, StatusLabel } from "../common";
+import { createPresentationDefinition } from "./createPresentationDefinition";
+import { handlePollPresentationResponseRequest } from "./handlePollPresentationResponseRequest";
 
 interface DisclosureRequestProps {
   signer: BladeSigner | null;
@@ -40,8 +37,7 @@ const DisclosureRequest: React.FC<DisclosureRequestProps> = ({
   credPrivateKey,
   responderDids,
 }) => {
-  // TODO: Update this field
-  const credentialType = "8851425a-8dee-4e0f-a044-dba63cf84eb2&1.0.0";
+  const credentialSubject = verifiableCredential?.credentialSubject;
   const [presentationResponse, setPresentationResponse] = useState<any>();
   const [presentationRequest, setPresentationRequest] = useState<any>();
   const [fileId, setFileId] = useState<FileId | null | undefined>();
@@ -79,6 +75,7 @@ const DisclosureRequest: React.FC<DisclosureRequestProps> = ({
         )[0];
 
         const contextDocument = await (await fetch(selectedContext)).json();
+        const credentialType = credentialSubject.type;
         const credentialContext =
           contextDocument["@context"][credentialType]["@context"];
         const contextFields = Object.keys(credentialContext);
@@ -112,40 +109,6 @@ const DisclosureRequest: React.FC<DisclosureRequestProps> = ({
       }
     };
 
-    const createPresentationDefinition = (id: string) => {
-      const path = selectedFields.map(
-        (field) => `$.credentialSubject.${field}`
-      );
-      return {
-        comment:
-          "Note: VP, OIDC, DIDComm, or CHAPI outer wrapper would be here.",
-        presentation_definition: {
-          id: uuidv4(),
-          input_descriptors: [
-            {
-              id: "audit",
-              name: "Audit Report Request",
-              purpose: "Require further information to complete audit report.",
-              constraints: {
-                fields: [
-                  {
-                    path: ["$.id"],
-                    filter: {
-                      type: "string",
-                      const: id, //vc.id
-                    },
-                  },
-                  {
-                    path,
-                  },
-                ],
-              },
-            },
-          ],
-        },
-      };
-    };
-
     const handleGenKeyPair = async () => {
       const keyPair = await generateKeyPair({
         privateKeyHex: credPrivateKey,
@@ -158,7 +121,6 @@ const DisclosureRequest: React.FC<DisclosureRequestProps> = ({
 
     const handleCreateFile = async () => {
       setLoading({ id: "handleCreateFile" });
-      const { credentialSubject } = verifiableCredential;
 
       const keyPair = await handleGenKeyPair();
       if (keyPair) {
@@ -172,7 +134,10 @@ const DisclosureRequest: React.FC<DisclosureRequestProps> = ({
           suite,
         });
 
-        const presentationDefinition = createPresentationDefinition(vcFile.id);
+        const presentationDefinition = createPresentationDefinition(
+          vcFile.id,
+          selectedFields
+        );
 
         // create presentation query file
         const contents = {
@@ -186,8 +151,6 @@ const DisclosureRequest: React.FC<DisclosureRequestProps> = ({
         const fileId = await createFile(signer, JSON.stringify(contents));
         if (fileId) {
           setFileId(fileId);
-          // TODO: Remove hardcode
-          // setFileId("fileId" as unknown as FileId);
           setCreatePresentationSuccess(true);
           setPresentationRequest(contents);
         } else {
@@ -244,35 +207,12 @@ const DisclosureRequest: React.FC<DisclosureRequestProps> = ({
         topicId
       ).then(async (isSuccess) => {
         if (isSuccess) {
-          const presentationResponseMessage = await pollRequest(async () => {
-            // Get presentation response from mirror node
-            const topicMessages = (await getTopicMessages(
-              topicId || ""
-            )) as PresentationResponseMessage[];
-            const message = topicMessages?.filter(
-              (msg) =>
-                msg.request_id === requestId &&
-                msg.operation === MessageType.PRESENTATION_RESPONSE
-            )[0];
-            return message;
-          }, 60000);
-
-          // get response file's contents
-          const responseFileId =
-            (
-              presentationResponseMessage as
-                | PresentationResponseMessage
-                | undefined
-            )?.response_file_id || "";
-
-          const fileContents = await getFileContents(signer, responseFileId);
-
-          if (fileContents) {
-            setSendRequestSuccess(true);
-            return fileContents;
-          } else {
-            setSendRequestSuccess(false);
-          }
+          return handlePollPresentationResponseRequest({
+            requestId,
+            signer,
+            setSendRequestSuccess,
+            topicId,
+          });
         } else {
           setSendRequestSuccess(false);
         }
