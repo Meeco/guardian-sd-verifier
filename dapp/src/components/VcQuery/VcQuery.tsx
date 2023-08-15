@@ -15,6 +15,7 @@ interface VcQueryProps {
   setLoading: React.Dispatch<React.SetStateAction<LoadingState>>;
   credPrivateKey: string;
   signer: BladeSigner | null;
+  vcFile: any;
   setVcFile: React.Dispatch<any>;
   responderDids: string[];
   setResponderDids: React.Dispatch<React.SetStateAction<string[]>>;
@@ -27,15 +28,12 @@ const VcQuery: React.FC<VcQueryProps> = ({
   loading,
   setLoading,
   credPrivateKey,
+  vcFile,
   setVcFile,
   responderDids,
   setResponderDids,
 }) => {
   const [cid, setCid] = useState("");
-  const [vcId, setVcId] = useState("");
-  const [getVcSuccess, setGetVcSuccess] = useState<boolean | undefined>(
-    undefined
-  );
   const [getRespondersSuccess, setGetRespondersSuccess] = useState<
     boolean | undefined
   >(undefined);
@@ -56,13 +54,11 @@ const VcQuery: React.FC<VcQueryProps> = ({
       try {
         setLoading({ id: "handleFetchIpfs" });
         const file = await fetchIPFSFile(cid, { resultType: ResultType.JSON });
-        setVcId(file.id);
         setVcFile(file);
-        setGetVcSuccess(true);
         setLoading({ id: undefined });
       } catch (error) {
+        setVcFile(null);
         setLoading({ id: undefined });
-        setGetVcSuccess(false);
         console.log({ error });
       }
     };
@@ -76,7 +72,7 @@ const VcQuery: React.FC<VcQueryProps> = ({
         const presentationQuery: PresentationQueryMessage = {
           operation: MessageType.PRESENTATION_QUERY,
           request_id: requestId,
-          vc_id: vcId,
+          vc_id: vcFile?.id,
           requester_did: process.env.REACT_APP_REQUESTER_DID || "",
           limit_hbar: 1,
         };
@@ -127,7 +123,7 @@ const VcQuery: React.FC<VcQueryProps> = ({
     return (
       <Accordion.Item eventKey="vc-query">
         <Accordion.Header>
-          <b>VC Query </b> {vcId ? `(${vcId})` : undefined}
+          <b>VC Query </b> {vcFile?.id}
         </Accordion.Header>
         <Accordion.Body>
           <p>Create a request for selective disclosure of a discovered VC</p>
@@ -139,7 +135,7 @@ const VcQuery: React.FC<VcQueryProps> = ({
               onChange={handleChangeCid}
               className="w-50"
             />
-            {vcId ? (
+            {vcFile ? (
               <a
                 href={`https://ipfs.io/ipfs/${cid}`}
                 target="_blank"
@@ -157,11 +153,11 @@ const VcQuery: React.FC<VcQueryProps> = ({
               loading={loading.id === "handleFetchIpfs"}
             />
             <StatusLabel
-              isSuccess={getVcSuccess}
-              text={getVcSuccess ? `VC ID: ${vcId}` : "Get VC Failed"}
+              isSuccess={vcFile === undefined ? vcFile : !!vcFile}
+              text={vcFile?.id ? `VC ID: ${vcFile?.id}` : "Get VC Failed"}
             />
           </div>
-          {vcId && (
+          {vcFile && (
             <div className="d-flex mt-4">
               <Button
                 onClick={handleQueryResponders}

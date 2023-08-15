@@ -95,6 +95,7 @@ function App() {
           loading={loading}
           setLoading={setLoading}
           credPrivateKey={credPrivateKey}
+          vcFile={vcFile}
           setVcFile={setVcFile}
           responderDids={responderDids}
           setResponderDids={setResponderDids}
