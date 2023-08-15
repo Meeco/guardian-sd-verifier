@@ -14,6 +14,7 @@ export const documentLoader = async (url: string) => {
   try {
     const [protocol] = url.split(":");
 
+    // TODO: Remove hardcode response
     if (
       url ===
       "https://ipfs.io/ipfs/QmdafSLzFLrTSp3fPG8CpcjH5MehtDFY4nxjr5CVq3z1rz"
