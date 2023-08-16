@@ -3,16 +3,13 @@ import { FileId } from "@hashgraph/sdk";
 import React, { useState } from "react";
 import { Accordion, FormCheck, FormGroup } from "react-bootstrap";
 import ReactJson from "react-json-view";
-import { v4 as uuidv4 } from "uuid";
+import * as nacl from "tweetnacl";
 import { LoadingState } from "../../App";
-import { submitMessage } from "../../consensusService";
-import { createFile } from "../../fileService";
-import { MessageType, PresentationRequestMessage } from "../../types";
-import { documentLoader, generateKeyPair } from "../../utils";
-import { createAuthDetails } from "../../utils/createAuthDetails";
 import { Button, StatusLabel } from "../common";
-import { createPresentationDefinition } from "./createPresentationDefinition";
-import { handlePollPresentationResponseRequest } from "./handlePollPresentationResponseRequest";
+import createPresentationRequest from "./createPresentationRequest";
+import decryptPresentationResponseMessage from "./decryptPresentationResponseMessage";
+import generateRequesterKeys from "./generateRequesterKeys";
+import handleSendPresentationRequest from "./handleSendPresentationRequest";
 
 interface DisclosureRequestProps {
   signer: BladeSigner | null;
@@ -24,6 +21,7 @@ interface DisclosureRequestProps {
   selectedMethod: any;
   credPrivateKey: string;
   responderDids: string[];
+  requesterPrivateKey: string;
 }
 
 const DisclosureRequest: React.FC<DisclosureRequestProps> = ({
@@ -36,6 +34,7 @@ const DisclosureRequest: React.FC<DisclosureRequestProps> = ({
   selectedMethod,
   credPrivateKey,
   responderDids,
+  requesterPrivateKey,
 }) => {
   const credentialSubject = verifiableCredential?.credentialSubject;
   const [presentationResponse, setPresentationResponse] = useState<any>();
@@ -109,58 +108,26 @@ const DisclosureRequest: React.FC<DisclosureRequestProps> = ({
       }
     };
 
-    const handleGenKeyPair = async () => {
-      const keyPair = await generateKeyPair({
-        privateKeyHex: credPrivateKey,
+    const { requesterEmphem, requesterKeyPair } =
+      generateRequesterKeys(requesterPrivateKey);
+
+    const requesterNonce = nacl.randomBytes(24);
+
+    const handleCreatePresentationRequest = () => {
+      createPresentationRequest({
+        signer,
+        credentialSubject,
+        credPrivateKey,
+        selectedFields,
+        setCreatePresentationSuccess,
+        setFileId,
+        setLoading,
+        setPresentationRequest,
+        vcFile,
+        verifiableCredential,
+        requesterEmphem,
+        requesterNonce,
       });
-
-      return keyPair;
-    };
-
-    // Create file in HFS
-
-    const handleCreateFile = async () => {
-      setLoading({ id: "handleCreateFile" });
-
-      const keyPair = await handleGenKeyPair();
-      if (keyPair) {
-        const { keyData, suite } = keyPair;
-        // create authorization_details
-        const authDetails = await createAuthDetails({
-          verifiableCredential,
-          challenge: "challenge",
-          documentLoader,
-          keyData,
-          suite,
-        });
-
-        const presentationDefinition = createPresentationDefinition(
-          vcFile.id,
-          selectedFields
-        );
-
-        // create presentation query file
-        const contents = {
-          ...presentationDefinition,
-          authorization_details: {
-            ...authDetails,
-            did: credentialSubject.id,
-          },
-        };
-
-        const fileId = await createFile(signer, JSON.stringify(contents));
-        if (fileId) {
-          setFileId(fileId);
-          setCreatePresentationSuccess(true);
-          setPresentationRequest(contents);
-        } else {
-          setCreatePresentationSuccess(false);
-        }
-        setLoading({ id: undefined });
-      } else {
-        setCreatePresentationSuccess(false);
-        throw new Error("Key data is required");
-      }
     };
 
     // Send presentation request to HCS
@@ -169,56 +136,29 @@ const DisclosureRequest: React.FC<DisclosureRequestProps> = ({
     }: {
       responderDid: string;
     }) => {
-      setLoading({ id: "handleSendRequest" });
-      const presentationResponse = await handleGetPresentationResponse({
-        fileId,
-        responderDid,
-      });
-      setLoading({ id: undefined });
-      setPresentationResponse(presentationResponse);
-    };
+      try {
+        setLoading({ id: "handleSendRequest" });
+        const responseMessage = await handleSendPresentationRequest({
+          responderDid,
+          fileId,
+          requesterNonce,
+          requesterEmphem,
+          signer,
+          topicId,
+          setSendRequestSuccess,
+        });
 
-    // Get presentation response from HCS
-    const handleGetPresentationResponse = async ({
-      responderDid,
-      fileId,
-    }: {
-      fileId?: FileId | null;
-      responderDid: string;
-    }) => {
-      const requestId = uuidv4();
+        const presentationResponse = decryptPresentationResponseMessage({
+          presentationResponseMessage: responseMessage,
+          signer,
+          requesterKeyPair,
+        });
 
-      const presentationRequest: PresentationRequestMessage = {
-        operation: MessageType.PRESENTATION_REQUEST,
-        request_id: requestId,
-        recipient_did: responderDid,
-        request_file_id: fileId?.toString() || "",
-        // TODO: Update this field later
-        request_file_dek_encrypted_base64: "",
-        // TODO: Update this field later
-        request_file_public_key_id: "",
-      };
-
-      // send presentation request to HCS
-      const presentationRequestMessage = JSON.stringify(presentationRequest);
-      const result = submitMessage(
-        presentationRequestMessage,
-        signer,
-        topicId
-      ).then(async (isSuccess) => {
-        if (isSuccess) {
-          return handlePollPresentationResponseRequest({
-            requestId,
-            signer,
-            setSendRequestSuccess,
-            topicId,
-          });
-        } else {
-          setSendRequestSuccess(false);
-        }
-      });
-
-      return result;
+        setLoading({ id: undefined });
+        setPresentationResponse(presentationResponse);
+      } catch (error) {
+        console.log({ error });
+      }
     };
 
     return (
@@ -261,9 +201,9 @@ const DisclosureRequest: React.FC<DisclosureRequestProps> = ({
               </FormGroup>
               <div className="d-flex mt-3">
                 <Button
-                  onClick={handleCreateFile}
+                  onClick={handleCreatePresentationRequest}
                   text="Create presentation"
-                  loading={loading.id === "handleCreateFile"}
+                  loading={loading.id === "createPresentationRequest"}
                 />
                 <StatusLabel
                   isSuccess={createPresentationSuccess}

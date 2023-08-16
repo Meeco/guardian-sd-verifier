@@ -1,23 +1,32 @@
 import { BladeSigner } from "@bladelabs/blade-web3.js";
 import { useMemo } from "react";
-import { Accordion, Button } from "react-bootstrap";
+import { Accordion, Button, Form } from "react-bootstrap";
 import { StatusLabel } from "../common";
 
 interface HederaAccountProps {
   handleConnectWallet: () => void;
   signer: BladeSigner | null;
   accountID: string;
+  requesterPrivateKey: string;
+  setRequesterPrivateKey: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const HederaAccount: React.FC<HederaAccountProps> = ({
   handleConnectWallet,
   signer,
   accountID,
+  requesterPrivateKey,
+  setRequesterPrivateKey,
 }) => {
   const isSuccess = useMemo(() => {
     if (signer) return true;
     else return undefined;
   }, [signer]);
+
+  const handleChangePrivateKey = (e: React.ChangeEvent<any>) => {
+    e.preventDefault();
+    setRequesterPrivateKey(e.target.value);
+  };
 
   return (
     <Accordion.Item eventKey="account">
@@ -48,6 +57,15 @@ const HederaAccount: React.FC<HederaAccountProps> = ({
             )}
           </Button>
           <StatusLabel isSuccess={isSuccess} text="Connected" />
+        </div>
+        <div>
+          Hedera account's private key(ED25519)
+          <Form.Control
+            type="text"
+            placeholder="Hedera account's private key"
+            onChange={handleChangePrivateKey}
+            className="w-50"
+          />
         </div>
       </Accordion.Body>
     </Accordion.Item>

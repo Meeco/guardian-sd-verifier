@@ -1,17 +1,13 @@
-import { BladeSigner } from "@bladelabs/blade-web3.js";
-import { getFileContents } from "../../fileService";
 import { getTopicMessages } from "../../hederaService";
 import { MessageType, PresentationResponseMessage } from "../../types";
 import { pollRequest } from "../../utils";
 
 export const handlePollPresentationResponseRequest = async ({
   requestId,
-  signer,
   topicId,
   setSendRequestSuccess,
 }: {
   requestId: string;
-  signer: BladeSigner;
   topicId?: string;
   setSendRequestSuccess: (
     value: React.SetStateAction<boolean | undefined>
@@ -30,17 +26,17 @@ export const handlePollPresentationResponseRequest = async ({
     return message;
   }, 60000);
 
-  // get response file's contents
-  const responseFileId =
-    (presentationResponseMessage as PresentationResponseMessage | undefined)
-      ?.response_file_id || "";
-
-  const fileContents = await getFileContents(signer, responseFileId);
-
-  if (fileContents) {
+  if (presentationResponseMessage) {
     setSendRequestSuccess(true);
-    return fileContents;
+    return presentationResponseMessage;
   } else {
     setSendRequestSuccess(false);
   }
+
+  // if (fileContents) {
+  //   setSendRequestSuccess(true);
+  //   return fileContents;
+  // } else {
+  //   setSendRequestSuccess(false);
+  // }
 };

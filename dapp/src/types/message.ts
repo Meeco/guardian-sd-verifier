@@ -31,13 +31,13 @@ export interface QueryResponseMessage {
  */
 export interface PresentationRequestMessage {
   operation: MessageType.PRESENTATION_REQUEST;
-  request_id: string;
   recipient_did: string;
+  request_id: string;
   request_file_id: string;
-  request_file_dek_encrypted_base64: string;
-  request_file_public_key_id: string;
+  request_file_nonce: string;
+  request_ephem_public_key: string;
+  version: string;
 }
-
 /**
  * A message from a PEx responder to a verifier fulfilling a presentation request
  */
@@ -46,5 +46,7 @@ export interface PresentationResponseMessage {
   request_id: string;
   recipient_did: string;
   response_file_id: string;
-  response_file_dek_encrypted_base64: string;
+  response_file_nonce: string;
+  response_ephem_public_key: string;
+  version: string;
 }

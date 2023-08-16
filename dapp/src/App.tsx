@@ -1,6 +1,7 @@
 import { BladeConnector, BladeSigner } from "@bladelabs/blade-web3.js";
 import { useEffect, useState } from "react";
 import { Accordion } from "react-bootstrap";
+
 import "./App.css";
 import initConnection from "./bladeWeb3Service/initConnection";
 import pairWallet from "./bladeWeb3Service/pairWallet";
@@ -38,6 +39,7 @@ function App() {
   const [signer, setSigner] = useState<BladeSigner | null>(null);
   // Blade wallet account ID
   const [accountID, setaccountID] = useState("");
+  const [requesterPrivateKey, setRequesterPrivateKey] = useState("");
   const [vcFile, setVcFile] = useState<any>();
   const [responderDids, setResponderDids] = useState<string[]>([]);
 
@@ -60,6 +62,8 @@ function App() {
     setBladeConnector(connector);
   }, []);
 
+  // requesterToResponder();
+
   return (
     <div className="App">
       <div className="d-flex align-items-center">
@@ -78,6 +82,8 @@ function App() {
           handleConnectWallet={handleConnectWallet}
           signer={signer}
           accountID={accountID}
+          requesterPrivateKey={requesterPrivateKey}
+          setRequesterPrivateKey={setRequesterPrivateKey}
         />
         <Identity
           loading={loading}
@@ -110,6 +116,7 @@ function App() {
           credPrivateKey={credPrivateKey}
           vcFile={vcFile}
           responderDids={responderDids}
+          requesterPrivateKey={requesterPrivateKey}
         />
       </Accordion>
     </div>
