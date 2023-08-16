@@ -289,6 +289,7 @@ const DisclosureRequest: React.FC<DisclosureRequestProps> = ({
                         name="request"
                         theme={"monokai"}
                         collapseStringsAfterLength={30}
+                        collapsed
                       />
                     </Accordion.Body>
                   </Accordion.Item>
