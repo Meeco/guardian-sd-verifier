@@ -16,6 +16,11 @@ export interface LoadingState {
   id?: string;
 }
 
+export interface Responders {
+  did: string;
+  publicKey: string;
+}
+
 function App() {
   // Loading status
   const [loading, setLoading] = useState<LoadingState>({
@@ -41,7 +46,7 @@ function App() {
   const [accountID, setaccountID] = useState("");
   const [requesterPrivateKey, setRequesterPrivateKey] = useState("");
   const [vcFile, setVcFile] = useState<any>();
-  const [responderDids, setResponderDids] = useState<string[]>([]);
+  const [responders, setResponders] = useState<Responders[]>([]);
 
   const handleConnectWallet = () => {
     if (bladeConnector) {
@@ -103,8 +108,8 @@ function App() {
           credPrivateKey={credPrivateKey}
           vcFile={vcFile}
           setVcFile={setVcFile}
-          responderDids={responderDids}
-          setResponderDids={setResponderDids}
+          responders={responders}
+          setResponders={setResponders}
         />
         <DisclosureRequest
           signer={signer}
@@ -115,7 +120,7 @@ function App() {
           selectedMethod={selectedMethod}
           credPrivateKey={credPrivateKey}
           vcFile={vcFile}
-          responderDids={responderDids}
+          responders={responders}
           requesterPrivateKey={requesterPrivateKey}
         />
       </Accordion>

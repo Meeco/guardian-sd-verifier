@@ -3,6 +3,7 @@ import * as nacl from "tweetnacl";
 import * as naclUtil from "tweetnacl-util";
 import { getFileContents } from "../../fileService";
 import { PresentationResponseMessage } from "../../types";
+import { decryptData } from "../../utils";
 
 const decryptPresentationResponseMessage = async ({
   signer,
@@ -27,15 +28,14 @@ const decryptPresentationResponseMessage = async ({
   const message = naclUtil.decodeBase64(fileContents);
   const nonce = naclUtil.decodeBase64(responseNonce);
 
-  const decryptedMessage = nacl.box.open(
+  const presentationResponse = decryptData({
     message,
     nonce,
-    decodedResponseEphemPublicKey,
-    requesterKeyPair.secretKey
-  );
+    privatekey: requesterKeyPair.secretKey,
+    publickey: decodedResponseEphemPublicKey,
+  });
 
-  if (decryptedMessage) {
-    const presentationResponse = naclUtil.encodeUTF8(decryptedMessage);
+  if (presentationResponse) {
     return presentationResponse;
   } else {
     throw new Error("Presentation reponse is empty");

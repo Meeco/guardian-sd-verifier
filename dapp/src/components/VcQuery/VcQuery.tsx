@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Accordion, Form } from "react-bootstrap";
 import { BoxArrowUpRight } from "react-bootstrap-icons";
 import { v4 as uuidv4 } from "uuid";
-import { LoadingState } from "../../App";
+import { LoadingState, Responders } from "../../App";
 import { submitMessage } from "../../consensusService";
 import { getTopicMessages } from "../../hederaService";
 import { MessageType, PresentationQueryMessage } from "../../types";
@@ -17,8 +17,8 @@ interface VcQueryProps {
   signer: BladeSigner | null;
   vcFile: any;
   setVcFile: React.Dispatch<any>;
-  responderDids: string[];
-  setResponderDids: React.Dispatch<React.SetStateAction<string[]>>;
+  responders: Responders[];
+  setResponders: React.Dispatch<React.SetStateAction<Responders[]>>;
   topicId?: string;
 }
 
@@ -30,8 +30,8 @@ const VcQuery: React.FC<VcQueryProps> = ({
   credPrivateKey,
   vcFile,
   setVcFile,
-  responderDids,
-  setResponderDids,
+  responders,
+  setResponders,
 }) => {
   const [cid, setCid] = useState("");
   const [getRespondersSuccess, setGetRespondersSuccess] = useState<
@@ -95,10 +95,13 @@ const VcQuery: React.FC<VcQueryProps> = ({
               }, 15000);
 
               if (queryRespondersMessages) {
-                const responderDids = queryRespondersMessages.map(
-                  (item: any) => item.responder_did
-                );
-                setResponderDids(responderDids);
+                const responders = queryRespondersMessages.map((item: any) => {
+                  return {
+                    did: item.responder_did,
+                    publicKey: item.response_ephem_public_key,
+                  };
+                });
+                setResponders(responders);
                 setGetRespondersSuccess(true);
               }
               setLoading({ id: undefined });
@@ -174,10 +177,10 @@ const VcQuery: React.FC<VcQueryProps> = ({
               />
             </div>
           )}
-          {responderDids.length > 0 && (
+          {responders.length > 0 && (
             <ul className="mt-3">
-              {responderDids.map((item) => (
-                <li key={item}>Responder: {item}</li>
+              {responders.map((item) => (
+                <li key={item.did}>Responder: {item.did}</li>
               ))}
             </ul>
           )}

@@ -1,10 +1,9 @@
 import { BladeSigner } from "@bladelabs/blade-web3.js";
-import { FileId } from "@hashgraph/sdk";
 import React, { useState } from "react";
 import { Accordion, FormCheck, FormGroup } from "react-bootstrap";
 import ReactJson from "react-json-view";
 import * as nacl from "tweetnacl";
-import { LoadingState } from "../../App";
+import { LoadingState, Responders } from "../../App";
 import { Button, StatusLabel } from "../common";
 import createPresentationRequest from "./createPresentationRequest";
 import decryptPresentationResponseMessage from "./decryptPresentationResponseMessage";
@@ -20,7 +19,7 @@ interface DisclosureRequestProps {
   vcFile: any;
   selectedMethod: any;
   credPrivateKey: string;
-  responderDids: string[];
+  responders: Responders[];
   requesterPrivateKey: string;
 }
 
@@ -33,13 +32,12 @@ const DisclosureRequest: React.FC<DisclosureRequestProps> = ({
   vcFile,
   selectedMethod,
   credPrivateKey,
-  responderDids,
+  responders,
   requesterPrivateKey,
 }) => {
   const credentialSubject = verifiableCredential?.credentialSubject;
   const [presentationResponse, setPresentationResponse] = useState<any>();
   const [presentationRequest, setPresentationRequest] = useState<any>();
-  const [fileId, setFileId] = useState<FileId | null | undefined>();
 
   const [selectableFields, setSelectableFields] = useState<string[]>([]);
   const [selectedFields, setSelectedFields] = useState<string[]>([]);
@@ -108,6 +106,10 @@ const DisclosureRequest: React.FC<DisclosureRequestProps> = ({
       }
     };
 
+    const handleSelectAll = () => {
+      setSelectedFields(selectableFields);
+    };
+
     const { requesterEmphem, requesterKeyPair } =
       generateRequesterKeys(requesterPrivateKey);
 
@@ -115,34 +117,33 @@ const DisclosureRequest: React.FC<DisclosureRequestProps> = ({
 
     const handleCreatePresentationRequest = () => {
       createPresentationRequest({
-        signer,
         credentialSubject,
         credPrivateKey,
         selectedFields,
         setCreatePresentationSuccess,
-        setFileId,
         setLoading,
         setPresentationRequest,
         vcFile,
         verifiableCredential,
-        requesterEmphem,
-        requesterNonce,
       });
     };
 
     // Send presentation request to HCS
     const handleSendRequest = async ({
       responderDid,
+      responderEmphemPublickey,
     }: {
       responderDid: string;
+      responderEmphemPublickey: string;
     }) => {
       try {
         setLoading({ id: "handleSendRequest" });
         const responseMessage = await handleSendPresentationRequest({
           responderDid,
-          fileId,
+          presentationRequest,
           requesterNonce,
           requesterEmphem,
+          responderEmphemPublickey,
           signer,
           topicId,
           setSendRequestSuccess,
@@ -187,6 +188,15 @@ const DisclosureRequest: React.FC<DisclosureRequestProps> = ({
           {selectableFields.length > 0 && (
             <>
               <FormGroup className="mt-3">
+                <FormCheck
+                  key="select-all-fields"
+                  id="select-all-fields"
+                  type="checkbox"
+                  as="input"
+                  label="Select all"
+                  onChange={handleSelectAll}
+                  // checked={selectedFields.includes(field)}
+                />
                 {selectableFields.map((field: string) => (
                   <FormCheck
                     key={field}
@@ -237,19 +247,24 @@ const DisclosureRequest: React.FC<DisclosureRequestProps> = ({
               )}
             </>
           )}
-          {responderDids && presentationRequest && (
-            <Accordion defaultActiveKey={responderDids[0]}>
-              {responderDids.map((responderDid) => (
+          {responders && presentationRequest && (
+            <Accordion defaultActiveKey={responders[0].did}>
+              {responders.map((responder) => (
                 <Accordion.Item
                   className="mt-4"
-                  key={responderDid}
-                  eventKey={responderDid}
+                  key={responder.did}
+                  eventKey={responder.did}
                 >
-                  <Accordion.Header>{responderDid}</Accordion.Header>
+                  <Accordion.Header>{responder.did}</Accordion.Header>
                   <Accordion.Body>
                     <div className="d-flex mt-2">
                       <Button
-                        onClick={() => handleSendRequest({ responderDid })}
+                        onClick={() =>
+                          handleSendRequest({
+                            responderDid: responder.did,
+                            responderEmphemPublickey: responder.publicKey,
+                          })
+                        }
                         text="Send request"
                         loading={loading.id === "handleSendRequest"}
                       />
@@ -263,9 +278,9 @@ const DisclosureRequest: React.FC<DisclosureRequestProps> = ({
                     {presentationResponse && (
                       <Accordion
                         className="mt-4"
-                        defaultActiveKey={`${responderDid}-response`}
+                        defaultActiveKey={`${responder.did}-response`}
                       >
-                        <Accordion.Item eventKey={`${responderDid}-response`}>
+                        <Accordion.Item eventKey={`${responder.did}-response`}>
                           <Accordion.Header>
                             Disclosed Verifiable Presentation Document
                           </Accordion.Header>

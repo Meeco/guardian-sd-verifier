@@ -18,7 +18,7 @@ const HederaAccount: React.FC<HederaAccountProps> = ({
   requesterPrivateKey,
   setRequesterPrivateKey,
 }) => {
-  const isSuccess = useMemo(() => {
+  const connectWalletSuccess = useMemo(() => {
     if (signer) return true;
     else return undefined;
   }, [signer]);
@@ -56,17 +56,19 @@ const HederaAccount: React.FC<HederaAccountProps> = ({
               </div>
             )}
           </Button>
-          <StatusLabel isSuccess={isSuccess} text="Connected" />
+          <StatusLabel isSuccess={connectWalletSuccess} text="Connected" />
         </div>
-        <div>
-          Hedera account's private key(ED25519)
-          <Form.Control
-            type="text"
-            placeholder="Hedera account's private key"
-            onChange={handleChangePrivateKey}
-            className="w-50"
-          />
-        </div>
+        {connectWalletSuccess && (
+          <div>
+            Hedera account's private key(ED25519)
+            <Form.Control
+              type="text"
+              placeholder="Hedera account's private key"
+              onChange={handleChangePrivateKey}
+              className="w-50"
+            />
+          </div>
+        )}
       </Accordion.Body>
     </Accordion.Item>
   );

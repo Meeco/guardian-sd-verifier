@@ -24,6 +24,7 @@ export interface QueryResponseMessage {
   request_id: string;
   responder_did: string;
   offer_hbar: number;
+  response_ephem_public_key: string;
 }
 
 /**
