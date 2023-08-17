@@ -1,5 +1,5 @@
 import { BladeSigner } from "@bladelabs/blade-web3.js";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Accordion, FormCheck, FormGroup } from "react-bootstrap";
 import ReactJson from "react-json-view";
 import * as nacl from "tweetnacl";
@@ -52,6 +52,11 @@ const DisclosureRequest: React.FC<DisclosureRequestProps> = ({
     boolean | undefined
   >(undefined);
 
+  const displayedFields = useMemo(
+    () => selectableFields.filter((field) => field !== "select-all"),
+    [selectableFields]
+  );
+
   if (!signer || !credPrivateKey) {
     return (
       <Accordion.Item eventKey="disclosure-request">
@@ -67,27 +72,25 @@ const DisclosureRequest: React.FC<DisclosureRequestProps> = ({
     const handleGetFields = async () => {
       try {
         setLoading({ id: "handleGetFields" });
-        // TODO: remove mock
-        // const selectedContext = vcFile["@context"].filter((context: string) =>
-        //   context.startsWith("https://ipfs.io/ipfs/")
-        // )[0];
+        const selectedContext = vcFile["@context"].filter((context: string) =>
+          context.startsWith("https://ipfs.io/ipfs/")
+        )[0];
 
-        // const contextDocument = await (await fetch(selectedContext)).json();
-        // const credentialType = credentialSubject.type;
-        // const credentialContext =
-        //   contextDocument["@context"][credentialType]["@context"];
-        // const contextFields = Object.keys(credentialContext);
-        // const preservedFields = [
-        //   "@version",
-        //   "@protected",
-        //   "id",
-        //   "type",
-        //   "schema",
-        // ];
-        // const selectableFields = contextFields.filter(
-        //   (field) => !preservedFields.includes(field)
-        // );
-        const selectableFields = ["field0", "field1", "field2", "field3"];
+        const contextDocument = await (await fetch(selectedContext)).json();
+        const credentialType = vcFile.credentialSubject.type;
+        const credentialContext =
+          contextDocument["@context"][credentialType]["@context"];
+        const contextFields = Object.keys(credentialContext);
+        const preservedFields = [
+          "@version",
+          "@protected",
+          "id",
+          "type",
+          "schema",
+        ];
+        const selectableFields = contextFields.filter(
+          (field) => !preservedFields.includes(field)
+        );
         setSelectableFields([...selectableFields, "select-all"]);
         setGetVcSchemeSuccess(true);
         setLoading({ id: undefined });
@@ -153,14 +156,19 @@ const DisclosureRequest: React.FC<DisclosureRequestProps> = ({
           setSendRequestSuccess,
         });
 
-        const presentationResponse = decryptPresentationResponseMessage({
-          presentationResponseMessage: responseMessage,
-          signer,
-          requesterKeyPair,
-        });
+        if (sendRequestSuccess) {
+          const presentationResponse = await decryptPresentationResponseMessage(
+            {
+              presentationResponseMessage: responseMessage,
+              signer,
+              requesterKeyPair,
+            }
+          );
+
+          setPresentationResponse(presentationResponse);
+        }
 
         setLoading({ id: undefined });
-        setPresentationResponse(presentationResponse);
       } catch (error) {
         console.log({ error });
       }
@@ -201,7 +209,7 @@ const DisclosureRequest: React.FC<DisclosureRequestProps> = ({
                   onChange={handleSelectAll}
                   checked={selectedFields === selectableFields}
                 />
-                {selectableFields.map((field: string) => (
+                {displayedFields.map((field: string) => (
                   <FormCheck
                     key={field}
                     id={field}
@@ -229,10 +237,7 @@ const DisclosureRequest: React.FC<DisclosureRequestProps> = ({
                 />
               </div>
               {presentationRequest && (
-                <Accordion
-                  className="mt-4"
-                  defaultActiveKey="presentationRequest"
-                >
+                <Accordion className="mt-4">
                   <Accordion.Item eventKey="presentationRequest">
                     <Accordion.Header>
                       Presentation Request Document
@@ -273,9 +278,11 @@ const DisclosureRequest: React.FC<DisclosureRequestProps> = ({
                         loading={loading.id === "handleSendRequest"}
                       />
                       <StatusLabel
-                        isSuccess={sendRequestSuccess}
+                        isSuccess={sendRequestSuccess && presentationResponse}
                         text={
-                          sendRequestSuccess ? "Sent" : "Send Request Failed"
+                          sendRequestSuccess && presentationResponse
+                            ? "Sent"
+                            : "Send Request Failed"
                         }
                       />
                     </div>
