@@ -52,13 +52,13 @@ const createPresentationRequest = async ({
     );
 
     // create presentation query file
-    const contents = JSON.stringify({
+    const contents = {
       ...presentationDefinition,
       authorization_details: {
         ...authDetails,
         did: credentialSubject.id,
       },
-    });
+    };
 
     setPresentationRequest(contents);
     setLoading({ id: undefined });

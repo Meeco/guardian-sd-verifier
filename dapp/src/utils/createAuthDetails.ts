@@ -38,16 +38,12 @@ export const createAuthDetails = async ({
     holder: keyData.controller,
   });
 
-  console.log({ presentation });
-
   const vp = await vc.signPresentation({
     presentation,
     suite,
     challenge,
     documentLoader,
   });
-
-  console.log({ vp });
 
   const authDetails = {
     verifiablePresentation: {
@@ -63,7 +59,6 @@ export const createAuthDetails = async ({
     documentLoader,
   });
 
-  console.log({ resultVp });
-
-  return authDetails;
+  if (resultVp.verified) return authDetails;
+  else throw new Error("Presentation verification is invalid");
 };

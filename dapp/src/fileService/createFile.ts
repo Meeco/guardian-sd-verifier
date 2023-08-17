@@ -1,7 +1,10 @@
 import { BladeSigner } from "@bladelabs/blade-web3.js";
 import { FileCreateTransaction, Hbar } from "@hashgraph/sdk";
 
-const createFile = async (bladeSigner: BladeSigner, contents: string) => {
+const createFile = async (
+  bladeSigner: BladeSigner,
+  contents: string | Uint8Array
+) => {
   try {
     //Create the transaction
     const transaction = await new FileCreateTransaction()

@@ -1,5 +1,4 @@
 import * as nacl from "tweetnacl";
-import * as naclUtil from "tweetnacl-util";
 
 const encryptData = ({
   message,
@@ -14,7 +13,7 @@ const encryptData = ({
 }) => {
   const encryptedMessage = nacl.box(message, nonce, publickey, privatekey);
 
-  return naclUtil.encodeBase64(encryptedMessage);
+  return encryptedMessage;
 };
 
 export default encryptData;

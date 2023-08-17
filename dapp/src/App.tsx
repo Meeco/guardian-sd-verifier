@@ -1,7 +1,6 @@
 import { BladeConnector, BladeSigner } from "@bladelabs/blade-web3.js";
 import { useEffect, useState } from "react";
 import { Accordion } from "react-bootstrap";
-
 import "./App.css";
 import initConnection from "./bladeWeb3Service/initConnection";
 import pairWallet from "./bladeWeb3Service/pairWallet";
@@ -67,8 +66,6 @@ function App() {
     const connector = initConnection();
     setBladeConnector(connector);
   }, []);
-
-  // requesterToResponder();
 
   return (
     <div className="App">

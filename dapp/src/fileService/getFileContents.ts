@@ -31,7 +31,7 @@ const getFileContents = async (signer: BladeSigner, fileId: string) => {
     // TODO: execute FileContentsQuery with signer instead of Hedera client when the executeWithSigner issue is resolved'
     const contents = await query.execute(client);
     // const contents = await query.executeWithSigner(signer);
-    return readFileAsJson(await readFileAsText(contents));
+    return contents;
   } catch (error) {
     console.log("Get file contents failed", error);
   }

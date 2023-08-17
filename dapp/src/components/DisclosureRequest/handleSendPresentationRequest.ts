@@ -32,20 +32,21 @@ const handleSendPresentationRequest = async ({
 }) => {
   try {
     const requestId = uuidv4();
+    const presentationRequestStr = JSON.stringify(presentationRequest);
 
-    const message = naclUtil.decodeUTF8(presentationRequest);
-    const responderEmphemPublickeyBytes = naclUtil.decodeUTF8(
+    const message = naclUtil.decodeUTF8(presentationRequestStr);
+    const responderEmphemPublickeyBytes = naclUtil.decodeBase64(
       responderEmphemPublickey
     );
 
-    const encryptedMessageBase64 = encryptData({
+    const encryptedMessage = encryptData({
       message,
       nonce: requesterNonce,
       privatekey: requesterEmphem.secretKey,
       publickey: responderEmphemPublickeyBytes,
     });
 
-    const fileId = await createFile(signer, encryptedMessageBase64);
+    const fileId = await createFile(signer, encryptedMessage);
 
     const presentationRequestMessage: PresentationRequestMessage = {
       operation: MessageType.PRESENTATION_REQUEST,
