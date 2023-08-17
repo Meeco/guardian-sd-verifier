@@ -67,26 +67,28 @@ const DisclosureRequest: React.FC<DisclosureRequestProps> = ({
     const handleGetFields = async () => {
       try {
         setLoading({ id: "handleGetFields" });
-        const selectedContext = vcFile["@context"].filter((context: string) =>
-          context.startsWith("https://ipfs.io/ipfs/")
-        )[0];
+        // TODO: remove mock
+        // const selectedContext = vcFile["@context"].filter((context: string) =>
+        //   context.startsWith("https://ipfs.io/ipfs/")
+        // )[0];
 
-        const contextDocument = await (await fetch(selectedContext)).json();
-        const credentialType = credentialSubject.type;
-        const credentialContext =
-          contextDocument["@context"][credentialType]["@context"];
-        const contextFields = Object.keys(credentialContext);
-        const preservedFields = [
-          "@version",
-          "@protected",
-          "id",
-          "type",
-          "schema",
-        ];
-        const selectableFields = contextFields.filter(
-          (field) => !preservedFields.includes(field)
-        );
-        setSelectableFields(selectableFields);
+        // const contextDocument = await (await fetch(selectedContext)).json();
+        // const credentialType = credentialSubject.type;
+        // const credentialContext =
+        //   contextDocument["@context"][credentialType]["@context"];
+        // const contextFields = Object.keys(credentialContext);
+        // const preservedFields = [
+        //   "@version",
+        //   "@protected",
+        //   "id",
+        //   "type",
+        //   "schema",
+        // ];
+        // const selectableFields = contextFields.filter(
+        //   (field) => !preservedFields.includes(field)
+        // );
+        const selectableFields = ["field0", "field1", "field2", "field3"];
+        setSelectableFields([...selectableFields, "select-all"]);
         setGetVcSchemeSuccess(true);
         setLoading({ id: undefined });
       } catch (error) {
@@ -107,7 +109,9 @@ const DisclosureRequest: React.FC<DisclosureRequestProps> = ({
     };
 
     const handleSelectAll = () => {
-      setSelectedFields(selectableFields);
+      if (selectedFields === selectableFields) {
+        setSelectedFields([]);
+      } else setSelectedFields(selectableFields);
     };
 
     const { requesterEmphem, requesterKeyPair } =
@@ -189,13 +193,13 @@ const DisclosureRequest: React.FC<DisclosureRequestProps> = ({
             <>
               <FormGroup className="mt-3">
                 <FormCheck
-                  key="select-all-fields"
-                  id="select-all-fields"
+                  key="select-all"
+                  id="select-all"
                   type="checkbox"
                   as="input"
                   label="Select all"
                   onChange={handleSelectAll}
-                  // checked={selectedFields.includes(field)}
+                  checked={selectedFields === selectableFields}
                 />
                 {selectableFields.map((field: string) => (
                   <FormCheck
