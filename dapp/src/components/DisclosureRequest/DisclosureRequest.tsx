@@ -1,4 +1,5 @@
 import { BladeSigner } from "@bladelabs/blade-web3.js";
+import { Client } from "@hashgraph/sdk";
 import React, { useMemo, useState } from "react";
 import { Accordion, FormCheck, FormGroup } from "react-bootstrap";
 import ReactJson from "react-json-view";
@@ -11,6 +12,7 @@ import generateRequesterKeys from "./generateRequesterKeys";
 import handleSendPresentationRequest from "./handleSendPresentationRequest";
 
 interface DisclosureRequestProps {
+  client?: Client;
   signer: BladeSigner | null;
   topicId?: string;
   loading: LoadingState;
@@ -24,6 +26,7 @@ interface DisclosureRequestProps {
 }
 
 const DisclosureRequest: React.FC<DisclosureRequestProps> = ({
+  client,
   signer,
   topicId,
   loading,
@@ -57,7 +60,7 @@ const DisclosureRequest: React.FC<DisclosureRequestProps> = ({
     [selectableFields]
   );
 
-  if (!signer || !credPrivateKey) {
+  if (!signer || !credPrivateKey || !client) {
     return (
       <Accordion.Item eventKey="disclosure-request">
         <Accordion.Header>
@@ -159,8 +162,9 @@ const DisclosureRequest: React.FC<DisclosureRequestProps> = ({
         if (sendRequestSuccess) {
           const presentationResponse = await decryptPresentationResponseMessage(
             {
+              client,
               presentationResponseMessage: responseMessage,
-              signer,
+              requesterPrivateKey,
               requesterKeyPair,
             }
           );

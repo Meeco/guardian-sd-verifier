@@ -1,4 +1,4 @@
-import { BladeSigner } from "@bladelabs/blade-web3.js";
+import { Client } from "@hashgraph/sdk";
 import * as nacl from "tweetnacl";
 import * as naclUtil from "tweetnacl-util";
 import { getFileContents } from "../../fileService";
@@ -6,11 +6,13 @@ import { PresentationResponseMessage } from "../../types";
 import { decryptData } from "../../utils";
 
 const decryptPresentationResponseMessage = async ({
-  signer,
+  client,
+  requesterPrivateKey,
   presentationResponseMessage,
   requesterKeyPair,
 }: {
-  signer: BladeSigner;
+  client: Client;
+  requesterPrivateKey: string;
   presentationResponseMessage?: PresentationResponseMessage;
   requesterKeyPair: nacl.BoxKeyPair;
 }) => {
@@ -24,7 +26,10 @@ const decryptPresentationResponseMessage = async ({
     responseEphemPublicKey
   );
 
-  const fileContents = await getFileContents(signer, responseFileId);
+  const fileContents = await getFileContents({
+    client,
+    fileId: responseFileId,
+  });
   if (fileContents) {
     const nonce = naclUtil.decodeBase64(responseNonce);
 

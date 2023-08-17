@@ -1,5 +1,5 @@
 import { BladeConnector, BladeSigner } from "@bladelabs/blade-web3.js";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Accordion } from "react-bootstrap";
 import "./App.css";
 import initConnection from "./bladeWeb3Service/initConnection";
@@ -10,6 +10,7 @@ import {
   Identity,
   VcQuery,
 } from "./components";
+import { createHederaClient } from "./hederaService";
 
 export interface LoadingState {
   id?: string;
@@ -42,11 +43,16 @@ function App() {
   // Blade wallet signer(user)
   const [signer, setSigner] = useState<BladeSigner | null>(null);
   // Blade wallet account ID
-  const [accountID, setaccountID] = useState("");
+  const [accountId, setaccountId] = useState("");
   // Requester(wallet holder)'s private key
   const [requesterPrivateKey, setRequesterPrivateKey] = useState("");
   const [vcFile, setVcFile] = useState<any>();
   const [responders, setResponders] = useState<Responders[]>([]);
+
+  const client = useMemo(() => {
+    if (requesterPrivateKey)
+      return createHederaClient(accountId, requesterPrivateKey);
+  }, [accountId, requesterPrivateKey]);
 
   const handleConnectWallet = () => {
     if (bladeConnector) {
@@ -54,7 +60,7 @@ function App() {
         const signer = bladeConnector.getSigner();
         if (signer) {
           setSigner(signer);
-          setaccountID(accId);
+          setaccountId(accId);
         }
       });
     } else {
@@ -84,7 +90,7 @@ function App() {
         <HederaAccount
           handleConnectWallet={handleConnectWallet}
           signer={signer}
-          accountID={accountID}
+          accountId={accountId}
           requesterPrivateKey={requesterPrivateKey}
           setRequesterPrivateKey={setRequesterPrivateKey}
         />
@@ -112,6 +118,7 @@ function App() {
           setResponders={setResponders}
         />
         <DisclosureRequest
+          client={client}
           signer={signer}
           topicId={topicId}
           loading={loading}

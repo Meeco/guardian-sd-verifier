@@ -6,7 +6,7 @@ import { StatusLabel } from "../common";
 interface HederaAccountProps {
   handleConnectWallet: () => void;
   signer: BladeSigner | null;
-  accountID: string;
+  accountId: string;
   requesterPrivateKey: string;
   setRequesterPrivateKey: React.Dispatch<React.SetStateAction<string>>;
 }
@@ -14,7 +14,7 @@ interface HederaAccountProps {
 const HederaAccount: React.FC<HederaAccountProps> = ({
   handleConnectWallet,
   signer,
-  accountID,
+  accountId,
   requesterPrivateKey,
   setRequesterPrivateKey,
 }) => {
@@ -31,7 +31,7 @@ const HederaAccount: React.FC<HederaAccountProps> = ({
   return (
     <Accordion.Item eventKey="account">
       <Accordion.Header>
-        <b>Hedera Account </b> {accountID ? `(${accountID})` : undefined}
+        <b>Hedera Account </b> {accountId ? `(${accountId})` : undefined}
       </Accordion.Header>
       <Accordion.Body>
         <p>
@@ -43,8 +43,8 @@ const HederaAccount: React.FC<HederaAccountProps> = ({
             disabled={!!signer}
             variant="outline-primary"
           >
-            {accountID ? (
-              `Connected: ${accountID}`
+            {accountId ? (
+              `Connected: ${accountId}`
             ) : (
               <div className="d-flex align-items-center">
                 <img
