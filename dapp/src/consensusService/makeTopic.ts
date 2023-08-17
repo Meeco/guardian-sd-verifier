@@ -1,6 +1,14 @@
-import { Client, TopicCreateTransaction } from "@hashgraph/sdk";
+import { Client, Hbar, TopicCreateTransaction } from "@hashgraph/sdk";
 
-const makeTopic = async (client: Client) => {
+const client = Client.forTestnet();
+const accountId = process.env.REACT_APP_HEDERA_ACCOUNT_ID || "";
+const accountPrivateKey = process.env.REACT_APP_HEDERA_PRIVATE_KEY || "";
+client
+  .setOperator(accountId, accountPrivateKey)
+  .setDefaultMaxTransactionFee(new Hbar(1))
+  .setMaxQueryPayment(new Hbar(1));
+
+const makeTopic = async () => {
   try {
     // Create a new topic
     let txResponse = await new TopicCreateTransaction().execute(client);

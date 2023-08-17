@@ -15,8 +15,7 @@ describe("makeTopic", () => {
         getReceipt: jest.fn().mockResolvedValueOnce({ topicId: "0.0.123" }),
       } as any);
 
-    const topicId = await makeTopic(client);
-    expect(executeMock).toHaveBeenCalledWith(client);
+    const topicId = await makeTopic();
     expect(topicId).toBe("0.0.123");
   }, 10000);
 
@@ -27,7 +26,7 @@ describe("makeTopic", () => {
 
     const logSpy = jest.spyOn(console, "log");
 
-    const topicId = await makeTopic(client);
+    const topicId = await makeTopic();
 
     expect(topicId).toBe(undefined);
     expect(logSpy).toHaveBeenCalledWith(
