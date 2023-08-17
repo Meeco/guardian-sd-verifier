@@ -44,6 +44,7 @@ function App() {
   const [signer, setSigner] = useState<BladeSigner | null>(null);
   // Blade wallet account ID
   const [accountID, setaccountID] = useState("");
+  // Requester(wallet holder)'s private key
   const [requesterPrivateKey, setRequesterPrivateKey] = useState("");
   const [vcFile, setVcFile] = useState<any>();
   const [responders, setResponders] = useState<Responders[]>([]);
@@ -91,6 +92,7 @@ function App() {
           setRequesterPrivateKey={setRequesterPrivateKey}
         />
         <Identity
+          signer={signer}
           loading={loading}
           setLoading={setLoading}
           verifiableCredential={verifiableCredential}
@@ -99,6 +101,7 @@ function App() {
           setSelectedMethod={setSelectedMethod}
           setCredPrivateKey={setCredPrivateKey}
           setCredPublicKey={setCredPublicKey}
+          requesterPrivateKey={requesterPrivateKey}
         />
         <VcQuery
           signer={signer}
