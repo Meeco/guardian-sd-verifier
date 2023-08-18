@@ -1,6 +1,6 @@
-import { LoadingState } from "../../App";
 import { documentLoader, generateKeyPair } from "../../utils";
 import { createAuthDetails } from "../../utils/createAuthDetails";
+import { LoadingState } from "../AppProvider";
 import { createPresentationDefinition } from "./createPresentationDefinition";
 
 const handleGenKeyPair = async (credPrivateKey: string) => {

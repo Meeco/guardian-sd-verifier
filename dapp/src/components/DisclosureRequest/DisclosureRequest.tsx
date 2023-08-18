@@ -1,45 +1,30 @@
-import { BladeSigner } from "@bladelabs/blade-web3.js";
-import { Client } from "@hashgraph/sdk";
-import React, { useMemo, useState } from "react";
+import React, { useContext, useMemo, useState } from "react";
 import { Accordion, FormCheck, FormGroup } from "react-bootstrap";
 import ReactJson from "react-json-view";
 import * as nacl from "tweetnacl";
-import { LoadingState, Responders } from "../../App";
+import { AppContext } from "../AppProvider";
 import { Button, StatusLabel } from "../common";
 import createPresentationRequest from "./createPresentationRequest";
 import decryptPresentationResponseMessage, {
   PresentationResponse,
 } from "./decryptPresentationResponseMessage";
-import generateRequesterKeys from "./generateRequesterKeys";
 import handleSendPresentationRequest from "./handleSendPresentationRequest";
 
-interface DisclosureRequestProps {
-  client?: Client;
-  signer: BladeSigner | null;
-  topicId?: string;
-  loading: LoadingState;
-  setLoading: React.Dispatch<React.SetStateAction<LoadingState>>;
-  verifiableCredential: any;
-  vcFile: any;
-  selectedMethod: any;
-  credPrivateKey: string;
-  responders: Responders[];
-  requesterPrivateKey: string;
-}
+const DisclosureRequest = () => {
+  const {
+    client,
+    signer,
+    topicId,
+    loading,
+    setLoading,
+    verifiableCredential,
+    vcFile,
+    selectedMethod,
+    credPrivateKey,
+    responders,
+    requesterPrivateKey,
+  } = useContext(AppContext);
 
-const DisclosureRequest: React.FC<DisclosureRequestProps> = ({
-  client,
-  signer,
-  topicId,
-  loading,
-  setLoading,
-  verifiableCredential,
-  vcFile,
-  selectedMethod,
-  credPrivateKey,
-  responders,
-  requesterPrivateKey,
-}) => {
   const credentialSubject = verifiableCredential?.credentialSubject;
   const [presentationResponse, setPresentationResponse] =
     useState<PresentationResponse>();
@@ -81,7 +66,7 @@ const DisclosureRequest: React.FC<DisclosureRequestProps> = ({
     sendRequestSuccess,
   ]);
 
-  if (!signer || !credPrivateKey || !client) {
+  if (!signer || !credPrivateKey || !client || !requesterPrivateKey) {
     return (
       <Accordion.Item eventKey="disclosure-request">
         <Accordion.Header>
@@ -93,6 +78,8 @@ const DisclosureRequest: React.FC<DisclosureRequestProps> = ({
       </Accordion.Item>
     );
   } else {
+    const { requesterEmphem, requesterKeyPair } = requesterPrivateKey;
+
     const handleGetFields = async () => {
       try {
         setLoading({ id: "handleGetFields" });
@@ -141,9 +128,6 @@ const DisclosureRequest: React.FC<DisclosureRequestProps> = ({
       } else setSelectedFields(selectableFields);
     };
 
-    const { requesterEmphem, requesterKeyPair } =
-      generateRequesterKeys(requesterPrivateKey);
-
     const requesterNonce = nacl.randomBytes(24);
 
     const handleCreatePresentationRequest = () => {
@@ -185,7 +169,6 @@ const DisclosureRequest: React.FC<DisclosureRequestProps> = ({
             {
               client,
               presentationResponseMessage: responseMessage,
-              requesterPrivateKey,
               requesterKeyPair,
             }
           );

@@ -1,39 +1,28 @@
-import { BladeSigner } from "@bladelabs/blade-web3.js";
 import * as vc from "@digitalbazaar/vc";
-import { ChangeEvent, useMemo, useState } from "react";
-import { Accordion, Form } from "react-bootstrap";
-import { LoadingState } from "../../App";
+import { ChangeEvent, useContext, useMemo, useState } from "react";
+import { Accordion, Button, Form } from "react-bootstrap";
 import { fetchResolveDid } from "../../didService";
 import { documentLoader, generateKeyPair } from "../../utils";
 import getPublicKeyHexFromJwk from "../../utils/getPublicKeyHexFromJwk";
-import { Button, StatusLabel } from "../common";
+import { AppContext } from "../AppProvider";
+import { Button as ButtonWithLoader, StatusLabel } from "../common";
 import VerificationMethods from "./VerificationMethods";
 
-interface IdentityProps {
-  loading: LoadingState;
-  setLoading: React.Dispatch<React.SetStateAction<LoadingState>>;
-  verifiableCredential: any;
-  setVerifiableCredential: React.Dispatch<any>;
-  selectedMethod: any;
-  setSelectedMethod: React.Dispatch<any>;
-  setCredPrivateKey: React.Dispatch<React.SetStateAction<string>>;
-  setCredPublicKey: React.Dispatch<React.SetStateAction<string>>;
-  requesterPrivateKey: string;
-  signer: BladeSigner | null;
-}
+const Identity = () => {
+  const {
+    signer,
+    loading,
+    setLoading,
+    requesterPrivateKey,
+    setCredPublicKey,
+    credPrivateKey,
+    setCredPrivateKey,
+    verifiableCredential,
+    setVerifiableCredential,
+    selectedMethod,
+    setSelectedMethod,
+  } = useContext(AppContext);
 
-const Identity: React.FC<IdentityProps> = ({
-  loading,
-  setLoading,
-  verifiableCredential,
-  setVerifiableCredential,
-  selectedMethod,
-  setSelectedMethod,
-  setCredPrivateKey,
-  setCredPublicKey,
-  requesterPrivateKey,
-  signer,
-}) => {
   // User uploaded file
   const [file, setFile] = useState<File | undefined>();
   // User uploaded credential's DID
@@ -42,6 +31,22 @@ const Identity: React.FC<IdentityProps> = ({
   const [verificationMethods, setVerificationMethods] = useState<any>([]);
   const [getVerificationMethodsSuccess, setGetVerificationMethodsSuccess] =
     useState<boolean | undefined>(undefined);
+
+  const [vcVerificaitonResult, setvcVerificaitonResult] = useState<
+    boolean | undefined
+  >();
+  const [verifyCredentialErrMsg, setVerifyCredentialErrMsg] = useState<
+    string | undefined
+  >();
+
+  const verifyStatusText = useMemo(() => {
+    if (vcVerificaitonResult) {
+      return "Verified";
+    }
+    if (vcVerificaitonResult === false)
+      return verifyCredentialErrMsg ?? "VC or private key is invalid";
+    else return "";
+  }, [vcVerificaitonResult, verifyCredentialErrMsg]);
 
   const isExtractDidSuccess = useMemo(() => {
     if (file) return !!credentialDid;
@@ -127,21 +132,26 @@ const Identity: React.FC<IdentityProps> = ({
       // set credential private key
       const privateKey = e.target.value;
       setCredPrivateKey(privateKey);
-      // Verify VC
-      verifyCredential(privateKey);
     };
 
-    const verifyCredential = async (privateKey: string) => {
-      const keyPair = await generateKeyPair({ privateKeyHex: privateKey });
-      if (keyPair) {
-        const { suite } = keyPair;
-        const resultVc = await vc.verifyCredential({
-          credential: verifiableCredential,
-          suite,
-          documentLoader,
+    const verifyCredential = async () => {
+      try {
+        const keyPair = await generateKeyPair({
+          privateKeyHex: credPrivateKey,
         });
+        if (keyPair) {
+          const { suite } = keyPair;
+          const resultVc = await vc.verifyCredential({
+            credential: verifiableCredential,
+            suite,
+            documentLoader,
+          });
 
-        console.log({ resultVc });
+          setvcVerificaitonResult(resultVc.verified);
+        }
+      } catch (error) {
+        setVerifyCredentialErrMsg((error as any).message);
+        setvcVerificaitonResult(false);
       }
     };
 
@@ -177,7 +187,7 @@ const Identity: React.FC<IdentityProps> = ({
               </div>
               <div>
                 <div className="d-flex  mt-4">
-                  <Button
+                  <ButtonWithLoader
                     onClick={getVerificationMethods}
                     text=" Get verification Method(s)"
                     loading={loading.id === "getVerificationMethods"}
@@ -208,6 +218,18 @@ const Identity: React.FC<IdentityProps> = ({
                     type="text"
                     onChange={handlePrivateKeyChange}
                     disabled={!selectedMethod}
+                  />
+                </div>
+                <div className="d-flex mt-3">
+                  <Button
+                    onClick={verifyCredential}
+                    disabled={credPrivateKey === ""}
+                  >
+                    Verify VC
+                  </Button>
+                  <StatusLabel
+                    isSuccess={vcVerificaitonResult}
+                    text={verifyStatusText}
                   />
                 </div>
               </div>

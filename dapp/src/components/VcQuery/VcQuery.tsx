@@ -1,38 +1,29 @@
-import { BladeSigner } from "@bladelabs/blade-web3.js";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { Accordion, Form } from "react-bootstrap";
 import { BoxArrowUpRight } from "react-bootstrap-icons";
 import { v4 as uuidv4 } from "uuid";
-import { LoadingState, Responders } from "../../App";
 import { submitMessage } from "../../consensusService";
 import { getTopicMessages } from "../../hederaService";
 import { MessageType, PresentationQueryMessage } from "../../types";
 import { ResultType, fetchIPFSFile, pollRequest } from "../../utils";
+import { AppContext } from "../AppProvider";
 import { Button, StatusLabel } from "../common";
 
-interface VcQueryProps {
-  loading: LoadingState;
-  setLoading: React.Dispatch<React.SetStateAction<LoadingState>>;
-  credPrivateKey: string;
-  signer: BladeSigner | null;
-  vcFile: any;
-  setVcFile: React.Dispatch<any>;
-  responders: Responders[];
-  setResponders: React.Dispatch<React.SetStateAction<Responders[]>>;
-  topicId?: string;
-}
+const exploreLworksUrl = "https://explore.lworks.io/testnet/topics";
 
-const VcQuery: React.FC<VcQueryProps> = ({
-  signer,
-  topicId,
-  loading,
-  setLoading,
-  credPrivateKey,
-  vcFile,
-  setVcFile,
-  responders,
-  setResponders,
-}) => {
+const VcQuery = () => {
+  const {
+    signer,
+    loading,
+    setLoading,
+    credPrivateKey,
+    vcFile,
+    setVcFile,
+    responders,
+    setResponders,
+    topicId,
+  } = useContext(AppContext);
+
   const [cid, setCid] = useState("");
   const [getRespondersSuccess, setGetRespondersSuccess] = useState<
     boolean | undefined
@@ -112,7 +103,7 @@ const VcQuery: React.FC<VcQueryProps> = ({
           }
         );
       } catch (error) {
-        console.log("handleQueryResponders===>", error);
+        console.log({ error });
         setLoading({ id: undefined });
         setGetRespondersSuccess(false);
       }
@@ -126,7 +117,7 @@ const VcQuery: React.FC<VcQueryProps> = ({
     return (
       <Accordion.Item eventKey="vc-query">
         <Accordion.Header>
-          <b>VC Query </b> {vcFile?.id}
+          <b>VC Query </b> {vcFile?.id ? `(${vcFile?.id})` : ""}
         </Accordion.Header>
         <Accordion.Body>
           <p>Create a request for selective disclosure of a discovered VC</p>
@@ -156,11 +147,11 @@ const VcQuery: React.FC<VcQueryProps> = ({
               loading={loading.id === "handleFetchIpfs"}
             />
             <StatusLabel
-              isSuccess={vcFile === undefined ? vcFile : !!vcFile}
+              isSuccess={vcFile ? !!vcFile?.id : undefined}
               text={vcFile?.id ? `VC ID: ${vcFile?.id}` : "Get VC Failed"}
             />
           </div>
-          {vcFile && (
+          {!!vcFile?.id && (
             <div className="d-flex mt-4">
               <Button
                 onClick={handleQueryResponders}
@@ -178,11 +169,20 @@ const VcQuery: React.FC<VcQueryProps> = ({
             </div>
           )}
           {responders.length > 0 && (
-            <ul className="mt-3">
-              {responders.map((item) => (
-                <li key={item.did}>Responder: {item.did}</li>
-              ))}
-            </ul>
+            <>
+              <ul className="mt-3">
+                {responders.map((item) => (
+                  <li key={item.did}>Responder: {item.did}</li>
+                ))}
+              </ul>
+              <a
+                href={`${exploreLworksUrl}/${topicId}`}
+                target="_blank"
+                rel="noreferrer"
+              >
+                View topic
+              </a>
+            </>
           )}
         </Accordion.Body>
       </Accordion.Item>

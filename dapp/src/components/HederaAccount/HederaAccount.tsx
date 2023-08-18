@@ -1,23 +1,40 @@
-import { BladeSigner } from "@bladelabs/blade-web3.js";
-import { useMemo } from "react";
+import { useContext, useMemo, useState } from "react";
 import { Accordion, Button, Form } from "react-bootstrap";
+import pairWallet from "../../bladeWeb3Service/pairWallet";
+import generateRequesterKeys from "../../utils/generateRequesterKeys";
+import { AppContext } from "../AppProvider";
 import { StatusLabel } from "../common";
 
-interface HederaAccountProps {
-  handleConnectWallet: () => void;
-  signer: BladeSigner | null;
-  accountId: string;
-  requesterPrivateKey: string;
-  setRequesterPrivateKey: React.Dispatch<React.SetStateAction<string>>;
-}
+const HederaAccount = () => {
+  const {
+    bladeConnector,
+    setSigner,
+    signer,
+    accountId,
+    setaccountId,
+    setRequesterPrivateKey,
+    requesterPrivateKey,
+  } = useContext(AppContext);
 
-const HederaAccount: React.FC<HederaAccountProps> = ({
-  handleConnectWallet,
-  signer,
-  accountId,
-  requesterPrivateKey,
-  setRequesterPrivateKey,
-}) => {
+  const [keyStr, setKeyStr] = useState("");
+  const [verifyPrivateKeyErrMsg, setVerifyPrivateKeyErrMsg] = useState<
+    string | undefined
+  >();
+
+  const handleConnectWallet = () => {
+    if (bladeConnector) {
+      pairWallet(bladeConnector).then(async (accId) => {
+        const signer = bladeConnector.getSigner();
+        if (signer) {
+          setSigner(signer);
+          setaccountId(accId);
+        }
+      });
+    } else {
+      console.log("bladeConnector is not found");
+    }
+  };
+
   const connectWalletSuccess = useMemo(() => {
     if (signer) return true;
     else return undefined;
@@ -25,8 +42,26 @@ const HederaAccount: React.FC<HederaAccountProps> = ({
 
   const handleChangePrivateKey = (e: React.ChangeEvent<any>) => {
     e.preventDefault();
-    setRequesterPrivateKey(e.target.value);
+    setKeyStr(e.target.value);
   };
+
+  const verifyPrivateKey = () => {
+    try {
+      const requesterPrivateKey = generateRequesterKeys(keyStr);
+      setRequesterPrivateKey(requesterPrivateKey);
+      setVerifyPrivateKeyErrMsg(undefined);
+    } catch (error) {
+      console.log({ error });
+      setVerifyPrivateKeyErrMsg((error as any).message);
+      setRequesterPrivateKey(undefined);
+    }
+  };
+
+  const verifyStatus = useMemo(() => {
+    if (verifyPrivateKeyErrMsg === undefined) {
+      if (requesterPrivateKey) return true;
+    } else return false;
+  }, [requesterPrivateKey, verifyPrivateKeyErrMsg]);
 
   return (
     <Accordion.Item eventKey="account">
@@ -67,6 +102,15 @@ const HederaAccount: React.FC<HederaAccountProps> = ({
               onChange={handleChangePrivateKey}
               className="w-50"
             />
+            <div className="d-flex mt-3">
+              <Button onClick={verifyPrivateKey} disabled={keyStr === ""}>
+                Verify private key
+              </Button>
+              <StatusLabel
+                isSuccess={verifyStatus}
+                text={verifyPrivateKeyErrMsg ?? "Verified"}
+              />
+            </div>
           </div>
         )}
       </Accordion.Body>

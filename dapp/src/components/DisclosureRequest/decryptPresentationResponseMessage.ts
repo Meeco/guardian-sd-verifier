@@ -15,12 +15,10 @@ export interface PresentationResponse {
 
 const decryptPresentationResponseMessage = async ({
   client,
-  requesterPrivateKey,
   presentationResponseMessage,
   requesterKeyPair,
 }: {
   client: Client;
-  requesterPrivateKey: string;
   presentationResponseMessage?: PresentationResponseMessage;
   requesterKeyPair: nacl.BoxKeyPair;
 }) => {

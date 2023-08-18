@@ -7,38 +7,34 @@ export const generateKeyPair = async ({
 }: {
   privateKeyHex: string;
 }) => {
-  try {
-    const key = await Ed25519KeyPair.generate({
-      secureRandom: () => {
-        return Buffer.from(privateKeyHex, "hex");
-      },
-    });
+  const key = await Ed25519KeyPair.generate({
+    secureRandom: () => {
+      return Buffer.from(privateKeyHex, "hex");
+    },
+  });
 
-    const keyPair2018 = await key.export({
-      type: "Ed25519VerificationKey2018",
-      privateKey: true,
-    });
+  const keyPair2018 = await key.export({
+    type: "Ed25519VerificationKey2018",
+    privateKey: true,
+  });
 
-    const keyData = await Ed25519VerificationKey2020.from({
-      ...keyPair2018,
-      keyPair: keyPair2018,
-    });
+  const keyData = await Ed25519VerificationKey2020.from({
+    ...keyPair2018,
+    keyPair: keyPair2018,
+  });
 
-    // const suite = new JsonWebSignature({
-    //   key: await JsonWebKey.from(
-    //     await key.export({
-    //       type: "JsonWebKey2020",
-    //       privateKey: true,
-    //     })
-    //   ),
-    // });
+  // const suite = new JsonWebSignature({
+  //   key: await JsonWebKey.from(
+  //     await key.export({
+  //       type: "JsonWebKey2020",
+  //       privateKey: true,
+  //     })
+  //   ),
+  // });
 
-    const suite = new Ed25519Signature2020({
-      key: keyData,
-    });
+  const suite = new Ed25519Signature2020({
+    key: keyData,
+  });
 
-    return { keyData, suite };
-  } catch (error) {
-    console.log("generateKeyPair failed: ", error);
-  }
+  return { keyData, suite };
 };
