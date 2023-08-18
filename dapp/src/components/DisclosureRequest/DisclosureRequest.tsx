@@ -7,7 +7,9 @@ import * as nacl from "tweetnacl";
 import { LoadingState, Responders } from "../../App";
 import { Button, StatusLabel } from "../common";
 import createPresentationRequest from "./createPresentationRequest";
-import decryptPresentationResponseMessage from "./decryptPresentationResponseMessage";
+import decryptPresentationResponseMessage, {
+  PresentationResponse,
+} from "./decryptPresentationResponseMessage";
 import generateRequesterKeys from "./generateRequesterKeys";
 import handleSendPresentationRequest from "./handleSendPresentationRequest";
 
@@ -39,7 +41,8 @@ const DisclosureRequest: React.FC<DisclosureRequestProps> = ({
   requesterPrivateKey,
 }) => {
   const credentialSubject = verifiableCredential?.credentialSubject;
-  const [presentationResponse, setPresentationResponse] = useState<any>();
+  const [presentationResponse, setPresentationResponse] =
+    useState<PresentationResponse>();
   const [presentationRequest, setPresentationRequest] = useState<any>();
 
   const [selectableFields, setSelectableFields] = useState<string[]>([]);
@@ -59,6 +62,24 @@ const DisclosureRequest: React.FC<DisclosureRequestProps> = ({
     () => selectableFields.filter((field) => field !== "select-all"),
     [selectableFields]
   );
+
+  const presentationResponseStatus = useMemo(() => {
+    if (sendRequestSuccess !== undefined) {
+      if (presentationResponse?.data) return true;
+      else return false;
+    }
+  }, [presentationResponse?.data, sendRequestSuccess]);
+
+  const presentationResponseStatusMessage = useMemo(() => {
+    if (sendRequestSuccess !== undefined) {
+      if (presentationResponse?.data) return "Sent";
+      else return presentationResponse?.error?.message ?? "Send request failed";
+    } else return "";
+  }, [
+    presentationResponse?.data,
+    presentationResponse?.error?.message,
+    sendRequestSuccess,
+  ]);
 
   if (!signer || !credPrivateKey || !client) {
     return (
@@ -175,6 +196,7 @@ const DisclosureRequest: React.FC<DisclosureRequestProps> = ({
         setLoading({ id: undefined });
       } catch (error) {
         console.log({ error });
+        setLoading({ id: undefined });
       }
     };
 
@@ -282,15 +304,11 @@ const DisclosureRequest: React.FC<DisclosureRequestProps> = ({
                         loading={loading.id === "handleSendRequest"}
                       />
                       <StatusLabel
-                        isSuccess={sendRequestSuccess && presentationResponse}
-                        text={
-                          sendRequestSuccess && presentationResponse
-                            ? "Sent"
-                            : "Send Request Failed"
-                        }
+                        isSuccess={presentationResponseStatus}
+                        text={presentationResponseStatusMessage}
                       />
                     </div>
-                    {presentationResponse && (
+                    {presentationResponse?.data && (
                       <Accordion
                         className="mt-4"
                         defaultActiveKey={`${responder.did}-response`}
@@ -301,7 +319,7 @@ const DisclosureRequest: React.FC<DisclosureRequestProps> = ({
                           </Accordion.Header>
                           <Accordion.Body>
                             <ReactJson
-                              src={presentationResponse}
+                              src={presentationResponse?.data}
                               name="presentation_response"
                               theme={"monokai"}
                               collapseStringsAfterLength={30}

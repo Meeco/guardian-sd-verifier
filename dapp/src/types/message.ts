@@ -45,9 +45,12 @@ export interface PresentationRequestMessage {
 export interface PresentationResponseMessage {
   operation: MessageType.PRESENTATION_RESPONSE;
   request_id: string;
-  recipient_did: string;
-  response_file_id: string;
-  response_file_nonce: string;
-  response_ephem_public_key: string;
-  version: string;
+  recipient_did?: string;
+  response_file_id?: string;
+  response_file_nonce?: string;
+  response_ephem_public_key?: string;
+  error?: {
+    code: string;
+    message: string;
+  };
 }
