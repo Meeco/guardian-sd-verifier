@@ -1,5 +1,6 @@
 export { default as decryptData } from "./decryptData";
 export { documentLoader } from "./documentLoader";
+export { default as downloadJson } from "./downloadJson";
 export { default as encryptData } from "./encryptData";
 export * from "./fetchIPFSFile";
 export { default as fetchJson } from "./fetchJson";

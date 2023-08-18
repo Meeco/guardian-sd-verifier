@@ -1,9 +1,10 @@
 import React, { useContext, useMemo, useState } from "react";
-import { Accordion, FormCheck, FormGroup } from "react-bootstrap";
+import { Accordion, Button, FormCheck, FormGroup } from "react-bootstrap";
 import ReactJson from "react-json-view";
 import * as nacl from "tweetnacl";
+import { downloadJson } from "../../utils";
 import { AppContext } from "../AppProvider";
-import { Button, StatusLabel } from "../common";
+import { Button as ButtonWithLoader, StatusLabel } from "../common";
 import createPresentationRequest from "./createPresentationRequest";
 import decryptPresentationResponseMessage, {
   PresentationResponse,
@@ -191,7 +192,7 @@ const DisclosureRequest = () => {
         <Accordion.Body>
           {selectedMethod && (
             <div className="d-flex mt-3">
-              <Button
+              <ButtonWithLoader
                 onClick={handleGetFields}
                 text="Get VC Scheme"
                 loading={loading.id === "handleGetFields"}
@@ -231,7 +232,7 @@ const DisclosureRequest = () => {
                 ))}
               </FormGroup>
               <div className="d-flex mt-3">
-                <Button
+                <ButtonWithLoader
                   onClick={handleCreatePresentationRequest}
                   text="Create presentation"
                   loading={loading.id === "createPresentationRequest"}
@@ -249,7 +250,20 @@ const DisclosureRequest = () => {
                 <Accordion className="mt-4">
                   <Accordion.Item eventKey="presentationRequest">
                     <Accordion.Header>
-                      Presentation Request Document
+                      <div className="d-flex w-100 align-items-center justify-content-between">
+                        Presentation Request Document
+                        <Button
+                          className="me-3"
+                          onClick={() =>
+                            downloadJson(
+                              presentationRequest,
+                              "presentation_request.json"
+                            )
+                          }
+                        >
+                          Download
+                        </Button>
+                      </div>
                     </Accordion.Header>
                     <Accordion.Body>
                       <ReactJson
@@ -276,7 +290,7 @@ const DisclosureRequest = () => {
                   <Accordion.Header>{responder.did}</Accordion.Header>
                   <Accordion.Body>
                     <div className="d-flex mt-2">
-                      <Button
+                      <ButtonWithLoader
                         onClick={() =>
                           handleSendRequest({
                             responderDid: responder.did,
@@ -298,7 +312,20 @@ const DisclosureRequest = () => {
                       >
                         <Accordion.Item eventKey={`${responder.did}-response`}>
                           <Accordion.Header>
-                            Disclosed Verifiable Presentation Document
+                            <div className="d-flex w-100 align-items-center justify-content-between">
+                              Disclosed Verifiable Presentation Document
+                              <Button
+                                className="me-3"
+                                onClick={() =>
+                                  downloadJson(
+                                    presentationResponse?.data,
+                                    "disclosed_verifiable_presentation_document.json"
+                                  )
+                                }
+                              >
+                                Download
+                              </Button>
+                            </div>
                           </Accordion.Header>
                           <Accordion.Body>
                             <ReactJson
