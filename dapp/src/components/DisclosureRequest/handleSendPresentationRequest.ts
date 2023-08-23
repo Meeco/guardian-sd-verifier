@@ -17,7 +17,6 @@ const handleSendPresentationRequest = async ({
   responderEmphemPublickey,
   signer,
   topicId,
-  setSendRequestSuccess,
 }: {
   presentationRequest: any;
   responderDid: string;
@@ -26,9 +25,6 @@ const handleSendPresentationRequest = async ({
   responderEmphemPublickey: string;
   signer: BladeSigner;
   topicId?: string;
-  setSendRequestSuccess: React.Dispatch<
-    React.SetStateAction<boolean | undefined>
-  >;
 }) => {
   try {
     const requestId = uuidv4();
@@ -64,6 +60,7 @@ const handleSendPresentationRequest = async ({
     const presentationRequestMessageStr = JSON.stringify(
       presentationRequestMessage
     );
+    const timeStamp = Date.now();
     const presentationResponseMessage = submitMessage(
       presentationRequestMessageStr,
       signer,
@@ -72,18 +69,15 @@ const handleSendPresentationRequest = async ({
       if (isSuccess) {
         return handlePollPresentationResponseRequest({
           requestId,
-          setSendRequestSuccess,
           topicId,
+          timeStamp,
         });
-      } else {
-        setSendRequestSuccess(false);
       }
     });
 
     return presentationResponseMessage;
   } catch (error) {
     console.log({ error });
-    setSendRequestSuccess(false);
   }
 };
 

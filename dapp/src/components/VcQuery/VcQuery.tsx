@@ -70,12 +70,16 @@ const VcQuery = () => {
 
         const presentationQueryMessage = JSON.stringify(presentationQuery);
         // Send query message to HCS
+        const timeStamp = Date.now();
         submitMessage(presentationQueryMessage, signer, topicId).then(
           async (isSuccess) => {
             if (isSuccess) {
               const queryRespondersMessages = await pollRequest(async () => {
                 // Get query response from mirror node
-                const topicMessages = await getTopicMessages(topicId || "");
+                const topicMessages = await getTopicMessages({
+                  topicId: topicId || "",
+                  timeStamp,
+                });
                 const messages = topicMessages?.filter(
                   (msg) =>
                     msg.request_id === requestId &&
@@ -120,7 +124,7 @@ const VcQuery = () => {
     return (
       <Accordion.Item eventKey="vc-query">
         <Accordion.Header>
-          <b>VC Query </b> {vcFile?.id ? `(${vcFile?.id})` : ""}
+          <b>VC Query&nbsp;</b> {vcFile?.id ? `(${vcFile?.id})` : ""}
         </Accordion.Header>
         <Accordion.Body>
           <p>Create a request for selective disclosure of a discovered VC</p>
@@ -196,7 +200,10 @@ const VcQuery = () => {
                 target="_blank"
                 rel="noreferrer"
               >
-                View topic
+                <div className="d-flex align-items-center">
+                  View topic
+                  <BoxArrowUpRight className="ms-2" />
+                </div>
               </a>
             </>
           )}

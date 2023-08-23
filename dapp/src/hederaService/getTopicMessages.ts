@@ -10,10 +10,17 @@ interface TopicMessages {
   messages: Message[];
 }
 
-const getTopicMessages = async (topicId: string) => {
+const getTopicMessages = async ({
+  topicId,
+  timeStamp,
+}: {
+  topicId: string;
+  timeStamp: number;
+}) => {
   try {
+    const timeStampInSec = (timeStamp / 1000).toFixed(9);
     const res = await fetch(
-      `${process.env.REACT_APP_MIRROR_NODE_URL}/api/v1/topics/${topicId}/messages?encoding=base64&order=desc`,
+      `${process.env.REACT_APP_MIRROR_NODE_URL}/api/v1/topics/${topicId}/messages?encoding=base64&order=desc&timestamp=gte%3A${timeStampInSec}`,
       {
         headers: {
           Accept: "application/json",

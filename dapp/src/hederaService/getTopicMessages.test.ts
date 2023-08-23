@@ -4,7 +4,7 @@ describe("getTopicMessages", () => {
   const topicId = "0.0.123";
   const encodedStr =
     "ewogICJvcGVyYXRpb24iOiAicXVlcnktcmVzcG9uc2UiLAogICJyZXNwb25kZXJfZGlkIjogIjAuMC4xMjMiLAogICJvZmZlcl9oYmFyIjogMQp9Cg==";
-
+  const timeStamp = 123456789;
   afterEach(() => {
     jest.clearAllMocks();
   });
@@ -18,7 +18,7 @@ describe("getTopicMessages", () => {
       })
     ) as jest.Mock;
 
-    const messages = await getTopicMessages(topicId);
+    const messages = await getTopicMessages({ topicId, timeStamp });
 
     expect(messages).toEqual([
       {
@@ -36,7 +36,7 @@ describe("getTopicMessages", () => {
 
     const logSpy = jest.spyOn(console, "log");
 
-    const messages = await getTopicMessages(topicId);
+    const messages = await getTopicMessages({ topicId, timeStamp });
 
     expect(messages).toBe(undefined);
     expect(logSpy).toHaveBeenCalledWith(

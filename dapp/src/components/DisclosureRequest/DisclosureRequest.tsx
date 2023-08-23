@@ -37,27 +37,27 @@ const DisclosureRequest = () => {
   const [createPresentationSuccess, setCreatePresentationSuccess] = useState<
     boolean | undefined
   >(undefined);
-  const [sendRequestSuccess, setSendRequestSuccess] = useState<
-    boolean | undefined
-  >(undefined);
 
   const displayedFields = useMemo(
     () => selectableFields.filter((field) => field !== "select-all"),
     [selectableFields]
   );
 
-  const presentationResponseStatus = (presentationResponse: any) => {
-    if (loading.id === "handleSendRequest") {
+  const presentationResponseStatus = (
+    presentationResponse: any,
+    did: string
+  ) => {
+    if (loading.id === `handleSendRequest-${did}`) {
       return;
     }
-    if (sendRequestSuccess !== undefined) {
+    if (presentationResponse !== undefined) {
       if (presentationResponse?.data) return true;
       else return false;
     }
   };
 
   const presentationResponseStatusMessage = (presentationResponse: any) => {
-    if (sendRequestSuccess !== undefined) {
+    if (presentationResponse !== undefined) {
       if (presentationResponse?.data) return "Sent";
       else return presentationResponse?.error?.message ?? "Send request failed";
     } else return "";
@@ -149,7 +149,7 @@ const DisclosureRequest = () => {
       responderEmphemPublickey: string;
     }) => {
       try {
-        setLoading({ id: "handleSendRequest" });
+        setLoading({ id: `handleSendRequest-${responderDid}` });
         const responseMessage = await handleSendPresentationRequest({
           responderDid,
           presentationRequest,
@@ -158,18 +158,15 @@ const DisclosureRequest = () => {
           responderEmphemPublickey,
           signer,
           topicId,
-          setSendRequestSuccess,
         });
 
-        if (sendRequestSuccess) {
-          const presentationResponse = await decryptPresentationResponseMessage(
-            {
-              client,
-              presentationResponseMessage: responseMessage,
-              requesterKeyPair,
-            }
-          );
+        const presentationResponse = await decryptPresentationResponseMessage({
+          client,
+          presentationResponseMessage: responseMessage,
+          requesterKeyPair,
+        });
 
+        if (presentationResponse) {
           const selectedIndex = responders.findIndex(
             (item) => item.did === responderDid
           );
@@ -186,6 +183,14 @@ const DisclosureRequest = () => {
         setLoading({ id: undefined });
       } catch (error) {
         console.log({ error });
+        const selectedIndex = responders.findIndex(
+          (item) => item.did === responderDid
+        );
+        const updatedResponders = [...responders];
+        updatedResponders[selectedIndex] = {
+          ...updatedResponders[selectedIndex],
+          presentationResponse: null,
+        };
         setLoading({ id: undefined });
       }
     };
@@ -266,17 +271,6 @@ const DisclosureRequest = () => {
                     <Accordion.Header>
                       <div className="d-flex w-100 align-items-center justify-content-between">
                         Presentation Request Document
-                        <Button
-                          className="me-3"
-                          onClick={() =>
-                            downloadJson(
-                              presentationRequest,
-                              "presentation_request.json"
-                            )
-                          }
-                        >
-                          Download
-                        </Button>
                       </div>
                     </Accordion.Header>
                     <Accordion.Body>
@@ -287,6 +281,17 @@ const DisclosureRequest = () => {
                         collapseStringsAfterLength={30}
                         collapsed
                       />
+                      <Button
+                        className="me-3 mt-3"
+                        onClick={() =>
+                          downloadJson(
+                            presentationRequest,
+                            "presentation_request.json"
+                          )
+                        }
+                      >
+                        Download
+                      </Button>
                     </Accordion.Body>
                   </Accordion.Item>
                 </Accordion>
@@ -298,12 +303,12 @@ const DisclosureRequest = () => {
             responders.map((responder) => {
               const { accountId, did, publicKey, presentationResponse } =
                 responder;
-              const isSuccess =
-                presentationResponseStatus(presentationResponse);
+              const isSuccess = presentationResponseStatus(
+                presentationResponse,
+                did
+              );
               const statusText =
                 presentationResponseStatusMessage(presentationResponse);
-
-              console.log({ responders });
 
               return (
                 <Accordion key={did}>
@@ -321,11 +326,11 @@ const DisclosureRequest = () => {
                             })
                           }
                           text="Send request"
-                          loading={loading.id === "handleSendRequest"}
+                          loading={loading.id === `handleSendRequest-${did}`}
                         />
                         <StatusLabel
                           isSuccess={
-                            loading.id === "handleSendRequest"
+                            loading.id === `handleSendRequest-${did}`
                               ? undefined
                               : isSuccess
                           }
@@ -341,17 +346,6 @@ const DisclosureRequest = () => {
                             <Accordion.Header>
                               <div className="d-flex w-100 align-items-center justify-content-between">
                                 Disclosed Verifiable Presentation Document
-                                <Button
-                                  className="me-3"
-                                  onClick={() =>
-                                    downloadJson(
-                                      presentationResponse?.data,
-                                      "disclosed_verifiable_presentation_document.json"
-                                    )
-                                  }
-                                >
-                                  Download
-                                </Button>
                               </div>
                             </Accordion.Header>
                             <Accordion.Body>
@@ -360,7 +354,19 @@ const DisclosureRequest = () => {
                                 name="presentation_response"
                                 theme={"monokai"}
                                 collapseStringsAfterLength={30}
+                                collapsed
                               />
+                              <Button
+                                className="me-3 mt-3"
+                                onClick={() =>
+                                  downloadJson(
+                                    presentationResponse?.data,
+                                    "disclosed_verifiable_presentation_document.json"
+                                  )
+                                }
+                              >
+                                Download
+                              </Button>
                             </Accordion.Body>
                           </Accordion.Item>
                         </Accordion>
