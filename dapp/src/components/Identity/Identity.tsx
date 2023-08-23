@@ -161,7 +161,8 @@ const Identity = () => {
     return (
       <Accordion.Item eventKey="identity">
         <Accordion.Header>
-          <b>Identity </b> {credentialDid ? `(${credentialDid})` : undefined}
+          <b>Identity&nbsp;</b>
+          {credentialDid ? `(${credentialDid})` : undefined}
         </Accordion.Header>
         <Accordion.Body>
           <p>

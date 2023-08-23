@@ -59,14 +59,16 @@ const HederaAccount = () => {
 
   const verifyStatus = useMemo(() => {
     if (verifyPrivateKeyErrMsg === undefined) {
-      if (requesterPrivateKey) return true;
+      if (requesterPrivateKey) {
+        return true;
+      }
     } else return false;
   }, [requesterPrivateKey, verifyPrivateKeyErrMsg]);
 
   return (
     <Accordion.Item eventKey="account">
       <Accordion.Header>
-        <b>Hedera Account </b> {accountId ? `(${accountId})` : undefined}
+        <b>Hedera Account&nbsp;</b> {accountId ? `(${accountId})` : undefined}
       </Accordion.Header>
       <Accordion.Body>
         <p>
@@ -95,7 +97,7 @@ const HederaAccount = () => {
         </div>
         {connectWalletSuccess && (
           <div>
-            Hedera account's private key(ED25519)
+            Hedera account's private key (ED25519)
             <Form.Control
               type="text"
               placeholder="Hedera account's private key"
