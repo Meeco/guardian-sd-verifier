@@ -90,6 +90,7 @@ const VcQuery = () => {
                   return {
                     did: item.responder_did,
                     publicKey: item.response_ephem_public_key,
+                    accountId: item.payer_account_id,
                   };
                 });
                 setResponders(responders);
@@ -113,6 +114,8 @@ const VcQuery = () => {
       e.preventDefault();
       setCid(e.target.value);
     };
+
+    const fetchVcFileSuccess = vcFile ? !!vcFile?.id : undefined;
 
     return (
       <Accordion.Item eventKey="vc-query">
@@ -147,7 +150,11 @@ const VcQuery = () => {
               loading={loading.id === "handleFetchIpfs"}
             />
             <StatusLabel
-              isSuccess={vcFile ? !!vcFile?.id : undefined}
+              isSuccess={
+                loading.id === "handleFetchIpfs"
+                  ? undefined
+                  : fetchVcFileSuccess
+              }
               text={vcFile?.id ? `VC ID: ${vcFile?.id}` : "Get VC Failed"}
             />
           </div>
@@ -159,7 +166,11 @@ const VcQuery = () => {
                 loading={loading.id === "handleQueryResponders"}
               />
               <StatusLabel
-                isSuccess={getRespondersSuccess}
+                isSuccess={
+                  loading.id === "handleQueryResponders"
+                    ? undefined
+                    : getRespondersSuccess
+                }
                 text={
                   getRespondersSuccess
                     ? "Query Responders Success"
@@ -171,9 +182,14 @@ const VcQuery = () => {
           {responders.length > 0 && (
             <>
               <ul className="mt-3">
-                {responders.map((item) => (
-                  <li key={item.did}>Responder: {item.did}</li>
-                ))}
+                {responders.map((responder) => {
+                  const { accountId, did } = responder;
+                  return (
+                    <li key={did}>
+                      Responder: {did} ({accountId})
+                    </li>
+                  );
+                })}
               </ul>
               <a
                 href={`${exploreLworksUrl}/${topicId}`}

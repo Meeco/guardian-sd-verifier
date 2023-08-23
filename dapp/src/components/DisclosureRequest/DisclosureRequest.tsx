@@ -6,9 +6,7 @@ import { downloadJson } from "../../utils";
 import { AppContext } from "../AppProvider";
 import { Button as ButtonWithLoader, StatusLabel } from "../common";
 import createPresentationRequest from "./createPresentationRequest";
-import decryptPresentationResponseMessage, {
-  PresentationResponse,
-} from "./decryptPresentationResponseMessage";
+import decryptPresentationResponseMessage from "./decryptPresentationResponseMessage";
 import handleSendPresentationRequest from "./handleSendPresentationRequest";
 
 const DisclosureRequest = () => {
@@ -23,12 +21,11 @@ const DisclosureRequest = () => {
     selectedMethod,
     credPrivateKey,
     responders,
+    setResponders,
     requesterPrivateKey,
   } = useContext(AppContext);
 
   const credentialSubject = verifiableCredential?.credentialSubject;
-  const [presentationResponse, setPresentationResponse] =
-    useState<PresentationResponse>();
   const [presentationRequest, setPresentationRequest] = useState<any>();
 
   const [selectableFields, setSelectableFields] = useState<string[]>([]);
@@ -49,23 +46,22 @@ const DisclosureRequest = () => {
     [selectableFields]
   );
 
-  const presentationResponseStatus = useMemo(() => {
+  const presentationResponseStatus = (presentationResponse: any) => {
+    if (loading.id === "handleSendRequest") {
+      return;
+    }
     if (sendRequestSuccess !== undefined) {
       if (presentationResponse?.data) return true;
       else return false;
     }
-  }, [presentationResponse?.data, sendRequestSuccess]);
+  };
 
-  const presentationResponseStatusMessage = useMemo(() => {
+  const presentationResponseStatusMessage = (presentationResponse: any) => {
     if (sendRequestSuccess !== undefined) {
       if (presentationResponse?.data) return "Sent";
       else return presentationResponse?.error?.message ?? "Send request failed";
     } else return "";
-  }, [
-    presentationResponse?.data,
-    presentationResponse?.error?.message,
-    sendRequestSuccess,
-  ]);
+  };
 
   if (!signer || !credPrivateKey || !client || !requesterPrivateKey) {
     return (
@@ -174,7 +170,17 @@ const DisclosureRequest = () => {
             }
           );
 
-          setPresentationResponse(presentationResponse);
+          const selectedIndex = responders.findIndex(
+            (item) => item.did === responderDid
+          );
+
+          const updatedResponders = [...responders];
+          updatedResponders[selectedIndex] = {
+            ...updatedResponders[selectedIndex],
+            presentationResponse,
+          };
+
+          setResponders(updatedResponders);
         }
 
         setLoading({ id: undefined });
@@ -198,7 +204,11 @@ const DisclosureRequest = () => {
                 loading={loading.id === "handleGetFields"}
               />
               <StatusLabel
-                isSuccess={getVcSchemeSuccess}
+                isSuccess={
+                  loading.id === "handleGetFields"
+                    ? undefined
+                    : getVcSchemeSuccess
+                }
                 text={
                   getVcSchemeSuccess
                     ? "Get VC Scheme Success"
@@ -238,7 +248,11 @@ const DisclosureRequest = () => {
                   loading={loading.id === "createPresentationRequest"}
                 />
                 <StatusLabel
-                  isSuccess={createPresentationSuccess}
+                  isSuccess={
+                    loading.id === "createPresentationRequest"
+                      ? undefined
+                      : createPresentationSuccess
+                  }
                   text={
                     createPresentationSuccess
                       ? "Created"
@@ -279,70 +293,83 @@ const DisclosureRequest = () => {
               )}
             </>
           )}
-          {responders && presentationRequest && (
-            <Accordion defaultActiveKey={responders[0].did}>
-              {responders.map((responder) => (
-                <Accordion.Item
-                  className="mt-4"
-                  key={responder.did}
-                  eventKey={responder.did}
-                >
-                  <Accordion.Header>{responder.did}</Accordion.Header>
-                  <Accordion.Body>
-                    <div className="d-flex mt-2">
-                      <ButtonWithLoader
-                        onClick={() =>
-                          handleSendRequest({
-                            responderDid: responder.did,
-                            responderEmphemPublickey: responder.publicKey,
-                          })
-                        }
-                        text="Send request"
-                        loading={loading.id === "handleSendRequest"}
-                      />
-                      <StatusLabel
-                        isSuccess={presentationResponseStatus}
-                        text={presentationResponseStatusMessage}
-                      />
-                    </div>
-                    {presentationResponse?.data && (
-                      <Accordion
-                        className="mt-4"
-                        defaultActiveKey={`${responder.did}-response`}
-                      >
-                        <Accordion.Item eventKey={`${responder.did}-response`}>
-                          <Accordion.Header>
-                            <div className="d-flex w-100 align-items-center justify-content-between">
-                              Disclosed Verifiable Presentation Document
-                              <Button
-                                className="me-3"
-                                onClick={() =>
-                                  downloadJson(
-                                    presentationResponse?.data,
-                                    "disclosed_verifiable_presentation_document.json"
-                                  )
-                                }
-                              >
-                                Download
-                              </Button>
-                            </div>
-                          </Accordion.Header>
-                          <Accordion.Body>
-                            <ReactJson
-                              src={presentationResponse?.data}
-                              name="presentation_response"
-                              theme={"monokai"}
-                              collapseStringsAfterLength={30}
-                            />
-                          </Accordion.Body>
-                        </Accordion.Item>
-                      </Accordion>
-                    )}
-                  </Accordion.Body>
-                </Accordion.Item>
-              ))}
-            </Accordion>
-          )}
+          {responders &&
+            presentationRequest &&
+            responders.map((responder) => {
+              const { accountId, did, publicKey, presentationResponse } =
+                responder;
+              const isSuccess =
+                presentationResponseStatus(presentationResponse);
+              const statusText =
+                presentationResponseStatusMessage(presentationResponse);
+
+              console.log({ responders });
+
+              return (
+                <Accordion key={did}>
+                  <Accordion.Item className="mt-4" eventKey={did}>
+                    <Accordion.Header>
+                      {did} ({accountId})
+                    </Accordion.Header>
+                    <Accordion.Body>
+                      <div className="d-flex mt-2">
+                        <ButtonWithLoader
+                          onClick={() =>
+                            handleSendRequest({
+                              responderDid: did,
+                              responderEmphemPublickey: publicKey,
+                            })
+                          }
+                          text="Send request"
+                          loading={loading.id === "handleSendRequest"}
+                        />
+                        <StatusLabel
+                          isSuccess={
+                            loading.id === "handleSendRequest"
+                              ? undefined
+                              : isSuccess
+                          }
+                          text={statusText}
+                        />
+                      </div>
+                      {presentationResponse?.data && (
+                        <Accordion
+                          className="mt-4"
+                          defaultActiveKey={`${did}-response`}
+                        >
+                          <Accordion.Item eventKey={`${did}-response`}>
+                            <Accordion.Header>
+                              <div className="d-flex w-100 align-items-center justify-content-between">
+                                Disclosed Verifiable Presentation Document
+                                <Button
+                                  className="me-3"
+                                  onClick={() =>
+                                    downloadJson(
+                                      presentationResponse?.data,
+                                      "disclosed_verifiable_presentation_document.json"
+                                    )
+                                  }
+                                >
+                                  Download
+                                </Button>
+                              </div>
+                            </Accordion.Header>
+                            <Accordion.Body>
+                              <ReactJson
+                                src={presentationResponse?.data}
+                                name="presentation_response"
+                                theme={"monokai"}
+                                collapseStringsAfterLength={30}
+                              />
+                            </Accordion.Body>
+                          </Accordion.Item>
+                        </Accordion>
+                      )}
+                    </Accordion.Body>
+                  </Accordion.Item>
+                </Accordion>
+              );
+            })}
         </Accordion.Body>
       </Accordion.Item>
     );

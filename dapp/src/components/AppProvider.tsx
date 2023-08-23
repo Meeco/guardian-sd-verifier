@@ -27,8 +27,8 @@ export interface AppState {
   >;
   vcFile: any;
   setVcFile: React.Dispatch<any>;
-  responders: Responders[];
-  setResponders: React.Dispatch<React.SetStateAction<Responders[]>>;
+  responders: Responder[];
+  setResponders: React.Dispatch<React.SetStateAction<Responder[]>>;
   client: any;
 }
 
@@ -36,9 +36,11 @@ export interface LoadingState {
   id?: string;
 }
 
-export interface Responders {
+export interface Responder {
   did: string;
+  accountId: string;
   publicKey: string;
+  presentationResponse?: any;
 }
 
 export const AppContext = createContext({} as AppState);
@@ -72,7 +74,7 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
     RequesterPrivateKey | undefined
   >();
   const [vcFile, setVcFile] = useState<any>();
-  const [responders, setResponders] = useState<Responders[]>([]);
+  const [responders, setResponders] = useState<Responder[]>([]);
 
   const client = useMemo(() => {
     if (requesterPrivateKey) {

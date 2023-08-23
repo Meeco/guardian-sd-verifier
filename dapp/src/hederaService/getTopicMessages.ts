@@ -1,8 +1,9 @@
 import { Buffer } from "buffer";
-import { QueryResponseMessage, PresentationResponseMessage } from "../types";
+import { PresentationResponseMessage, QueryResponseMessage } from "../types";
 
 interface Message {
   message: string;
+  payer_account_id: string;
 }
 
 interface TopicMessages {
@@ -20,7 +21,12 @@ const getTopicMessages = async (topicId: string) => {
       }
     );
     const data: TopicMessages = await res.json();
-    const messages = data.messages.map((item) => decodeMessage(item.message));
+    const messages = data.messages.map((item) => {
+      return {
+        ...decodeMessage(item.message),
+        payer_account_id: item.payer_account_id,
+      };
+    });
     return messages;
   } catch (error) {
     console.log("Get topic messages failed", error);
