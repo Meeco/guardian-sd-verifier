@@ -44,9 +44,9 @@ const decryptPresentationResponseMessage = async ({
       client,
       fileId: responseFileId,
     });
+
     if (fileContents) {
       const nonce = naclUtil.decodeBase64(responseNonce);
-
       const presentationResponse = decryptData({
         message: fileContents,
         nonce,
@@ -59,6 +59,7 @@ const decryptPresentationResponseMessage = async ({
         const response: PresentationResponse = {
           data,
         };
+
         return response;
       } else {
         throw new Error("Presentation response is empty");

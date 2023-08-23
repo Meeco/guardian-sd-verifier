@@ -1,6 +1,6 @@
 import * as vc from "@digitalbazaar/vc";
 import { ChangeEvent, useContext, useMemo, useState } from "react";
-import { Accordion, Button, Form } from "react-bootstrap";
+import { Accordion, Form } from "react-bootstrap";
 import { fetchResolveDid } from "../../didService";
 import { documentLoader, generateKeyPair } from "../../utils";
 import getPublicKeyHexFromJwk from "../../utils/getPublicKeyHexFromJwk";
@@ -135,6 +135,7 @@ const Identity = () => {
     };
 
     const verifyCredential = async () => {
+      setLoading({ id: "verifyCredential" });
       try {
         const keyPair = await generateKeyPair({
           privateKeyHex: credPrivateKey,
@@ -148,10 +149,12 @@ const Identity = () => {
           });
 
           setvcVerificaitonResult(resultVc.verified);
+          setLoading({ id: undefined });
         }
       } catch (error) {
         setVerifyCredentialErrMsg((error as any).message);
         setvcVerificaitonResult(false);
+        setLoading({ id: undefined });
       }
     };
 
@@ -189,11 +192,15 @@ const Identity = () => {
                 <div className="d-flex  mt-4">
                   <ButtonWithLoader
                     onClick={getVerificationMethods}
-                    text=" Get verification Method(s)"
+                    text="Get verification Method(s)"
                     loading={loading.id === "getVerificationMethods"}
                   />
                   <StatusLabel
-                    isSuccess={getVerificationMethodsSuccess}
+                    isSuccess={
+                      loading.id === "getVerificationMethods"
+                        ? undefined
+                        : getVerificationMethodsSuccess
+                    }
                     text={
                       getVerificationMethodsSuccess
                         ? "DID Fetched Success"
@@ -221,14 +228,17 @@ const Identity = () => {
                   />
                 </div>
                 <div className="d-flex mt-3">
-                  <Button
+                  <ButtonWithLoader
                     onClick={verifyCredential}
-                    disabled={credPrivateKey === ""}
-                  >
-                    Verify VC
-                  </Button>
+                    text="Verify VC"
+                    loading={loading.id === "verifyCredential"}
+                  />
                   <StatusLabel
-                    isSuccess={vcVerificaitonResult}
+                    isSuccess={
+                      loading.id === "verifyCredential"
+                        ? undefined
+                        : vcVerificaitonResult
+                    }
                     text={verifyStatusText}
                   />
                 </div>
