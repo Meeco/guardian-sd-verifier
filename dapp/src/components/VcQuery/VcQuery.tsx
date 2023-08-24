@@ -16,20 +16,22 @@ const VcQuery = () => {
     signer,
     loading,
     setLoading,
-    credPrivateKey,
     vcFile,
     setVcFile,
     responders,
     setResponders,
     topicId,
+    credentialKey,
+    vcVerificaitonResult,
   } = useContext(AppContext);
 
   const [cid, setCid] = useState("");
   const [getRespondersSuccess, setGetRespondersSuccess] = useState<
     boolean | undefined
   >(undefined);
+  const [getRespondersErrMsg, setgetRespondersErrMsg] = useState("");
 
-  if (!signer || !credPrivateKey) {
+  if (!signer || !credentialKey || !vcVerificaitonResult) {
     return (
       <Accordion.Item eventKey="vc-query">
         <Accordion.Header>
@@ -99,11 +101,16 @@ const VcQuery = () => {
                 });
                 setResponders(responders);
                 setGetRespondersSuccess(true);
+                setLoading({ id: undefined });
+              } else {
+                setgetRespondersErrMsg("No responder found");
+                setGetRespondersSuccess(false);
+                setLoading({ id: undefined });
               }
-              setLoading({ id: undefined });
             } else {
-              setLoading({ id: undefined });
               setGetRespondersSuccess(false);
+              setgetRespondersErrMsg("Query Responders Failed");
+              setLoading({ id: undefined });
             }
           }
         );
@@ -111,6 +118,7 @@ const VcQuery = () => {
         console.log({ error });
         setLoading({ id: undefined });
         setGetRespondersSuccess(false);
+        setgetRespondersErrMsg((error as any).message);
       }
     };
 
@@ -178,7 +186,7 @@ const VcQuery = () => {
                 text={
                   getRespondersSuccess
                     ? "Query Responders Success"
-                    : "Query Responders Failed"
+                    : getRespondersErrMsg
                 }
               />
             </div>

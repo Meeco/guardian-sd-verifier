@@ -2,7 +2,7 @@ import * as vc from "@digitalbazaar/vc";
 import { ChangeEvent, useContext, useMemo, useState } from "react";
 import { Accordion, Form } from "react-bootstrap";
 import { fetchResolveDid } from "../../didService";
-import { documentLoader, generateKeyPair } from "../../utils";
+import { documentLoader, generateCredentialKey } from "../../utils";
 import getPublicKeyHexFromJwk from "../../utils/getPublicKeyHexFromJwk";
 import { AppContext } from "../AppProvider";
 import { Button as ButtonWithLoader, StatusLabel } from "../common";
@@ -14,13 +14,16 @@ const Identity = () => {
     loading,
     setLoading,
     requesterPrivateKey,
+    credPublicKey,
     setCredPublicKey,
-    credPrivateKey,
-    setCredPrivateKey,
     verifiableCredential,
     setVerifiableCredential,
     selectedMethod,
     setSelectedMethod,
+    credentialKey,
+    setCredentialKey,
+    vcVerificaitonResult,
+    setvcVerificaitonResult,
   } = useContext(AppContext);
 
   // User uploaded file
@@ -29,12 +32,10 @@ const Identity = () => {
   const [credentialDid, setCredentialDid] = useState("");
   // Verification methods from DID document
   const [verificationMethods, setVerificationMethods] = useState<any>([]);
+
   const [getVerificationMethodsSuccess, setGetVerificationMethodsSuccess] =
     useState<boolean | undefined>(undefined);
 
-  const [vcVerificaitonResult, setvcVerificaitonResult] = useState<
-    boolean | undefined
-  >();
   const [verifyCredentialErrMsg, setVerifyCredentialErrMsg] = useState<
     string | undefined
   >();
@@ -127,21 +128,49 @@ const Identity = () => {
       }
     };
 
-    const handlePrivateKeyChange = (e: ChangeEvent<any>) => {
+    const handlePrivateKeyChange = async (e: ChangeEvent<any>) => {
       e.preventDefault();
       // set credential private key
       const privateKey = e.target.value;
-      setCredPrivateKey(privateKey);
+      if (privateKey.length === 64) {
+        try {
+          const credentialKey = await generateCredentialKey({
+            privateKeyHex: privateKey,
+          });
+
+          const { keyPair } = credentialKey;
+          const publicKeyHex = Buffer.from(keyPair.publicKey).toString("hex");
+
+          if (credPublicKey === publicKeyHex) {
+            setCredentialKey(credentialKey);
+            setvcVerificaitonResult(undefined);
+          } else {
+            setCredentialKey(undefined);
+            setVerifyCredentialErrMsg("Incorrect private key");
+            setvcVerificaitonResult(false);
+          }
+        } catch (error) {
+          setCredentialKey(undefined);
+          setVerifyCredentialErrMsg((error as any).message);
+          setvcVerificaitonResult(false);
+        }
+      } else if (!privateKey) {
+        setCredentialKey(undefined);
+        setvcVerificaitonResult(undefined);
+      } else {
+        setCredentialKey(undefined);
+        setVerifyCredentialErrMsg(
+          "Credential Private Key's length should be 64"
+        );
+        setvcVerificaitonResult(false);
+      }
     };
 
     const verifyCredential = async () => {
       setLoading({ id: "verifyCredential" });
       try {
-        const keyPair = await generateKeyPair({
-          privateKeyHex: credPrivateKey,
-        });
-        if (keyPair) {
-          const { suite } = keyPair;
+        if (credentialKey) {
+          const { suite } = credentialKey;
           const resultVc = await vc.verifyCredential({
             credential: verifiableCredential,
             suite,
@@ -233,6 +262,7 @@ const Identity = () => {
                     onClick={verifyCredential}
                     text="Verify VC"
                     loading={loading.id === "verifyCredential"}
+                    disabled={!credentialKey}
                   />
                   <StatusLabel
                     isSuccess={

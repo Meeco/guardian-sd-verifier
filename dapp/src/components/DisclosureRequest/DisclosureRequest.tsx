@@ -19,7 +19,7 @@ const DisclosureRequest = () => {
     verifiableCredential,
     vcFile,
     selectedMethod,
-    credPrivateKey,
+    credentialKey,
     responders,
     setResponders,
     requesterPrivateKey,
@@ -63,7 +63,7 @@ const DisclosureRequest = () => {
     } else return "";
   };
 
-  if (!signer || !credPrivateKey || !client || !requesterPrivateKey) {
+  if (!signer || !credentialKey || !client || !requesterPrivateKey) {
     return (
       <Accordion.Item eventKey="disclosure-request">
         <Accordion.Header>
@@ -130,7 +130,7 @@ const DisclosureRequest = () => {
     const handleCreatePresentationRequest = () => {
       createPresentationRequest({
         credentialSubject,
-        credPrivateKey,
+        credentialKey,
         selectedFields,
         setCreatePresentationSuccess,
         setLoading,

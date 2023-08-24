@@ -23,19 +23,19 @@ export const createAuthDetails = async ({
   verifiableCredential,
   challenge,
   documentLoader,
-  keyData,
+  verificationKey,
   suite,
 }: {
   verifiableCredential: any;
   challenge: string;
   documentLoader: any;
-  keyData: any;
+  verificationKey: any;
   suite: Ed25519Signature2020;
 }) => {
   const presentation = vc.createPresentation({
     verifiableCredential,
     id: `urn:uuid:${v4()}`,
-    holder: keyData.controller,
+    holder: verificationKey.controller,
   });
 
   const vp = await vc.signPresentation({

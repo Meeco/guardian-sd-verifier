@@ -4,11 +4,17 @@ interface ButtonProps {
   onClick: () => void;
   text: string;
   loading?: boolean;
+  disabled?: boolean;
 }
 
-const Button: React.FC<ButtonProps> = ({ onClick, text, loading }) => {
+const Button: React.FC<ButtonProps> = ({
+  onClick,
+  text,
+  loading,
+  disabled,
+}) => {
   return (
-    <BsButton onClick={onClick}>
+    <BsButton onClick={onClick} disabled={disabled}>
       {loading ? (
         <>
           <Spinner

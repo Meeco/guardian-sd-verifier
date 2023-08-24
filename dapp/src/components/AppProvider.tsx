@@ -1,4 +1,5 @@
 import { BladeConnector, BladeSigner } from "@bladelabs/blade-web3.js";
+import { Ed25519KeyPair } from "@transmute/did-key-ed25519";
 import { createContext, useMemo, useState } from "react";
 import { createHederaClient } from "../hederaService";
 import { RequesterPrivateKey } from "../utils";
@@ -10,8 +11,6 @@ export interface AppState {
   setVerifiableCredential: React.Dispatch<any>;
   selectedMethod: any;
   setSelectedMethod: React.Dispatch<any>;
-  credPrivateKey: string;
-  setCredPrivateKey: React.Dispatch<React.SetStateAction<string>>;
   credPublicKey: string;
   setCredPublicKey: React.Dispatch<React.SetStateAction<string>>;
   topicId?: string;
@@ -30,6 +29,14 @@ export interface AppState {
   responders: Responder[];
   setResponders: React.Dispatch<React.SetStateAction<Responder[]>>;
   client: any;
+  credentialKey?: CredentialKey;
+  setCredentialKey: React.Dispatch<
+    React.SetStateAction<CredentialKey | undefined>
+  >;
+  vcVerificaitonResult?: boolean;
+  setvcVerificaitonResult: React.Dispatch<
+    React.SetStateAction<boolean | undefined>
+  >;
 }
 
 export interface LoadingState {
@@ -41,6 +48,12 @@ export interface Responder {
   accountId: string;
   publicKey: string;
   presentationResponse?: any;
+}
+
+export interface CredentialKey {
+  keyPair: Ed25519KeyPair;
+  verificationKey: any;
+  suite: any;
 }
 
 export const AppContext = createContext({} as AppState);
@@ -55,8 +68,6 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
   const [verifiableCredential, setVerifiableCredential] = useState<any>();
   // Selected verification method
   const [selectedMethod, setSelectedMethod] = useState<any>();
-  // Credential's private key
-  const [credPrivateKey, setCredPrivateKey] = useState("");
   // Credential's public key
   const [credPublicKey, setCredPublicKey] = useState("");
   // Topic ID for sending/receiving message
@@ -74,7 +85,16 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
     RequesterPrivateKey | undefined
   >();
   const [vcFile, setVcFile] = useState<any>();
+
   const [responders, setResponders] = useState<Responder[]>([]);
+
+  const [credentialKey, setCredentialKey] = useState<
+    CredentialKey | undefined
+  >();
+
+  const [vcVerificaitonResult, setvcVerificaitonResult] = useState<
+    boolean | undefined
+  >();
 
   const client = useMemo(() => {
     if (requesterPrivateKey) {
@@ -90,8 +110,6 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
     setVerifiableCredential,
     selectedMethod,
     setSelectedMethod,
-    credPrivateKey,
-    setCredPrivateKey,
     credPublicKey,
     setCredPublicKey,
     topicId,
@@ -108,6 +126,10 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
     responders,
     setResponders,
     client,
+    credentialKey,
+    setCredentialKey,
+    vcVerificaitonResult,
+    setvcVerificaitonResult,
   };
 
   return <AppContext.Provider value={appState}>{children}</AppContext.Provider>;

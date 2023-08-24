@@ -4,7 +4,7 @@ export { default as downloadJson } from "./downloadJson";
 export { default as encryptData } from "./encryptData";
 export * from "./fetchIPFSFile";
 export { default as fetchJson } from "./fetchJson";
-export { generateKeyPair } from "./generateKeyPair";
+export { generateCredentialKey } from "./generateCredentialKey";
 export * from "./generateRequesterKeys";
 export * from "./getPublicKeyHexFromJwk";
 export { default as pollRequest } from "./pollRequest";

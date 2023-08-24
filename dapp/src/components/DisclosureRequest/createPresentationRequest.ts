@@ -1,19 +1,11 @@
-import { documentLoader, generateKeyPair } from "../../utils";
+import { documentLoader } from "../../utils";
 import { createAuthDetails } from "../../utils/createAuthDetails";
-import { LoadingState } from "../AppProvider";
+import { CredentialKey, LoadingState } from "../AppProvider";
 import { createPresentationDefinition } from "./createPresentationDefinition";
-
-const handleGenKeyPair = async (credPrivateKey: string) => {
-  const keyPair = await generateKeyPair({
-    privateKeyHex: credPrivateKey,
-  });
-
-  return keyPair;
-};
 
 const createPresentationRequest = async ({
   setLoading,
-  credPrivateKey,
+  credentialKey,
   verifiableCredential,
   vcFile,
   selectedFields,
@@ -22,7 +14,7 @@ const createPresentationRequest = async ({
   setPresentationRequest,
 }: {
   setLoading: React.Dispatch<React.SetStateAction<LoadingState>>;
-  credPrivateKey: string;
+  credentialKey: CredentialKey;
   verifiableCredential: any;
   vcFile: any;
   selectedFields: string[];
@@ -34,15 +26,14 @@ const createPresentationRequest = async ({
 }) => {
   setLoading({ id: "createPresentationRequest" });
 
-  const keyPair = await handleGenKeyPair(credPrivateKey);
-  if (keyPair) {
-    const { keyData, suite } = keyPair;
+  if (credentialKey) {
+    const { verificationKey, suite } = credentialKey;
     // create authorization_details
     const authDetails = await createAuthDetails({
       verifiableCredential,
       challenge: "challenge",
       documentLoader,
-      keyData,
+      verificationKey,
       suite,
     });
 
