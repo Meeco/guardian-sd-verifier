@@ -9,6 +9,7 @@ import {
   VcQuery,
 } from "./components";
 import { AppContext } from "./components/AppProvider";
+import { EventKey } from "./constants";
 
 function App() {
   const { setBladeConnector } = useContext(AppContext);
@@ -31,7 +32,7 @@ function App() {
           <h3>Hedera Guardian Selective Disclosure</h3>
         </div>
       </div>
-      <Accordion className="mt-4" defaultActiveKey="account">
+      <Accordion className="mt-4" defaultActiveKey={EventKey.HederaAccount}>
         <HederaAccount />
         <Identity />
         <VcQuery />

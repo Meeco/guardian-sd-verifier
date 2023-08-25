@@ -3,11 +3,12 @@ import { Accordion, Form } from "react-bootstrap";
 import { BoxArrowUpRight } from "react-bootstrap-icons";
 import { v4 as uuidv4 } from "uuid";
 import { submitMessage } from "../../consensusService";
+import { EventKey } from "../../constants";
 import { getTopicMessages } from "../../hederaService";
 import { MessageType, PresentationQueryMessage } from "../../types";
 import { ResultType, fetchIPFSFile, pollRequest } from "../../utils";
 import { AppContext } from "../AppProvider";
-import { Button, StatusLabel } from "../common";
+import { AccordianToggleButton, Button, StatusLabel } from "../common";
 
 const exploreLworksUrl = "https://explore.lworks.io/testnet/topics";
 
@@ -95,8 +96,8 @@ const VcQuery = () => {
                 const responders = queryRespondersMessages.map((item: any) => {
                   return {
                     did: item.responder_did,
-                    publicKey: item.response_ephem_public_key,
                     accountId: item.payer_account_id,
+                    encyptedKeyId: item.response_file_encrypted_key_id,
                   };
                 });
                 setResponders(responders);
@@ -130,7 +131,7 @@ const VcQuery = () => {
     const fetchVcFileSuccess = vcFile ? !!vcFile?.id : undefined;
 
     return (
-      <Accordion.Item eventKey="vc-query">
+      <Accordion.Item eventKey={EventKey.VcQuery}>
         <Accordion.Header>
           <b>VC Query&nbsp;</b> {vcFile?.id ? `(${vcFile?.id})` : ""}
         </Accordion.Header>
@@ -172,23 +173,45 @@ const VcQuery = () => {
           </div>
           {!!vcFile?.id && (
             <div className="d-flex mt-4">
-              <Button
-                onClick={handleQueryResponders}
-                text="Query Responders"
-                loading={loading.id === "handleQueryResponders"}
-              />
-              <StatusLabel
-                isSuccess={
-                  loading.id === "handleQueryResponders"
-                    ? undefined
-                    : getRespondersSuccess
-                }
-                text={
-                  getRespondersSuccess
-                    ? "Query Responders Success"
-                    : getRespondersErrMsg
-                }
-              />
+              {getRespondersSuccess ? (
+                <>
+                  <AccordianToggleButton
+                    text="Next"
+                    eventKey={EventKey.DisclosureRequest}
+                    isSuccess={
+                      loading.id === "handleQueryResponders"
+                        ? undefined
+                        : getRespondersSuccess
+                    }
+                    statusText={
+                      getRespondersSuccess
+                        ? "Query Responders Success"
+                        : getRespondersErrMsg
+                    }
+                  />
+                </>
+              ) : (
+                <>
+                  {" "}
+                  <Button
+                    onClick={handleQueryResponders}
+                    text="Query Responders"
+                    loading={loading.id === "handleQueryResponders"}
+                  />
+                  <StatusLabel
+                    isSuccess={
+                      loading.id === "handleQueryResponders"
+                        ? undefined
+                        : getRespondersSuccess
+                    }
+                    text={
+                      getRespondersSuccess
+                        ? "Query Responders Success"
+                        : getRespondersErrMsg
+                    }
+                  />
+                </>
+              )}
             </div>
           )}
           {responders.length > 0 && (

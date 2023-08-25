@@ -1,11 +1,16 @@
 import * as vc from "@digitalbazaar/vc";
 import { ChangeEvent, useContext, useMemo, useState } from "react";
 import { Accordion, Form } from "react-bootstrap";
+import { EventKey } from "../../constants";
 import { fetchResolveDid } from "../../didService";
 import { documentLoader, generateCredentialKey } from "../../utils";
 import getPublicKeyHexFromJwk from "../../utils/getPublicKeyHexFromJwk";
 import { AppContext } from "../AppProvider";
-import { Button as ButtonWithLoader, StatusLabel } from "../common";
+import {
+  AccordianToggleButton,
+  Button as ButtonWithLoader,
+  StatusLabel,
+} from "../common";
 import VerificationMethods from "./VerificationMethods";
 
 const Identity = () => {
@@ -56,7 +61,7 @@ const Identity = () => {
 
   if (!signer || !requesterPrivateKey) {
     return (
-      <Accordion.Item eventKey="identity">
+      <Accordion.Item eventKey={EventKey.Identity}>
         <Accordion.Header>
           <b>Identity</b>
         </Accordion.Header>
@@ -188,7 +193,7 @@ const Identity = () => {
     };
 
     return (
-      <Accordion.Item eventKey="identity">
+      <Accordion.Item eventKey={EventKey.Identity}>
         <Accordion.Header>
           <b>Identity&nbsp;</b>
           {credentialDid ? `(${credentialDid})` : undefined}
@@ -258,20 +263,37 @@ const Identity = () => {
                   />
                 </div>
                 <div className="d-flex mt-3">
-                  <ButtonWithLoader
-                    onClick={verifyCredential}
-                    text="Verify VC"
-                    loading={loading.id === "verifyCredential"}
-                    disabled={!credentialKey}
-                  />
-                  <StatusLabel
-                    isSuccess={
-                      loading.id === "verifyCredential"
-                        ? undefined
-                        : vcVerificaitonResult
-                    }
-                    text={verifyStatusText}
-                  />
+                  {vcVerificaitonResult ? (
+                    <>
+                      <AccordianToggleButton
+                        text="Next"
+                        eventKey={EventKey.VcQuery}
+                        isSuccess={
+                          loading.id === "verifyCredential"
+                            ? undefined
+                            : vcVerificaitonResult
+                        }
+                        statusText={verifyStatusText}
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <ButtonWithLoader
+                        onClick={verifyCredential}
+                        text="Verify VC"
+                        loading={loading.id === "verifyCredential"}
+                        disabled={!credentialKey}
+                      />
+                      <StatusLabel
+                        isSuccess={
+                          loading.id === "verifyCredential"
+                            ? undefined
+                            : vcVerificaitonResult
+                        }
+                        text={verifyStatusText}
+                      />
+                    </>
+                  )}
                 </div>
               </div>
             </>

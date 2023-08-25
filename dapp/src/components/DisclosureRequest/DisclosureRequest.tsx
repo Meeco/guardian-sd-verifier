@@ -1,7 +1,7 @@
 import React, { useContext, useMemo, useState } from "react";
 import { Accordion, Button, FormCheck, FormGroup } from "react-bootstrap";
 import ReactJson from "react-json-view";
-import * as nacl from "tweetnacl";
+import { EventKey } from "../../constants";
 import { downloadJson } from "../../utils";
 import { AppContext } from "../AppProvider";
 import { Button as ButtonWithLoader, StatusLabel } from "../common";
@@ -23,6 +23,7 @@ const DisclosureRequest = () => {
     responders,
     setResponders,
     requesterPrivateKey,
+    cipher,
   } = useContext(AppContext);
 
   const credentialSubject = verifiableCredential?.credentialSubject;
@@ -75,8 +76,6 @@ const DisclosureRequest = () => {
       </Accordion.Item>
     );
   } else {
-    const { requesterEmphem, requesterKeyPair } = requesterPrivateKey;
-
     const handleGetFields = async () => {
       try {
         setLoading({ id: "handleGetFields" });
@@ -125,8 +124,6 @@ const DisclosureRequest = () => {
       } else setSelectedFields(selectableFields);
     };
 
-    const requesterNonce = nacl.randomBytes(24);
-
     const handleCreatePresentationRequest = () => {
       createPresentationRequest({
         credentialSubject,
@@ -143,27 +140,26 @@ const DisclosureRequest = () => {
     // Send presentation request to HCS
     const handleSendRequest = async ({
       responderDid,
-      responderEmphemPublickey,
+      encyptedKeyId,
     }: {
       responderDid: string;
-      responderEmphemPublickey: string;
+      encyptedKeyId: string;
     }) => {
       try {
         setLoading({ id: `handleSendRequest-${responderDid}` });
         const responseMessage = await handleSendPresentationRequest({
           responderDid,
+          encyptedKeyId,
           presentationRequest,
-          requesterNonce,
-          requesterEmphem,
-          responderEmphemPublickey,
           signer,
           topicId,
+          cipher,
         });
 
         const presentationResponse = await decryptPresentationResponseMessage({
           client,
+          cipher,
           presentationResponseMessage: responseMessage,
-          requesterKeyPair,
         });
 
         if (presentationResponse) {
@@ -196,7 +192,7 @@ const DisclosureRequest = () => {
     };
 
     return (
-      <Accordion.Item eventKey="disclosure-request">
+      <Accordion.Item eventKey={EventKey.DisclosureRequest}>
         <Accordion.Header>
           <b>Disclosure Request</b>
         </Accordion.Header>
@@ -301,7 +297,7 @@ const DisclosureRequest = () => {
           {responders &&
             presentationRequest &&
             responders.map((responder) => {
-              const { accountId, did, publicKey, presentationResponse } =
+              const { accountId, did, presentationResponse, encyptedKeyId } =
                 responder;
               const isSuccess = presentationResponseStatus(
                 presentationResponse,
@@ -322,7 +318,7 @@ const DisclosureRequest = () => {
                           onClick={() =>
                             handleSendRequest({
                               responderDid: did,
-                              responderEmphemPublickey: publicKey,
+                              encyptedKeyId,
                             })
                           }
                           text="Send request"

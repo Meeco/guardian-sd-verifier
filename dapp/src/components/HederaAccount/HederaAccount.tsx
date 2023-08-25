@@ -1,9 +1,10 @@
 import { useContext, useMemo, useState } from "react";
 import { Accordion, Button, Form } from "react-bootstrap";
 import pairWallet from "../../bladeWeb3Service/pairWallet";
+import { EventKey } from "../../constants";
 import generateRequesterKeys from "../../utils/generateRequesterKeys";
 import { AppContext } from "../AppProvider";
-import { StatusLabel } from "../common";
+import { AccordianToggleButton, StatusLabel } from "../common";
 
 const HederaAccount = () => {
   const {
@@ -66,7 +67,7 @@ const HederaAccount = () => {
   }, [requesterPrivateKey, verifyPrivateKeyErrMsg]);
 
   return (
-    <Accordion.Item eventKey="account">
+    <Accordion.Item eventKey={EventKey.HederaAccount}>
       <Accordion.Header>
         <b>Hedera Account&nbsp;</b> {accountId ? `(${accountId})` : undefined}
       </Accordion.Header>
@@ -105,13 +106,26 @@ const HederaAccount = () => {
               className="w-50"
             />
             <div className="d-flex mt-3">
-              <Button onClick={verifyPrivateKey} disabled={keyStr === ""}>
-                Verify private key
-              </Button>
-              <StatusLabel
-                isSuccess={verifyStatus}
-                text={verifyPrivateKeyErrMsg ?? "Verified"}
-              />
+              {verifyStatus ? (
+                <>
+                  <AccordianToggleButton
+                    text="Next"
+                    eventKey={EventKey.Identity}
+                    isSuccess={verifyStatus}
+                    statusText={verifyPrivateKeyErrMsg ?? "Verified"}
+                  />
+                </>
+              ) : (
+                <>
+                  <Button onClick={verifyPrivateKey} disabled={keyStr === ""}>
+                    Verify private key
+                  </Button>
+                  <StatusLabel
+                    isSuccess={verifyStatus}
+                    text={verifyPrivateKeyErrMsg ?? "Verified"}
+                  />
+                </>
+              )}
             </div>
           </div>
         )}
