@@ -17,16 +17,17 @@ const VcQuery = () => {
     signer,
     loading,
     setLoading,
-    vcFile,
-    setVcFile,
+    vcResponse,
+    setVcResponse,
     responders,
     setResponders,
     topicId,
     credentialKey,
     vcVerificaitonResult,
+    cid,
+    setCid,
   } = useContext(AppContext);
 
-  const [cid, setCid] = useState("");
   const [getRespondersSuccess, setGetRespondersSuccess] = useState<
     boolean | undefined
   >(undefined);
@@ -48,10 +49,10 @@ const VcQuery = () => {
       try {
         setLoading({ id: "handleFetchIpfs" });
         const file = await fetchIPFSFile(cid, { resultType: ResultType.JSON });
-        setVcFile(file);
+        setVcResponse(file);
         setLoading({ id: undefined });
       } catch (error) {
-        setVcFile(null);
+        setVcResponse(null);
         setLoading({ id: undefined });
         console.log({ error });
       }
@@ -66,7 +67,7 @@ const VcQuery = () => {
         const presentationQuery: PresentationQueryMessage = {
           operation: MessageType.PRESENTATION_QUERY,
           request_id: requestId,
-          vc_id: vcFile?.id,
+          vc_id: vcResponse?.id,
           requester_did: process.env.REACT_APP_REQUESTER_DID || "",
           limit_hbar: 1,
         };
@@ -128,12 +129,12 @@ const VcQuery = () => {
       setCid(e.target.value);
     };
 
-    const fetchVcFileSuccess = vcFile ? !!vcFile?.id : undefined;
+    const fetchVcResponseSuccess = vcResponse ? !!vcResponse?.id : undefined;
 
     return (
       <Accordion.Item eventKey={EventKey.VcQuery}>
         <Accordion.Header>
-          <b>VC Query&nbsp;</b> {vcFile?.id ? `(${vcFile?.id})` : ""}
+          <b>VC Query&nbsp;</b> {vcResponse?.id ? `(${vcResponse?.id})` : ""}
         </Accordion.Header>
         <Accordion.Body>
           <p>Create a request for selective disclosure of a discovered VC</p>
@@ -145,7 +146,7 @@ const VcQuery = () => {
               onChange={handleChangeCid}
               className="w-50"
             />
-            {vcFile ? (
+            {vcResponse ? (
               <a
                 href={`https://ipfs.io/ipfs/${cid}`}
                 target="_blank"
@@ -166,12 +167,14 @@ const VcQuery = () => {
               isSuccess={
                 loading.id === "handleFetchIpfs"
                   ? undefined
-                  : fetchVcFileSuccess
+                  : fetchVcResponseSuccess
               }
-              text={vcFile?.id ? `VC ID: ${vcFile?.id}` : "Get VC Failed"}
+              text={
+                vcResponse?.id ? `VC ID: ${vcResponse?.id}` : "Get VC Failed"
+              }
             />
           </div>
-          {!!vcFile?.id && (
+          {!!vcResponse?.id && (
             <div className="d-flex mt-4">
               {getRespondersSuccess ? (
                 <>

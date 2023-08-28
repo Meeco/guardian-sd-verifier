@@ -17,7 +17,7 @@ const DisclosureRequest = () => {
     loading,
     setLoading,
     verifiableCredential,
-    vcFile,
+    vcResponse,
     selectedMethod,
     credentialKey,
     responders,
@@ -79,12 +79,12 @@ const DisclosureRequest = () => {
     const handleGetFields = async () => {
       try {
         setLoading({ id: "handleGetFields" });
-        const selectedContext = vcFile["@context"].filter((context: string) =>
-          context.startsWith("https://ipfs.io/ipfs/")
+        const selectedContext = vcResponse["@context"].filter(
+          (context: string) => context.startsWith("https://ipfs.io/ipfs/")
         )[0];
 
         const contextDocument = await (await fetch(selectedContext)).json();
-        const credentialType = vcFile.credentialSubject.type;
+        const credentialType = vcResponse.credentialSubject.type;
         const credentialContext =
           contextDocument["@context"][credentialType]["@context"];
         const contextFields = Object.keys(credentialContext);
@@ -132,7 +132,7 @@ const DisclosureRequest = () => {
         setCreatePresentationSuccess,
         setLoading,
         setPresentationRequest,
-        vcFile,
+        vcResponse,
         verifiableCredential,
       });
     };

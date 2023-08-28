@@ -7,7 +7,7 @@ const createPresentationRequest = async ({
   setLoading,
   credentialKey,
   verifiableCredential,
-  vcFile,
+  vcResponse,
   selectedFields,
   credentialSubject,
   setCreatePresentationSuccess,
@@ -16,7 +16,7 @@ const createPresentationRequest = async ({
   setLoading: React.Dispatch<React.SetStateAction<LoadingState>>;
   credentialKey: CredentialKey;
   verifiableCredential: any;
-  vcFile: any;
+  vcResponse: any;
   selectedFields: string[];
   credentialSubject: any;
   setCreatePresentationSuccess: React.Dispatch<
@@ -38,7 +38,7 @@ const createPresentationRequest = async ({
     });
 
     const presentationDefinition = createPresentationDefinition(
-      vcFile.id,
+      vcResponse.id,
       selectedFields
     );
 

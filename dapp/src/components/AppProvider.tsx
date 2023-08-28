@@ -29,8 +29,8 @@ export interface AppState {
   setRequesterPrivateKey: React.Dispatch<
     React.SetStateAction<RequesterPrivateKey | undefined>
   >;
-  vcFile: any;
-  setVcFile: React.Dispatch<any>;
+  vcResponse: any;
+  setVcResponse: React.Dispatch<any>;
   responders: Responder[];
   setResponders: React.Dispatch<React.SetStateAction<Responder[]>>;
   client: any;
@@ -48,6 +48,8 @@ export interface AppState {
   setVerificationMethods: React.Dispatch<any>;
   credentialPrivateKey: string;
   setCredentialPrivateKey: React.Dispatch<React.SetStateAction<string>>;
+  cid: string;
+  setCid: React.Dispatch<React.SetStateAction<string>>;
   cipher: any;
 }
 
@@ -102,7 +104,9 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
   const [requesterPrivateKey, setRequesterPrivateKey] = useState<
     RequesterPrivateKey | undefined
   >();
-  const [vcFile, setVcFile] = useState<any>();
+  const [vcResponse, setVcResponse] = useState<any>(
+    getLocalStorage("vcResponse")
+  );
 
   const [responders, setResponders] = useState<Responder[]>([]);
 
@@ -126,6 +130,8 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
   const [verificationMethods, setVerificationMethods] = useState<any>(
     getLocalStorage("verificationMethods") || []
   );
+
+  const [cid, setCid] = useState(getLocalStorage("cid") || "");
 
   const client = useMemo(() => {
     if (requesterPrivateKey) {
@@ -154,8 +160,8 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
     setaccountId,
     requesterPrivateKey,
     setRequesterPrivateKey,
-    vcFile,
-    setVcFile,
+    vcResponse,
+    setVcResponse,
     responders,
     setResponders,
     client,
@@ -169,6 +175,8 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
     setVerificationMethods,
     credentialPrivateKey,
     setCredentialPrivateKey,
+    cid,
+    setCid,
     cipher,
   };
 
@@ -181,6 +189,8 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
     setLocalStorage("credentialKey", credentialKey);
     setLocalStorage("credentialPrivateKey", credentialPrivateKey);
     setLocalStorage("vcVerificaitonResult", vcVerificaitonResult);
+    setLocalStorage("cid", cid);
+    setLocalStorage("vcResponse", vcResponse);
   }, [
     credPublicKey,
     credentialDid,
@@ -190,6 +200,8 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
     verificationMethods,
     credentialKey,
     credentialPrivateKey,
+    cid,
+    vcResponse,
   ]);
 
   return <AppContext.Provider value={appState}>{children}</AppContext.Provider>;
