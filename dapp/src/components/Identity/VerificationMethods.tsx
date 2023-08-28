@@ -1,6 +1,5 @@
 import React from "react";
-import { Form } from 'react-bootstrap';
-
+import { Form } from "react-bootstrap";
 
 interface VerificationMethodsProps {
   // Verification methods from DID document
@@ -12,10 +11,8 @@ interface VerificationMethodsProps {
 const VerificationMethods: React.FC<VerificationMethodsProps> = ({
   verificationMethods,
   selectedMethod,
-  setSelectedMethod
+  setSelectedMethod,
 }) => {
-
-
   const getDisplayedMethod = (input: string) => {
     const index = input.indexOf("#");
     if (index !== -1) {
@@ -29,7 +26,7 @@ const VerificationMethods: React.FC<VerificationMethodsProps> = ({
       {verificationMethods.map((item: any) => (
         <Form.Check
           key={item.id}
-          checked={selectedMethod === item}
+          checked={selectedMethod.id === item.id}
           type="radio"
           label={`#${getDisplayedMethod(item.id)}`}
           id={item.id}

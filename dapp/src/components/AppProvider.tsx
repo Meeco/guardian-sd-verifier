@@ -1,9 +1,13 @@
 import { BladeConnector, BladeSigner } from "@bladelabs/blade-web3.js";
 import { Cipher } from "@digitalbazaar/minimal-cipher";
 import { Ed25519KeyPair } from "@transmute/did-key-ed25519";
-import { createContext, useMemo, useState } from "react";
+import { createContext, useEffect, useMemo, useState } from "react";
 import { createHederaClient } from "../hederaService";
-import { RequesterPrivateKey } from "../utils";
+import {
+  RequesterPrivateKey,
+  getLocalStorage,
+  setLocalStorage,
+} from "../utils";
 
 export interface AppState {
   loading: LoadingState;
@@ -38,6 +42,12 @@ export interface AppState {
   setvcVerificaitonResult: React.Dispatch<
     React.SetStateAction<boolean | undefined>
   >;
+  credentialDid: string;
+  setCredentialDid: React.Dispatch<React.SetStateAction<string>>;
+  verificationMethods: any;
+  setVerificationMethods: React.Dispatch<any>;
+  credentialPrivateKey: string;
+  setCredentialPrivateKey: React.Dispatch<React.SetStateAction<string>>;
   cipher: any;
 }
 
@@ -67,11 +77,17 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
     id: undefined,
   });
   // User uploaded credential
-  const [verifiableCredential, setVerifiableCredential] = useState<any>();
+  const [verifiableCredential, setVerifiableCredential] = useState<any>(
+    getLocalStorage("verifiableCredential")
+  );
   // Selected verification method
-  const [selectedMethod, setSelectedMethod] = useState<any>();
+  const [selectedMethod, setSelectedMethod] = useState<any>(
+    getLocalStorage("selectedMethod")
+  );
   // Credential's public key
-  const [credPublicKey, setCredPublicKey] = useState("");
+  const [credPublicKey, setCredPublicKey] = useState(
+    getLocalStorage("credPublicKey") || ""
+  );
   // Topic ID for sending/receiving message
   const topicId = process.env.REACT_APP_TOPIC_ID;
   // Blade wallet connector
@@ -90,13 +106,26 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
 
   const [responders, setResponders] = useState<Responder[]>([]);
 
-  const [credentialKey, setCredentialKey] = useState<
-    CredentialKey | undefined
-  >();
+  const [credentialKey, setCredentialKey] = useState<CredentialKey | undefined>(
+    getLocalStorage("credentialKey") || undefined
+  );
+
+  const [credentialPrivateKey, setCredentialPrivateKey] = useState(
+    getLocalStorage("credentialPrivateKey") || ""
+  );
 
   const [vcVerificaitonResult, setvcVerificaitonResult] = useState<
     boolean | undefined
-  >();
+  >(getLocalStorage("vcVerificaitonResult") || undefined);
+
+  // User uploaded credential's DID
+  const [credentialDid, setCredentialDid] = useState(
+    getLocalStorage("credentialDid") || ""
+  );
+  // Verification methods from DID document
+  const [verificationMethods, setVerificationMethods] = useState<any>(
+    getLocalStorage("verificationMethods") || []
+  );
 
   const client = useMemo(() => {
     if (requesterPrivateKey) {
@@ -134,8 +163,34 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
     setCredentialKey,
     vcVerificaitonResult,
     setvcVerificaitonResult,
+    credentialDid,
+    setCredentialDid,
+    verificationMethods,
+    setVerificationMethods,
+    credentialPrivateKey,
+    setCredentialPrivateKey,
     cipher,
   };
+
+  useEffect(() => {
+    setLocalStorage("verifiableCredential", verifiableCredential);
+    setLocalStorage("credentialDid", credentialDid);
+    setLocalStorage("credPublicKey", credPublicKey);
+    setLocalStorage("verificationMethods", verificationMethods);
+    setLocalStorage("selectedMethod", selectedMethod);
+    setLocalStorage("credentialKey", credentialKey);
+    setLocalStorage("credentialPrivateKey", credentialPrivateKey);
+    setLocalStorage("vcVerificaitonResult", vcVerificaitonResult);
+  }, [
+    credPublicKey,
+    credentialDid,
+    selectedMethod,
+    vcVerificaitonResult,
+    verifiableCredential,
+    verificationMethods,
+    credentialKey,
+    credentialPrivateKey,
+  ]);
 
   return <AppContext.Provider value={appState}>{children}</AppContext.Provider>;
 };

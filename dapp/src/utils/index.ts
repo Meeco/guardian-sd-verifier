@@ -8,4 +8,5 @@ export { default as fetchJson } from "./fetchJson";
 export { generateCredentialKey } from "./generateCredentialKey";
 export * from "./generateRequesterKeys";
 export * from "./getPublicKeyHexFromJwk";
+export * from "./localStorageUtils";
 export { default as pollRequest } from "./pollRequest";

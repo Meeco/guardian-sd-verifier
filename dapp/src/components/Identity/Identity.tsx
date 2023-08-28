@@ -29,14 +29,16 @@ const Identity = () => {
     setCredentialKey,
     vcVerificaitonResult,
     setvcVerificaitonResult,
+    credentialDid,
+    setCredentialDid,
+    verificationMethods,
+    setVerificationMethods,
+    credentialPrivateKey,
+    setCredentialPrivateKey,
   } = useContext(AppContext);
 
   // User uploaded file
   const [file, setFile] = useState<File | undefined>();
-  // User uploaded credential's DID
-  const [credentialDid, setCredentialDid] = useState("");
-  // Verification methods from DID document
-  const [verificationMethods, setVerificationMethods] = useState<any>([]);
 
   const [getVerificationMethodsSuccess, setGetVerificationMethodsSuccess] =
     useState<boolean | undefined>(undefined);
@@ -147,22 +149,26 @@ const Identity = () => {
           const publicKeyHex = Buffer.from(keyPair.publicKey).toString("hex");
 
           if (credPublicKey === publicKeyHex) {
+            setCredentialPrivateKey(privateKey);
             setCredentialKey(credentialKey);
             setvcVerificaitonResult(undefined);
           } else {
+            setCredentialPrivateKey("");
             setCredentialKey(undefined);
             setVerifyCredentialErrMsg("Incorrect private key");
             setvcVerificaitonResult(false);
           }
         } catch (error) {
+          setCredentialPrivateKey("");
           setCredentialKey(undefined);
           setVerifyCredentialErrMsg((error as any).message);
           setvcVerificaitonResult(false);
         }
-      } else if (!privateKey) {
+      } else if (privateKey === "") {
         setCredentialKey(undefined);
         setvcVerificaitonResult(undefined);
       } else {
+        setCredentialPrivateKey("");
         setCredentialKey(undefined);
         setVerifyCredentialErrMsg(
           "Credential Private Key's length should be 64"
@@ -260,6 +266,7 @@ const Identity = () => {
                     type="text"
                     onChange={handlePrivateKeyChange}
                     disabled={!selectedMethod}
+                    value={credentialPrivateKey}
                   />
                 </div>
                 <div className="d-flex mt-3">
