@@ -1,9 +1,7 @@
 import { Client } from "@hashgraph/sdk";
-import * as nacl from "tweetnacl";
-import * as naclUtil from "tweetnacl-util";
 import { getFileContents } from "../../fileService";
 import { PresentationResponseMessage } from "../../types";
-import { decryptData } from "../../utils";
+import { deriveKeyAgreementKey } from "../../utils";
 
 export interface PresentationResponse {
   data?: any;
@@ -15,12 +13,12 @@ export interface PresentationResponse {
 
 const decryptPresentationResponseMessage = async ({
   client,
+  cipher,
   presentationResponseMessage,
-  requesterKeyPair,
 }: {
   client: Client;
+  cipher: any;
   presentationResponseMessage?: PresentationResponseMessage;
-  requesterKeyPair: nacl.BoxKeyPair;
 }) => {
   if (presentationResponseMessage?.error) {
     const { error } = presentationResponseMessage;
@@ -31,39 +29,30 @@ const decryptPresentationResponseMessage = async ({
   } else {
     // get response file's contents
     const responseFileId = presentationResponseMessage?.response_file_id || "";
-    const responseNonce =
-      presentationResponseMessage?.response_file_nonce || "";
-    const responseEphemPublicKey =
-      presentationResponseMessage?.response_ephem_public_key || "";
 
-    const decodedResponseEphemPublicKey = naclUtil.decodeBase64(
-      responseEphemPublicKey
-    );
-
-    const fileContents = await getFileContents({
+    const fileContentsBuffer = await getFileContents({
       client,
       fileId: responseFileId,
     });
 
-    if (fileContents) {
-      const nonce = naclUtil.decodeBase64(responseNonce);
-      const presentationResponse = decryptData({
-        message: fileContents,
-        nonce,
-        privatekey: requesterKeyPair.secretKey,
-        publickey: decodedResponseEphemPublicKey,
+    if (fileContentsBuffer) {
+      const fileContents = Buffer.from(fileContentsBuffer).toString("utf-8");
+
+      const keyAgreementKey = await deriveKeyAgreementKey({
+        did: process.env.REACT_APP_REQUESTER_DID || "",
+        didKeyId: process.env.REACT_APP_REQUESTER_DID_KEY_ID || "",
+        privateKeyStr:
+          process.env.REACT_APP_RREQUESTER_DID_PRIVATE_KEY_HEX || "",
+        publicKeyStr: process.env.REACT_APP_RREQUESTER_DID_PUBLIC_KEY_HEX || "",
+        type: "",
       });
 
-      if (presentationResponse) {
-        const data = JSON.parse(naclUtil.encodeUTF8(presentationResponse));
-        const response: PresentationResponse = {
-          data,
-        };
+      const decrypted = await cipher.decryptObject({
+        jwe: fileContents,
+        keyAgreementKey,
+      });
 
-        return response;
-      } else {
-        throw new Error("Presentation response is empty");
-      }
+      return decrypted;
     } else {
       throw new Error("response file is empty");
     }

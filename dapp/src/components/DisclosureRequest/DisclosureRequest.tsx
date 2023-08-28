@@ -174,6 +174,8 @@ const DisclosureRequest = () => {
           };
 
           setResponders(updatedResponders);
+        } else {
+          throw new Error("Send request failed");
         }
 
         setLoading({ id: undefined });

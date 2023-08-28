@@ -12,12 +12,6 @@ const HEDERA_RESOLVER_HOST =
  * universal did resolver running at localhost:5000 that will resolve Hedera DIDs
  */
 const fetchResolveDid = (did: string) =>
-  fetchJson(
-    `${
-      did.startsWith("did:hedera")
-        ? HEDERA_RESOLVER_HOST
-        : UNIVERSAL_RESOLVER_HOST
-    }/${did}`
-  );
+  fetchJson(`${HEDERA_RESOLVER_HOST}/${did}`);
 
 export default fetchResolveDid;

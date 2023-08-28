@@ -1,4 +1,5 @@
 export { default as decryptData } from "./decryptData";
+export { default as deriveKeyAgreementKey } from "./deriveKeyAgreementKey";
 export { documentLoader } from "./documentLoader";
 export { default as downloadJson } from "./downloadJson";
 export { default as encryptData } from "./encryptData";

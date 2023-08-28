@@ -74,7 +74,7 @@ const Identity = () => {
     // Get public key from user uploaded credential
     const getPublicKey = async () => {
       try {
-        const { didDocument } = await fetchResolveDid(credentialDid);
+        const didDocument = await fetchResolveDid(credentialDid);
         const { verificationMethod } = didDocument;
         const publicKeyJwk = verificationMethod[0].publicKeyJwk;
         const publicKeyHex = getPublicKeyHexFromJwk(publicKeyJwk);
@@ -90,7 +90,7 @@ const Identity = () => {
         setLoading({ id: "getVerificationMethods" });
         setGetVerificationMethodsSuccess(undefined);
         // Get verification method
-        const { didDocument } = await fetchResolveDid(credentialDid);
+        const didDocument = await fetchResolveDid(credentialDid);
         const { verificationMethod } = didDocument;
         setVerificationMethods(verificationMethod);
         // Get public key

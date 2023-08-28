@@ -1,4 +1,5 @@
 import { BladeConnector, BladeSigner } from "@bladelabs/blade-web3.js";
+import { Cipher } from "@digitalbazaar/minimal-cipher";
 import { Ed25519KeyPair } from "@transmute/did-key-ed25519";
 import { createContext, useMemo, useState } from "react";
 import { createHederaClient } from "../hederaService";
@@ -37,6 +38,7 @@ export interface AppState {
   setvcVerificaitonResult: React.Dispatch<
     React.SetStateAction<boolean | undefined>
   >;
+  cipher: any;
 }
 
 export interface LoadingState {
@@ -46,7 +48,7 @@ export interface LoadingState {
 export interface Responder {
   did: string;
   accountId: string;
-  publicKey: string;
+  encyptedKeyId: string;
   presentationResponse?: any;
 }
 
@@ -103,6 +105,8 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
     }
   }, [accountId, requesterPrivateKey]);
 
+  const cipher = new Cipher(); // by default {version: 'recommended'}
+
   const appState: AppState = {
     loading,
     setLoading,
@@ -130,6 +134,7 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
     setCredentialKey,
     vcVerificaitonResult,
     setvcVerificaitonResult,
+    cipher,
   };
 
   return <AppContext.Provider value={appState}>{children}</AppContext.Provider>;
