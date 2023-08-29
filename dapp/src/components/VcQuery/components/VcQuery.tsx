@@ -23,7 +23,6 @@ const VcQuery = () => {
     responders,
     setResponders,
     topicId,
-    vcVerificaitonResult,
     cid,
     setCid,
   } = useContext(AppContext);

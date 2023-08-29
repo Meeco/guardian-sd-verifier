@@ -4,7 +4,11 @@ import ReactJson from "react-json-view";
 import { EventKey } from "../../../constants";
 import { downloadJson } from "../../../utils";
 import { AppContext } from "../../AppProvider";
-import { Button as ButtonWithLoader, StatusLabel } from "../../common";
+import {
+  AccordianToggleButton,
+  Button as ButtonWithLoader,
+  StatusLabel,
+} from "../../common";
 import createPresentationRequest from "../createPresentationRequest";
 import handleSendPresentationRequest from "../handleSendPresentationRequest";
 import CreatePresentationButton from "./CreatePresentationButton";
@@ -212,6 +216,15 @@ const DisclosureRequest = () => {
           </>
         )}
 
+        {!signer ? (
+          <div className="mt-3">
+            <AccordianToggleButton
+              text={"Connect to wallet"}
+              eventKey={EventKey.HederaAccount}
+            />
+          </div>
+        ) : null}
+
         {/* ===== Responders section ====== */}
         {responders &&
           presentationRequest &&
@@ -262,8 +275,9 @@ const DisclosureRequest = () => {
                         text={statusText}
                       />
                     </div>
+
                     {/* =====Presentation Response section ====== */}
-                    {presentationResponse?.data && (
+                    {presentationResponse?.data ? (
                       <Accordion
                         className="mt-4"
                         defaultActiveKey={`${did}-response`}
@@ -296,7 +310,7 @@ const DisclosureRequest = () => {
                           </Accordion.Body>
                         </Accordion.Item>
                       </Accordion>
-                    )}
+                    ) : null}
                     {/* ===== end of Presentation Response section ====== */}
                   </Accordion.Body>
                 </Accordion.Item>
