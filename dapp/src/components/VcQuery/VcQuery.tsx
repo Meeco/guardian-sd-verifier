@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useCallback, useContext, useMemo, useState } from "react";
 import { Accordion, Form } from "react-bootstrap";
 import { BoxArrowUpRight } from "react-bootstrap-icons";
 import { v4 as uuidv4 } from "uuid";
@@ -22,7 +22,6 @@ const VcQuery = () => {
     responders,
     setResponders,
     topicId,
-    credentialKey,
     vcVerificaitonResult,
     cid,
     setCid,
@@ -33,32 +32,21 @@ const VcQuery = () => {
   >(undefined);
   const [getRespondersErrMsg, setgetRespondersErrMsg] = useState("");
 
-  if (!signer || !credentialKey || !vcVerificaitonResult) {
-    return (
-      <Accordion.Item eventKey="vc-query">
-        <Accordion.Header>
-          <b>VC Query</b>
-        </Accordion.Header>
-        <Accordion.Body>
-          <p>Please complete previous sections</p>
-        </Accordion.Body>
-      </Accordion.Item>
-    );
-  } else {
-    const handleFetchIpfs = async () => {
-      try {
-        setLoading({ id: "handleFetchIpfs" });
-        const file = await fetchIPFSFile(cid, { resultType: ResultType.JSON });
-        setVcResponse(file);
-        setLoading({ id: undefined });
-      } catch (error) {
-        setVcResponse(null);
-        setLoading({ id: undefined });
-        console.log({ error });
-      }
-    };
+  const handleFetchIpfs = async () => {
+    try {
+      setLoading({ id: "handleFetchIpfs" });
+      const file = await fetchIPFSFile(cid, { resultType: ResultType.JSON });
+      setVcResponse(file);
+      setLoading({ id: undefined });
+    } catch (error) {
+      setVcResponse(null);
+      setLoading({ id: undefined });
+      console.log({ error });
+    }
+  };
 
-    const handleQueryResponders = async () => {
+  const handleQueryResponders = useCallback(async () => {
+    if (signer) {
       try {
         setLoading({ id: "handleQueryResponders" });
         const requestId = uuidv4();
@@ -122,117 +110,137 @@ const VcQuery = () => {
         setGetRespondersSuccess(false);
         setgetRespondersErrMsg((error as any).message);
       }
-    };
+    }
+  }, [setLoading, setResponders, signer, topicId, vcResponse?.id]);
 
-    const handleChangeCid = (e: React.ChangeEvent<any>) => {
-      e.preventDefault();
-      setCid(e.target.value);
-    };
+  const handleChangeCid = (e: React.ChangeEvent<any>) => {
+    setCid(e.target.value);
+  };
 
-    const fetchVcResponseSuccess = vcResponse ? !!vcResponse?.id : undefined;
+  const fetchVcResponseSuccess = vcResponse ? !!vcResponse?.id : undefined;
 
-    return (
-      <Accordion.Item eventKey={EventKey.VcQuery}>
-        <Accordion.Header>
-          <b>VC Query&nbsp;</b> {vcResponse?.id ? `(${vcResponse?.id})` : ""}
-        </Accordion.Header>
-        <Accordion.Body>
-          <p>Create a request for selective disclosure of a discovered VC</p>
-          <Form.Label>CID</Form.Label>
-          <div className="d-flex align-items-center">
-            <Form.Control
-              type="text"
-              placeholder="CID"
-              onChange={handleChangeCid}
-              className="w-50"
-            />
-            {vcResponse ? (
-              <a
-                href={`https://ipfs.io/ipfs/${cid}`}
-                target="_blank"
-                rel="noreferrer"
-                className="mx-2"
-              >
-                <BoxArrowUpRight />
-              </a>
-            ) : null}
-          </div>
-          <div className="d-flex mt-3">
-            <Button
-              onClick={handleFetchIpfs}
-              text="Get VC"
-              loading={loading.id === "handleFetchIpfs"}
-            />
-            <StatusLabel
-              isSuccess={
-                loading.id === "handleFetchIpfs"
-                  ? undefined
-                  : fetchVcResponseSuccess
-              }
-              text={
-                vcResponse?.id ? `VC ID: ${vcResponse?.id}` : "Get VC Failed"
-              }
-            />
-          </div>
-          {!!vcResponse?.id && (
-            <div className="mt-4">
-              <div className="d-flex">
-                <Button
-                  onClick={handleQueryResponders}
-                  text="Query Responders"
-                  loading={loading.id === "handleQueryResponders"}
-                />
-                <StatusLabel
-                  isSuccess={
-                    loading.id === "handleQueryResponders"
-                      ? undefined
-                      : getRespondersSuccess
-                  }
-                  text={
-                    getRespondersSuccess
-                      ? "Query Responders Success"
-                      : getRespondersErrMsg
-                  }
+  const ActionButton = useMemo(() => {
+    if (!signer || !vcVerificaitonResult) {
+      return (
+        <AccordianToggleButton
+          text={!signer ? "Connect to wallet" : "Complete Identity section"}
+          eventKey={!signer ? EventKey.HederaAccount : EventKey.Identity}
+        />
+      );
+    } else {
+      return (
+        <>
+          <Button
+            onClick={handleQueryResponders}
+            text="Query Responders"
+            loading={loading.id === "handleQueryResponders"}
+          />
+          <StatusLabel
+            isSuccess={
+              loading.id === "handleQueryResponders"
+                ? undefined
+                : getRespondersSuccess
+            }
+            text={
+              getRespondersSuccess
+                ? "Query Responders Success"
+                : getRespondersErrMsg
+            }
+          />
+        </>
+      );
+    }
+  }, [
+    getRespondersErrMsg,
+    getRespondersSuccess,
+    handleQueryResponders,
+    loading.id,
+    signer,
+    vcVerificaitonResult,
+  ]);
+
+  return (
+    <Accordion.Item eventKey={EventKey.VcQuery}>
+      <Accordion.Header>
+        <b>VC Query&nbsp;</b> {vcResponse?.id ? `(${vcResponse?.id})` : ""}
+      </Accordion.Header>
+      <Accordion.Body>
+        <p>Create a request for selective disclosure of a discovered VC</p>
+        <Form.Label>CID</Form.Label>
+        <div className="d-flex align-items-center">
+          <Form.Control
+            type="text"
+            placeholder="CID"
+            onChange={handleChangeCid}
+            className="w-50"
+            value={cid}
+          />
+          {vcResponse ? (
+            <a
+              href={`https://ipfs.io/ipfs/${cid}`}
+              target="_blank"
+              rel="noreferrer"
+              className="mx-2 mb-2"
+            >
+              <BoxArrowUpRight />
+            </a>
+          ) : null}
+        </div>
+        <div className="d-flex mt-3">
+          <Button
+            onClick={handleFetchIpfs}
+            text="Get VC"
+            loading={loading.id === "handleFetchIpfs"}
+          />
+          <StatusLabel
+            isSuccess={
+              loading.id === "handleFetchIpfs"
+                ? undefined
+                : fetchVcResponseSuccess
+            }
+            text={vcResponse?.id ? `VC ID: ${vcResponse?.id}` : "Get VC Failed"}
+          />
+        </div>
+        {!!vcResponse?.id && (
+          <div className="mt-3">
+            <div className="d-flex">{ActionButton}</div>
+            {getRespondersSuccess ? (
+              <div className="mt-2">
+                <AccordianToggleButton
+                  text="Next"
+                  eventKey={EventKey.DisclosureRequest}
                 />
               </div>
-              {getRespondersSuccess ? (
-                <div className="mt-2">
-                  <AccordianToggleButton
-                    text="Next"
-                    eventKey={EventKey.DisclosureRequest}
-                  />
-                </div>
-              ) : null}
-            </div>
-          )}
-          {responders.length > 0 && (
-            <>
-              <ul className="mt-3">
-                {responders.map((responder) => {
-                  const { accountId, did } = responder;
-                  return (
-                    <li key={did}>
-                      Responder: {did} ({accountId})
-                    </li>
-                  );
-                })}
-              </ul>
-              <a
-                href={`${exploreLworksUrl}/${topicId}`}
-                target="_blank"
-                rel="noreferrer"
-              >
-                <div className="d-flex align-items-center">
-                  View topic
-                  <BoxArrowUpRight className="ms-2" />
-                </div>
-              </a>
-            </>
-          )}
-        </Accordion.Body>
-      </Accordion.Item>
-    );
-  }
+            ) : null}
+          </div>
+        )}
+        {responders.length > 0 && (
+          <>
+            <ul className="mt-3">
+              {responders.map((responder) => {
+                const { accountId, did } = responder;
+                return (
+                  <li key={did}>
+                    Responder: {did} ({accountId})
+                  </li>
+                );
+              })}
+            </ul>
+            <a
+              href={`${exploreLworksUrl}/${topicId}`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <div className="d-flex align-items-center">
+                View topic
+                <BoxArrowUpRight className="ms-2" />
+              </div>
+            </a>
+          </>
+        )}
+      </Accordion.Body>
+    </Accordion.Item>
+  );
 };
 
 export default VcQuery;
