@@ -1,5 +1,6 @@
 import React, { useContext, useMemo, useState } from "react";
 import { Accordion, Button, FormCheck, FormGroup } from "react-bootstrap";
+import { BoxArrowUpRight } from "react-bootstrap-icons";
 import ReactJson from "react-json-view";
 import { EventKey } from "../../constants";
 import { downloadJson } from "../../utils";
@@ -25,6 +26,8 @@ const DisclosureRequest = () => {
   } = useContext(AppContext);
 
   const credentialSubject = verifiableCredential?.credentialSubject;
+
+  const [selectedContext, setSelectedContext] = useState<string | undefined>();
   const [presentationRequest, setPresentationRequest] = useState<any>();
 
   const [selectableFields, setSelectableFields] = useState<string[]>([]);
@@ -80,6 +83,7 @@ const DisclosureRequest = () => {
         const selectedContext = vcResponse["@context"].filter(
           (context: string) => context.startsWith("https://ipfs.io/ipfs/")
         )[0];
+        setSelectedContext(selectedContext);
 
         const contextDocument = await (await fetch(selectedContext)).json();
         const credentialType = vcResponse.credentialSubject.type;
@@ -142,7 +146,7 @@ const DisclosureRequest = () => {
         </Accordion.Header>
         <Accordion.Body>
           {selectedMethod && (
-            <div className="d-flex mt-3">
+            <div className="d-flex mt-3 align-items-center">
               <ButtonWithLoader
                 onClick={handleGetFields}
                 text="Get VC Scheme"
@@ -160,6 +164,16 @@ const DisclosureRequest = () => {
                     : "Get VC Scheme Failed"
                 }
               />
+              {selectedContext ? (
+                <a
+                  href={`${selectedContext}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mb-1"
+                >
+                  <BoxArrowUpRight />
+                </a>
+              ) : null}
             </div>
           )}
           {selectableFields.length > 0 && (
