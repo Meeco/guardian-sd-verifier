@@ -1,14 +1,15 @@
-import { useCallback, useContext, useMemo, useState } from "react";
+import { useCallback, useContext, useState } from "react";
 import { Accordion, Form } from "react-bootstrap";
 import { BoxArrowUpRight } from "react-bootstrap-icons";
 import { v4 as uuidv4 } from "uuid";
-import { submitMessage } from "../../consensusService";
-import { EventKey } from "../../constants";
-import { getTopicMessages } from "../../hederaService";
-import { MessageType, PresentationQueryMessage } from "../../types";
-import { ResultType, fetchIPFSFile, pollRequest } from "../../utils";
-import { AppContext } from "../AppProvider";
-import { AccordianToggleButton, Button, StatusLabel } from "../common";
+import { submitMessage } from "../../../consensusService";
+import { EventKey } from "../../../constants";
+import { getTopicMessages } from "../../../hederaService";
+import { MessageType, PresentationQueryMessage } from "../../../types";
+import { ResultType, fetchIPFSFile, pollRequest } from "../../../utils";
+import { AppContext } from "../../AppProvider";
+import { AccordianToggleButton, Button, StatusLabel } from "../../common";
+import QueryRespondersButton from "./QueryRespondersButton";
 
 const exploreLworksUrl = "https://explore.lworks.io/testnet/topics";
 
@@ -119,46 +120,6 @@ const VcQuery = () => {
 
   const fetchVcResponseSuccess = vcResponse ? !!vcResponse?.id : undefined;
 
-  const ActionButton = useMemo(() => {
-    if (!signer || !vcVerificaitonResult) {
-      return (
-        <AccordianToggleButton
-          text={!signer ? "Connect to wallet" : "Complete Identity section"}
-          eventKey={!signer ? EventKey.HederaAccount : EventKey.Identity}
-        />
-      );
-    } else {
-      return (
-        <>
-          <Button
-            onClick={handleQueryResponders}
-            text="Query Responders"
-            loading={loading.id === "handleQueryResponders"}
-          />
-          <StatusLabel
-            isSuccess={
-              loading.id === "handleQueryResponders"
-                ? undefined
-                : getRespondersSuccess
-            }
-            text={
-              getRespondersSuccess
-                ? "Query Responders Success"
-                : getRespondersErrMsg
-            }
-          />
-        </>
-      );
-    }
-  }, [
-    getRespondersErrMsg,
-    getRespondersSuccess,
-    handleQueryResponders,
-    loading.id,
-    signer,
-    vcVerificaitonResult,
-  ]);
-
   return (
     <Accordion.Item eventKey={EventKey.VcQuery}>
       <Accordion.Header>
@@ -191,6 +152,7 @@ const VcQuery = () => {
             onClick={handleFetchIpfs}
             text="Get VC"
             loading={loading.id === "handleFetchIpfs"}
+            disabled={!cid}
           />
           <StatusLabel
             isSuccess={
@@ -203,7 +165,13 @@ const VcQuery = () => {
         </div>
         {!!vcResponse?.id && (
           <div className="mt-3">
-            <div className="d-flex">{ActionButton}</div>
+            <div className="d-flex">
+              <QueryRespondersButton
+                handleQueryResponders={handleQueryResponders}
+                getRespondersSuccess={getRespondersSuccess}
+                getRespondersErrMsg={getRespondersErrMsg}
+              />
+            </div>
             {getRespondersSuccess ? (
               <div className="mt-2">
                 <AccordianToggleButton

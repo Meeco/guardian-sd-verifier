@@ -1,1 +1,1 @@
-export { default as VcQuery } from "./VcQuery";
+export { default as VcQuery } from "./components/VcQuery";
