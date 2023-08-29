@@ -175,46 +175,34 @@ const VcQuery = () => {
             />
           </div>
           {!!vcResponse?.id && (
-            <div className="d-flex mt-4">
+            <div className="mt-4">
+              <div className="d-flex">
+                <Button
+                  onClick={handleQueryResponders}
+                  text="Query Responders"
+                  loading={loading.id === "handleQueryResponders"}
+                />
+                <StatusLabel
+                  isSuccess={
+                    loading.id === "handleQueryResponders"
+                      ? undefined
+                      : getRespondersSuccess
+                  }
+                  text={
+                    getRespondersSuccess
+                      ? "Query Responders Success"
+                      : getRespondersErrMsg
+                  }
+                />
+              </div>
               {getRespondersSuccess ? (
-                <>
+                <div className="mt-2">
                   <AccordianToggleButton
                     text="Next"
                     eventKey={EventKey.DisclosureRequest}
-                    isSuccess={
-                      loading.id === "handleQueryResponders"
-                        ? undefined
-                        : getRespondersSuccess
-                    }
-                    statusText={
-                      getRespondersSuccess
-                        ? "Query Responders Success"
-                        : getRespondersErrMsg
-                    }
                   />
-                </>
-              ) : (
-                <>
-                  {" "}
-                  <Button
-                    onClick={handleQueryResponders}
-                    text="Query Responders"
-                    loading={loading.id === "handleQueryResponders"}
-                  />
-                  <StatusLabel
-                    isSuccess={
-                      loading.id === "handleQueryResponders"
-                        ? undefined
-                        : getRespondersSuccess
-                    }
-                    text={
-                      getRespondersSuccess
-                        ? "Query Responders Success"
-                        : getRespondersErrMsg
-                    }
-                  />
-                </>
-              )}
+                </div>
+              ) : null}
             </div>
           )}
           {responders.length > 0 && (
