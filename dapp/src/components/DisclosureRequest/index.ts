@@ -1,1 +1,1 @@
-export { default as DisclosureRequest } from "./DisclosureRequest";
+export { default as DisclosureRequest } from "./components/DisclosureRequest";
