@@ -6,7 +6,6 @@ import { downloadJson } from "../../utils";
 import { AppContext } from "../AppProvider";
 import { Button as ButtonWithLoader, StatusLabel } from "../common";
 import createPresentationRequest from "./createPresentationRequest";
-import decryptPresentationResponseMessage from "./decryptPresentationResponseMessage";
 import handleSendPresentationRequest from "./handleSendPresentationRequest";
 
 const DisclosureRequest = () => {
@@ -136,62 +135,6 @@ const DisclosureRequest = () => {
       });
     };
 
-    // Send presentation request to HCS
-    const handleSendRequest = async ({
-      responderDid,
-      encyptedKeyId,
-    }: {
-      responderDid: string;
-      encyptedKeyId: string;
-    }) => {
-      try {
-        setLoading({ id: `handleSendRequest-${responderDid}` });
-        const responseMessage = await handleSendPresentationRequest({
-          responderDid,
-          encyptedKeyId,
-          presentationRequest,
-          signer,
-          topicId,
-          cipher,
-        });
-
-        const presentationResponse = await decryptPresentationResponseMessage({
-          client,
-          cipher,
-          presentationResponseMessage: responseMessage,
-        });
-
-        if (presentationResponse) {
-          const selectedIndex = responders.findIndex(
-            (item) => item.did === responderDid
-          );
-
-          const updatedResponders = [...responders];
-          updatedResponders[selectedIndex] = {
-            ...updatedResponders[selectedIndex],
-            presentationResponse,
-          };
-
-          setResponders(updatedResponders);
-        } else {
-          throw new Error("Send request failed");
-        }
-
-        setLoading({ id: undefined });
-      } catch (error) {
-        console.log({ error });
-        const selectedIndex = responders.findIndex(
-          (item) => item.did === responderDid
-        );
-        const updatedResponders = [...responders];
-        updatedResponders[selectedIndex] = {
-          ...updatedResponders[selectedIndex],
-          presentationResponse: null,
-        };
-        setLoading({ id: undefined });
-      }
-    };
-
     return (
       <Accordion.Item eventKey={EventKey.DisclosureRequest}>
         <Accordion.Header>
@@ -317,9 +260,17 @@ const DisclosureRequest = () => {
                       <div className="d-flex mt-2">
                         <ButtonWithLoader
                           onClick={() =>
-                            handleSendRequest({
+                            handleSendPresentationRequest({
                               responderDid: did,
                               encyptedKeyId,
+                              setLoading,
+                              presentationRequest,
+                              signer,
+                              topicId,
+                              cipher,
+                              client,
+                              responders,
+                              setResponders,
                             })
                           }
                           text="Send request"
