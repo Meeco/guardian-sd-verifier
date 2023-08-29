@@ -18,7 +18,6 @@ const Identity = () => {
     signer,
     loading,
     setLoading,
-    requesterPrivateKey,
     credPublicKey,
     setCredPublicKey,
     verifiableCredential,
@@ -61,7 +60,7 @@ const Identity = () => {
     return undefined;
   }, [credentialDid, file]);
 
-  if (!signer || !requesterPrivateKey) {
+  if (!signer) {
     return (
       <Accordion.Item eventKey={EventKey.Identity}>
         <Accordion.Header>

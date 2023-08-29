@@ -3,11 +3,7 @@ import { Cipher } from "@digitalbazaar/minimal-cipher";
 import { Ed25519KeyPair } from "@transmute/did-key-ed25519";
 import { createContext, useEffect, useMemo, useState } from "react";
 import { createHederaClient } from "../hederaService";
-import {
-  RequesterPrivateKey,
-  getLocalStorage,
-  setLocalStorage,
-} from "../utils";
+import { getLocalStorage, setLocalStorage } from "../utils";
 
 export interface AppState {
   loading: LoadingState;
@@ -25,10 +21,6 @@ export interface AppState {
   setSigner: React.Dispatch<React.SetStateAction<BladeSigner | null>>;
   accountId: string;
   setaccountId: React.Dispatch<React.SetStateAction<string>>;
-  requesterPrivateKey?: RequesterPrivateKey;
-  setRequesterPrivateKey: React.Dispatch<
-    React.SetStateAction<RequesterPrivateKey | undefined>
-  >;
   vcResponse: any;
   setVcResponse: React.Dispatch<any>;
   responders: Responder[];
@@ -100,10 +92,7 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
   const [signer, setSigner] = useState<BladeSigner | null>(null);
   // Blade wallet account ID
   const [accountId, setaccountId] = useState("");
-  // Requester(wallet holder)'s private key
-  const [requesterPrivateKey, setRequesterPrivateKey] = useState<
-    RequesterPrivateKey | undefined
-  >();
+
   const [vcResponse, setVcResponse] = useState<any>(
     getLocalStorage("vcResponse")
   );
@@ -134,11 +123,11 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
   const [cid, setCid] = useState(getLocalStorage("cid") || "");
 
   const client = useMemo(() => {
-    if (requesterPrivateKey) {
-      const requesterPrivateKeyStr = requesterPrivateKey?.privateKeyStr;
-      return createHederaClient(accountId, requesterPrivateKeyStr);
-    }
-  }, [accountId, requesterPrivateKey]);
+    return createHederaClient(
+      process.env.REACT_APP_HEDERA_ACCOUNT_ID || "",
+      process.env.REACT_APP_HEDERA_PRIVATE_KEY || ""
+    );
+  }, []);
 
   const cipher = new Cipher(); // by default {version: 'recommended'}
 
@@ -158,8 +147,6 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
     setSigner,
     accountId,
     setaccountId,
-    requesterPrivateKey,
-    setRequesterPrivateKey,
     vcResponse,
     setVcResponse,
     responders,

@@ -1,26 +1,13 @@
-import { useContext, useMemo, useState } from "react";
-import { Accordion, Button, Form } from "react-bootstrap";
+import { useContext, useMemo } from "react";
+import { Accordion, Button } from "react-bootstrap";
 import pairWallet from "../../bladeWeb3Service/pairWallet";
 import { EventKey } from "../../constants";
-import generateRequesterKeys from "../../utils/generateRequesterKeys";
 import { AppContext } from "../AppProvider";
 import { AccordianToggleButton, StatusLabel } from "../common";
 
 const HederaAccount = () => {
-  const {
-    bladeConnector,
-    setSigner,
-    signer,
-    accountId,
-    setaccountId,
-    setRequesterPrivateKey,
-    requesterPrivateKey,
-  } = useContext(AppContext);
-
-  const [keyStr, setKeyStr] = useState("");
-  const [verifyPrivateKeyErrMsg, setVerifyPrivateKeyErrMsg] = useState<
-    string | undefined
-  >();
+  const { bladeConnector, setSigner, signer, accountId, setaccountId } =
+    useContext(AppContext);
 
   const handleConnectWallet = () => {
     if (bladeConnector) {
@@ -40,31 +27,6 @@ const HederaAccount = () => {
     if (signer) return true;
     else return undefined;
   }, [signer]);
-
-  const handleChangePrivateKey = (e: React.ChangeEvent<any>) => {
-    e.preventDefault();
-    setKeyStr(e.target.value);
-  };
-
-  const verifyPrivateKey = () => {
-    try {
-      const requesterPrivateKey = generateRequesterKeys(keyStr);
-      setRequesterPrivateKey(requesterPrivateKey);
-      setVerifyPrivateKeyErrMsg(undefined);
-    } catch (error) {
-      console.log({ error });
-      setVerifyPrivateKeyErrMsg((error as any).message);
-      setRequesterPrivateKey(undefined);
-    }
-  };
-
-  const verifyStatus = useMemo(() => {
-    if (verifyPrivateKeyErrMsg === undefined) {
-      if (requesterPrivateKey) {
-        return true;
-      }
-    } else return false;
-  }, [requesterPrivateKey, verifyPrivateKeyErrMsg]);
 
   return (
     <Accordion.Item eventKey={EventKey.HederaAccount}>
@@ -96,39 +58,13 @@ const HederaAccount = () => {
           </Button>
           <StatusLabel isSuccess={connectWalletSuccess} text="Connected" />
         </div>
-        {connectWalletSuccess && (
-          <div>
-            Hedera account's private key (ED25519)
-            <Form.Control
-              type="text"
-              placeholder="Hedera account's private key"
-              onChange={handleChangePrivateKey}
-              className="w-50"
-            />
-            <div className="d-flex mt-3">
-              {verifyStatus ? (
-                <>
-                  <AccordianToggleButton
-                    text="Next"
-                    eventKey={EventKey.Identity}
-                    isSuccess={verifyStatus}
-                    statusText={verifyPrivateKeyErrMsg ?? "Verified"}
-                  />
-                </>
-              ) : (
-                <>
-                  <Button onClick={verifyPrivateKey} disabled={keyStr === ""}>
-                    Verify private key
-                  </Button>
-                  <StatusLabel
-                    isSuccess={verifyStatus}
-                    text={verifyPrivateKeyErrMsg ?? "Verified"}
-                  />
-                </>
-              )}
-            </div>
-          </div>
-        )}
+        <div>
+          <AccordianToggleButton
+            text="Next"
+            disabled={!connectWalletSuccess}
+            eventKey={EventKey.Identity}
+          />
+        </div>
       </Accordion.Body>
     </Accordion.Item>
   );

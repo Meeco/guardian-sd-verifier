@@ -23,18 +23,20 @@ const VerificationMethods: React.FC<VerificationMethodsProps> = ({
 
   return (
     <div className="verification-method">
-      {verificationMethods.map((item: any) => (
-        <Form.Check
-          key={item.id}
-          checked={selectedMethod.id === item.id}
-          type="radio"
-          label={`#${getDisplayedMethod(item.id)}`}
-          id={item.id}
-          onChange={() => {
-            setSelectedMethod(item);
-          }}
-        />
-      ))}
+      {verificationMethods
+        ? verificationMethods.map((item: any) => (
+            <Form.Check
+              key={item.id}
+              checked={selectedMethod.id === item.id}
+              type="radio"
+              label={`#${getDisplayedMethod(item.id)}`}
+              id={item.id}
+              onChange={() => {
+                setSelectedMethod(item);
+              }}
+            />
+          ))
+        : null}
     </div>
   );
 };

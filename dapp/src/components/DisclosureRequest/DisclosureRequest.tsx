@@ -22,7 +22,6 @@ const DisclosureRequest = () => {
     credentialKey,
     responders,
     setResponders,
-    requesterPrivateKey,
     cipher,
   } = useContext(AppContext);
 
@@ -64,7 +63,7 @@ const DisclosureRequest = () => {
     } else return "";
   };
 
-  if (!signer || !credentialKey || !client || !requesterPrivateKey) {
+  if (!signer || !credentialKey || !client) {
     return (
       <Accordion.Item eventKey="disclosure-request">
         <Accordion.Header>

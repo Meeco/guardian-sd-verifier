@@ -1,5 +1,7 @@
 export const setLocalStorage = (key: string, value: any) => {
-  window.localStorage.setItem(key, JSON.stringify(value));
+  if (value !== null && value !== undefined && value !== "") {
+    window.localStorage.setItem(key, JSON.stringify(value));
+  }
 };
 
 export const getLocalStorage = (key: string) => {
@@ -7,6 +9,6 @@ export const getLocalStorage = (key: string) => {
     const value = window.localStorage.getItem(key);
     if (value) return JSON.parse(value);
   } catch (error) {
-    console.log(`getLocalStorage error: ${error}`);
+    console.log(`getLocalStorage error: key "${key}", ${error}`);
   }
 };

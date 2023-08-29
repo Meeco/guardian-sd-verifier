@@ -17,7 +17,8 @@ function App() {
   useEffect(() => {
     const connector = initConnection();
     setBladeConnector(connector);
-  }, [setBladeConnector]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="App">
