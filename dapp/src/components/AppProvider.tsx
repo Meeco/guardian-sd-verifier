@@ -3,7 +3,11 @@ import { Cipher } from "@digitalbazaar/minimal-cipher";
 import { Ed25519KeyPair } from "@transmute/did-key-ed25519";
 import { createContext, useEffect, useMemo, useState } from "react";
 import { createHederaClient } from "../hederaService";
-import { getLocalStorage, setLocalStorage } from "../utils";
+import {
+  generateCredentialKey,
+  getLocalStorage,
+  setLocalStorage,
+} from "../utils";
 
 export interface AppState {
   loading: LoadingState;
@@ -99,9 +103,9 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
 
   const [responders, setResponders] = useState<Responder[]>([]);
 
-  const [credentialKey, setCredentialKey] = useState<CredentialKey | undefined>(
-    getLocalStorage("credentialKey") || undefined
-  );
+  const [credentialKey, setCredentialKey] = useState<
+    CredentialKey | undefined
+  >();
 
   const [credentialPrivateKey, setCredentialPrivateKey] = useState(
     getLocalStorage("credentialPrivateKey") || ""
@@ -173,7 +177,6 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
     setLocalStorage("credPublicKey", credPublicKey);
     setLocalStorage("verificationMethods", verificationMethods);
     setLocalStorage("selectedMethod", selectedMethod);
-    setLocalStorage("credentialKey", credentialKey);
     setLocalStorage("credentialPrivateKey", credentialPrivateKey);
     setLocalStorage("vcVerificaitonResult", vcVerificaitonResult);
     setLocalStorage("cid", cid);
@@ -190,6 +193,14 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
     cid,
     vcResponse,
   ]);
+
+  useEffect(() => {
+    if (credentialPrivateKey) {
+      generateCredentialKey({
+        privateKeyHex: credentialPrivateKey,
+      }).then((credentialKey) => setCredentialKey(credentialKey));
+    }
+  }, [credentialPrivateKey]);
 
   return <AppContext.Provider value={appState}>{children}</AppContext.Provider>;
 };
