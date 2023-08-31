@@ -31,7 +31,7 @@ const VerificationMethods: React.FC<VerificationMethodsProps> = ({
                 selectedMethod ? selectedMethod.id === item.id : undefined
               }
               type="radio"
-              label={`#${getDisplayedMethod(item.id)}`}
+              label={`#${getDisplayedMethod(item.id)} (${item.type})`}
               id={item.id}
               onChange={() => {
                 setSelectedMethod(item);

@@ -1,3 +1,4 @@
+import * as ed25519 from "@transmute/did-key-ed25519";
 import { ResultType, fetchIPFSFile } from "./fetchIPFSFile";
 import fetchJson from "./fetchJson";
 import resolveDidDocument from "./resolveDid";
@@ -12,65 +13,33 @@ const wrapResponse = (url: string, document: any) => {
 
 export const documentLoader = async (url: string) => {
   try {
+    let document: any;
+
     const [protocol] = url.split(":");
 
-    // TODO: Remove hardcode response
-    if (
-      url ===
-      "https://ipfs.io/ipfs/QmdafSLzFLrTSp3fPG8CpcjH5MehtDFY4nxjr5CVq3z1rz"
-    ) {
-      return wrapResponse(url, {
-        "@context": {
-          "@version": 1.1,
-          "@protected": true,
-          name: "http://schema.org/name",
-          description: "http://schema.org/description",
-          identifier: "http://schema.org/identifier",
-          auditor_template: {
-            "@id": "https://example-credentials.org#auditor_template",
-            "@context": {
-              "@version": 1.1,
-              "@protected": true,
-              id: "@id",
-              type: "@type",
-              schema: "http://schema.org/",
-              given_name: {
-                "@id": "custom:given_name",
-                "@type": "schema:text",
-              },
-              member_id: {
-                "@id": "custom:member_id",
-                "@type": "schema:text",
-              },
-              member_since: {
-                "@id": "custom:member_since",
-                "@type": "schema:text",
-              },
-              valid_until: {
-                "@id": "custom:valid_until",
-                "@type": "schema:text",
-              },
-            },
-          },
-        },
+    if (url.startsWith("did:key")) {
+      const [did] = url.split("#");
+      const { didDocument } = await ed25519.resolve(did, {
+        accept: "application/did+json",
       });
-    }
 
-    let document: any;
-    switch (protocol) {
-      case "did":
-        document = await resolveDidDocument(url);
-        break;
-      case "ipfs":
-        document = await fetchIPFSFile(url, { resultType: ResultType.JSON });
-        break;
-      case "https":
-        document = await fetchJson(url);
-        break;
-      default:
-        throw new Error(
-          `Refused to load document "${url}" - unsupported protocol`
-        );
+      document = didDocument;
+    } else {
+      switch (protocol) {
+        case "did":
+          document = await resolveDidDocument(url);
+          break;
+        case "ipfs":
+          document = await fetchIPFSFile(url, { resultType: ResultType.JSON });
+          break;
+        case "https":
+          document = await fetchJson(url);
+          break;
+        default:
+          throw new Error(
+            `Refused to load document "${url}" - unsupported protocol`
+          );
+      }
     }
 
     if (!document) {

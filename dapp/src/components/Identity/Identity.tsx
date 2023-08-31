@@ -1,9 +1,21 @@
-import * as vc from "@digitalbazaar/vc";
-import { ChangeEvent, useContext, useMemo, useState } from "react";
+import { Ed25519Signature2018 } from "@transmute/ed25519-signature-2018";
+import { Ed25519Signature2020 } from "@transmute/ed25519-signature-2020";
+import { verifiable } from "@transmute/vc.js";
+import { DocumentLoader } from "@transmute/vc.js/dist/types/DocumentLoader";
+import { base58btc } from "multiformats/bases/base58";
+import {
+  ChangeEvent,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { Accordion, Form } from "react-bootstrap";
 import { EventKey } from "../../constants";
 import { fetchResolveDid } from "../../didService";
-import { documentLoader, generateCredentialKey } from "../../utils";
+import { documentLoader } from "../../utils";
+import deriveEdVerificationKey from "../../utils/deriveEdVerificationKey";
 import getPublicKeyHexFromJwk from "../../utils/getPublicKeyHexFromJwk";
 import { AppContext } from "../AppProvider";
 import {
@@ -15,30 +27,31 @@ import VerificationMethods from "./VerificationMethods";
 
 const Identity = () => {
   const {
-    loading,
-    setLoading,
+    activeLoaders,
+    addLoader,
+    removeLoader,
     credPublicKey,
     setCredPublicKey,
     verifiableCredential,
     setVerifiableCredential,
     selectedMethod,
     setSelectedMethod,
-    credentialKey,
-    setCredentialKey,
     vcVerificaitonResult,
     setvcVerificaitonResult,
     credentialDid,
     setCredentialDid,
     verificationMethods,
     setVerificationMethods,
-    credentialPrivateKey,
-    setCredentialPrivateKey,
+    didPrivateKey,
+    setDidPrivateKey,
+    credentialVerificationKey,
+    setCredentialVerificationKey,
   } = useContext(AppContext);
 
   // User uploaded file
   const [file, setFile] = useState<File | undefined>();
 
-  const [displayedKey, setDisplayedKey] = useState(credentialPrivateKey);
+  const [displayedKey, setDisplayedKey] = useState(didPrivateKey);
 
   const [getVerificationMethodsSuccess, setGetVerificationMethodsSuccess] =
     useState<boolean | undefined>(undefined);
@@ -62,33 +75,46 @@ const Identity = () => {
   }, [credentialDid, file]);
 
   // Get public key from user uploaded credential
-  const getPublicKey = async () => {
-    try {
-      const didDocument = await fetchResolveDid(credentialDid);
-      const { verificationMethod } = didDocument;
-      const publicKeyJwk = verificationMethod[0].publicKeyJwk;
-      const publicKeyHex = getPublicKeyHexFromJwk(publicKeyJwk);
-      setCredPublicKey(publicKeyHex);
-    } catch (error) {
-      console.log({ error });
-    }
-  };
+  const getPublicKey = useCallback(
+    (selectedMethod: any) => {
+      try {
+        const { type } = selectedMethod;
+        switch (type) {
+          case "Ed25519VerificationKey2018":
+            const { publicKeyJwk } = selectedMethod;
+            setCredPublicKey(getPublicKeyHexFromJwk(publicKeyJwk));
+            break;
+          case "Ed25519VerificationKey2020":
+            const { publicKeyMultibase } = selectedMethod;
+            setCredPublicKey(
+              Buffer.from(base58btc.decode(publicKeyMultibase)).toString("hex")
+            );
+            break;
+          default:
+            break;
+        }
+      } catch (error) {
+        console.log({ error });
+      }
+    },
+    [setCredPublicKey]
+  );
 
   // Get verification method from user uploaded credential
   const getVerificationMethods = async () => {
     try {
-      setLoading({ id: "getVerificationMethods" });
+      addLoader("getVerificationMethods");
       setGetVerificationMethodsSuccess(undefined);
       // Get verification method
       const didDocument = await fetchResolveDid(credentialDid);
       const { verificationMethod } = didDocument;
       setVerificationMethods(verificationMethod);
       // Get public key
-      await getPublicKey();
+      // await getPublicKey();
       setGetVerificationMethodsSuccess(true);
-      setLoading({ id: undefined });
+      removeLoader("getVerificationMethods");
     } catch (error) {
-      setLoading({ id: undefined });
+      removeLoader("getVerificationMethods");
       setGetVerificationMethodsSuccess(false);
       console.log({ error });
     }
@@ -126,65 +152,98 @@ const Identity = () => {
   const handlePrivateKeyChange = async (e: ChangeEvent<any>) => {
     e.preventDefault();
     // set credential private key
-    const privateKey = e.target.value;
-    setDisplayedKey(privateKey);
+    const privateKeyHex = e.target.value as string;
+    setDisplayedKey(privateKeyHex);
 
-    if (privateKey.length === 64) {
+    if (privateKeyHex.length === 128 || privateKeyHex.length === 132) {
       try {
-        const credentialKey = await generateCredentialKey({
-          privateKeyHex: privateKey,
+        const verificationKey = await deriveEdVerificationKey({
+          id: selectedMethod.id,
+          did: credentialDid,
+          privateKeyHex,
+          publicKeyHex: credPublicKey,
+          type: selectedMethod.type,
         });
 
-        const { keyPair } = credentialKey;
-        const publicKeyHex = Buffer.from(keyPair.publicKey).toString("hex");
+        const { publicKeyMultibase } = verificationKey.export({
+          publicKey: true,
+        });
 
-        if (credPublicKey === publicKeyHex) {
-          setCredentialPrivateKey(privateKey);
-          setCredentialKey(credentialKey);
+        const verificationPublicKeyHex = Buffer.from(
+          base58btc.decode(publicKeyMultibase)
+        ).toString("hex");
+
+        console.log({ verificationPublicKeyHex });
+
+        if (credPublicKey === verificationPublicKeyHex) {
+          setDidPrivateKey(privateKeyHex);
+          setCredentialVerificationKey(verificationKey);
           setvcVerificaitonResult(undefined);
+          setVerifyCredentialErrMsg("");
         } else {
-          setCredentialPrivateKey("");
-          setCredentialKey(undefined);
+          setDidPrivateKey("");
+          setCredentialVerificationKey(undefined);
           setVerifyCredentialErrMsg("Incorrect private key");
           setvcVerificaitonResult(false);
         }
       } catch (error) {
-        setCredentialPrivateKey("");
-        setCredentialKey(undefined);
+        setDidPrivateKey("");
+        setCredentialVerificationKey(undefined);
         setVerifyCredentialErrMsg((error as any).message);
         setvcVerificaitonResult(false);
       }
-    } else if (privateKey === "") {
-      setCredentialKey(undefined);
+    } else if (privateKeyHex === "") {
+      setCredentialVerificationKey(undefined);
       setvcVerificaitonResult(undefined);
     } else {
-      setCredentialPrivateKey("");
-      setCredentialKey(undefined);
-      setVerifyCredentialErrMsg("Credential Private Key's length should be 64");
+      setDidPrivateKey("");
+      setCredentialVerificationKey(undefined);
+      setVerifyCredentialErrMsg(
+        "Credential Private Key's length should be 128 or 132"
+      );
       setvcVerificaitonResult(false);
     }
   };
 
   const verifyCredential = async () => {
-    setLoading({ id: "verifyCredential" });
+    addLoader("verifyCredential");
     try {
-      if (credentialKey) {
-        const { suite } = credentialKey;
-        const resultVc = await vc.verifyCredential({
-          credential: verifiableCredential,
-          suite,
-          documentLoader,
-        });
-
-        setvcVerificaitonResult(resultVc.verified);
-        setLoading({ id: undefined });
+      let suiteType;
+      switch (verifiableCredential.proof?.type) {
+        case "Ed25519Signature2018":
+          suiteType = Ed25519Signature2018;
+          break;
+        case "Ed25519Signature2020":
+          suiteType = Ed25519Signature2020;
+          break;
+        default:
+          throw new Error(
+            `Unsupported proof suite "${verifiableCredential.proof?.suite}"`
+          );
       }
+
+      const suite = new suiteType({});
+
+      const resultVc = await verifiable.credential.verify({
+        credential: verifiableCredential,
+        documentLoader: documentLoader as DocumentLoader,
+        suite,
+      });
+
+      setvcVerificaitonResult(resultVc.verified);
+      removeLoader("verifyCredential");
     } catch (error) {
       setVerifyCredentialErrMsg((error as any).message);
       setvcVerificaitonResult(false);
-      setLoading({ id: undefined });
+      removeLoader("verifyCredential");
     }
   };
+
+  useEffect(() => {
+    if (selectedMethod) {
+      getPublicKey(selectedMethod);
+    }
+  }, [getPublicKey, selectedMethod]);
 
   return (
     <Accordion.Item eventKey={EventKey.Identity}>
@@ -220,11 +279,11 @@ const Identity = () => {
                 <ButtonWithLoader
                   onClick={getVerificationMethods}
                   text="Get verification Method(s)"
-                  loading={loading.id === "getVerificationMethods"}
+                  loading={activeLoaders.includes("getVerificationMethods")}
                 />
                 <StatusLabel
                   isSuccess={
-                    loading.id === "getVerificationMethods"
+                    activeLoaders.includes("getVerificationMethods")
                       ? undefined
                       : getVerificationMethodsSuccess
                   }
@@ -246,7 +305,7 @@ const Identity = () => {
                 </div>
               )}
               <div className="mt-4">
-                <Form.Label>Credential Private Key</Form.Label>
+                <Form.Label>DID Private Key</Form.Label>
                 <Form.Control
                   className="w-50"
                   type="text"
@@ -262,7 +321,7 @@ const Identity = () => {
                       text="Next"
                       eventKey={EventKey.VcQuery}
                       isSuccess={
-                        loading.id === "verifyCredential"
+                        activeLoaders.includes("verifyCredential")
                           ? undefined
                           : vcVerificaitonResult
                       }
@@ -274,12 +333,12 @@ const Identity = () => {
                     <ButtonWithLoader
                       onClick={verifyCredential}
                       text="Verify VC"
-                      loading={loading.id === "verifyCredential"}
-                      disabled={!credentialKey}
+                      loading={activeLoaders.includes("verifyCredential")}
+                      disabled={!credentialVerificationKey}
                     />
                     <StatusLabel
                       isSuccess={
-                        loading.id === "verifyCredential"
+                        activeLoaders.includes("verifyCredential")
                           ? undefined
                           : vcVerificaitonResult
                       }

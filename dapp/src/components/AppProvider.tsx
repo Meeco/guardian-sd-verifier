@@ -1,17 +1,19 @@
 import { BladeConnector, BladeSigner } from "@bladelabs/blade-web3.js";
 import { Cipher } from "@digitalbazaar/minimal-cipher";
-import { Ed25519KeyPair } from "@transmute/did-key-ed25519";
-import { createContext, useEffect, useMemo, useState } from "react";
-import { createHederaClient } from "../hederaService";
 import {
-  generateCredentialKey,
-  getLocalStorage,
-  setLocalStorage,
-} from "../utils";
+  createContext,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import { createHederaClient } from "../hederaService";
+import { getLocalStorage, setLocalStorage } from "../utils";
 
 export interface AppState {
-  loading: LoadingState;
-  setLoading: React.Dispatch<React.SetStateAction<LoadingState>>;
+  activeLoaders: string[];
+  addLoader: (id: string) => void;
+  removeLoader: (removedId: string) => void;
   verifiableCredential: any;
   setVerifiableCredential: React.Dispatch<any>;
   selectedMethod: any;
@@ -30,10 +32,6 @@ export interface AppState {
   responders: Responder[];
   setResponders: React.Dispatch<React.SetStateAction<Responder[]>>;
   client: any;
-  credentialKey?: CredentialKey;
-  setCredentialKey: React.Dispatch<
-    React.SetStateAction<CredentialKey | undefined>
-  >;
   vcVerificaitonResult?: boolean;
   setvcVerificaitonResult: React.Dispatch<
     React.SetStateAction<boolean | undefined>
@@ -42,8 +40,10 @@ export interface AppState {
   setCredentialDid: React.Dispatch<React.SetStateAction<string>>;
   verificationMethods: any;
   setVerificationMethods: React.Dispatch<any>;
-  credentialPrivateKey: string;
-  setCredentialPrivateKey: React.Dispatch<React.SetStateAction<string>>;
+  didPrivateKey: string;
+  setDidPrivateKey: React.Dispatch<React.SetStateAction<string>>;
+  credentialVerificationKey: any;
+  setCredentialVerificationKey: React.Dispatch<React.SetStateAction<any>>;
   cid: string;
   setCid: React.Dispatch<React.SetStateAction<string>>;
   cipher: any;
@@ -60,20 +60,27 @@ export interface Responder {
   presentationResponse?: any;
 }
 
-export interface CredentialKey {
-  keyPair: Ed25519KeyPair;
-  verificationKey: any;
-  suite: any;
-}
-
 export const AppContext = createContext({} as AppState);
 AppContext.displayName = "AppContext";
 
 const AppProvider = ({ children }: { children: JSX.Element }) => {
   // Loading status
-  const [loading, setLoading] = useState<LoadingState>({
-    id: undefined,
-  });
+  const [activeLoaders, setActiveLoaders] = useState<string[]>([]);
+
+  const addLoader = useCallback(
+    (id: string) => {
+      setActiveLoaders([...activeLoaders, id]);
+    },
+    [activeLoaders]
+  );
+
+  const removeLoader = useCallback(
+    (removedId: string) => {
+      setActiveLoaders(activeLoaders.filter((id) => id !== removedId));
+    },
+    [activeLoaders]
+  );
+
   // User uploaded credential
   const [verifiableCredential, setVerifiableCredential] = useState<any>(
     getLocalStorage("verifiableCredential")
@@ -103,17 +110,9 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
 
   const [responders, setResponders] = useState<Responder[]>([]);
 
-  const [credentialKey, setCredentialKey] = useState<
-    CredentialKey | undefined
-  >();
-
-  const [credentialPrivateKey, setCredentialPrivateKey] = useState(
-    getLocalStorage("credentialPrivateKey") || ""
+  const [didPrivateKey, setDidPrivateKey] = useState(
+    getLocalStorage("didPrivateKey") || ""
   );
-
-  const [vcVerificaitonResult, setvcVerificaitonResult] = useState<
-    boolean | undefined
-  >(getLocalStorage("vcVerificaitonResult") || undefined);
 
   // User uploaded credential's DID
   const [credentialDid, setCredentialDid] = useState(
@@ -123,6 +122,13 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
   const [verificationMethods, setVerificationMethods] = useState<any>(
     getLocalStorage("verificationMethods") || []
   );
+
+  const [credentialVerificationKey, setCredentialVerificationKey] =
+    useState<any>();
+
+  const [vcVerificaitonResult, setvcVerificaitonResult] = useState<
+    boolean | undefined
+  >(getLocalStorage("vcVerificaitonResult") || undefined);
 
   const [cid, setCid] = useState(getLocalStorage("cid") || "");
 
@@ -136,8 +142,9 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
   const cipher = new Cipher(); // by default {version: 'recommended'}
 
   const appState: AppState = {
-    loading,
-    setLoading,
+    activeLoaders,
+    addLoader,
+    removeLoader,
     verifiableCredential,
     setVerifiableCredential,
     selectedMethod,
@@ -156,16 +163,16 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
     responders,
     setResponders,
     client,
-    credentialKey,
-    setCredentialKey,
     vcVerificaitonResult,
     setvcVerificaitonResult,
     credentialDid,
     setCredentialDid,
     verificationMethods,
     setVerificationMethods,
-    credentialPrivateKey,
-    setCredentialPrivateKey,
+    didPrivateKey,
+    setDidPrivateKey,
+    credentialVerificationKey,
+    setCredentialVerificationKey,
     cid,
     setCid,
     cipher,
@@ -177,7 +184,7 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
     setLocalStorage("credPublicKey", credPublicKey);
     setLocalStorage("verificationMethods", verificationMethods);
     setLocalStorage("selectedMethod", selectedMethod);
-    setLocalStorage("credentialPrivateKey", credentialPrivateKey);
+    setLocalStorage("didPrivateKey", didPrivateKey);
     setLocalStorage("vcVerificaitonResult", vcVerificaitonResult);
     setLocalStorage("cid", cid);
     setLocalStorage("vcResponse", vcResponse);
@@ -188,19 +195,10 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
     vcVerificaitonResult,
     verifiableCredential,
     verificationMethods,
-    credentialKey,
-    credentialPrivateKey,
     cid,
     vcResponse,
+    didPrivateKey,
   ]);
-
-  useEffect(() => {
-    if (credentialPrivateKey) {
-      generateCredentialKey({
-        privateKeyHex: credentialPrivateKey,
-      }).then((credentialKey) => setCredentialKey(credentialKey));
-    }
-  }, [credentialPrivateKey]);
 
   return <AppContext.Provider value={appState}>{children}</AppContext.Provider>;
 };
