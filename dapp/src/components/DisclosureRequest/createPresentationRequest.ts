@@ -1,11 +1,14 @@
-import { documentLoader } from "../../utils";
+import { Ed25519VerificationKey2020 } from "@digitalbazaar/ed25519-verification-key-2020";
+import { createSuite, documentLoader } from "../../utils";
 import { createAuthDetails } from "../../utils/createAuthDetails";
-import { CredentialKey, LoadingState } from "../AppProvider";
 import { createPresentationDefinition } from "./createPresentationDefinition";
 
 const createPresentationRequest = async ({
-  setLoading,
-  credentialKey,
+  addLoader,
+  removeLoader,
+  credentialVerificationKey,
+
+  selectedMethod,
   verifiableCredential,
   vcResponse,
   selectedFields,
@@ -13,8 +16,10 @@ const createPresentationRequest = async ({
   setCreatePresentationSuccess,
   setPresentationRequest,
 }: {
-  setLoading: React.Dispatch<React.SetStateAction<LoadingState>>;
-  credentialKey: CredentialKey;
+  addLoader: (id: string) => void;
+  removeLoader: (removedId: string) => void;
+  credentialVerificationKey: any;
+  selectedMethod: any;
   verifiableCredential: any;
   vcResponse: any;
   selectedFields: string[];
@@ -24,16 +29,26 @@ const createPresentationRequest = async ({
   >;
   setPresentationRequest: React.Dispatch<any>;
 }) => {
-  setLoading({ id: "createPresentationRequest" });
+  addLoader("createPresentationRequest");
+  if (credentialVerificationKey) {
+    const suite = await createSuite({
+      type: selectedMethod.type,
+      verificationKey: credentialVerificationKey,
+    });
 
-  if (credentialKey) {
-    const { verificationKey, suite } = credentialKey;
+    const verificationKey2020 =
+      selectedMethod.type === "Ed25519VerificationKey2020"
+        ? credentialVerificationKey
+        : await Ed25519VerificationKey2020.from({
+            ...credentialVerificationKey,
+            keyPair: credentialVerificationKey,
+          });
     // create authorization_details
     const authDetails = await createAuthDetails({
       verifiableCredential,
       challenge: "challenge",
       documentLoader,
-      verificationKey,
+      verificationKey: verificationKey2020,
       suite,
     });
 
@@ -52,7 +67,7 @@ const createPresentationRequest = async ({
     };
 
     setPresentationRequest(contents);
-    setLoading({ id: undefined });
+    removeLoader("createPresentationRequest");
     setCreatePresentationSuccess(true);
   } else {
     setCreatePresentationSuccess(false);

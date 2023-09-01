@@ -51,14 +51,5 @@ export const createAuthDetails = async ({
     },
   };
 
-  // Optionally assert that the credential verifies
-  const resultVp = await vc.verify({
-    presentation: vp,
-    challenge,
-    suite,
-    documentLoader,
-  });
-
-  if (resultVp.verified) return authDetails;
-  else throw new Error("Presentation verification is invalid");
+  return authDetails;
 };

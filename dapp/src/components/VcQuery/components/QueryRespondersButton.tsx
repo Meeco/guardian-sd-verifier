@@ -12,7 +12,8 @@ const QueryRespondersButton = ({
   getRespondersSuccess?: boolean;
   getRespondersErrMsg: string;
 }) => {
-  const { signer, loading, vcVerificaitonResult } = useContext(AppContext);
+  const { signer, activeLoaders, vcVerificaitonResult } =
+    useContext(AppContext);
 
   if (!signer || !vcVerificaitonResult) {
     return (
@@ -27,11 +28,11 @@ const QueryRespondersButton = ({
         <Button
           onClick={handleQueryResponders}
           text="Query Responders"
-          loading={loading.id === "handleQueryResponders"}
+          loading={activeLoaders.includes("handleQueryResponders")}
         />
         <StatusLabel
           isSuccess={
-            loading.id === "handleQueryResponders"
+            activeLoaders.includes("handleQueryResponders")
               ? undefined
               : getRespondersSuccess
           }

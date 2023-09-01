@@ -8,7 +8,11 @@ import {
   useState,
 } from "react";
 import { createHederaClient } from "../hederaService";
-import { getLocalStorage, setLocalStorage } from "../utils";
+import {
+  deriveEdVerificationKey,
+  getLocalStorage,
+  setLocalStorage,
+} from "../utils";
 
 export interface AppState {
   activeLoaders: string[];
@@ -18,8 +22,8 @@ export interface AppState {
   setVerifiableCredential: React.Dispatch<any>;
   selectedMethod: any;
   setSelectedMethod: React.Dispatch<any>;
-  credPublicKey: string;
-  setCredPublicKey: React.Dispatch<React.SetStateAction<string>>;
+  didPublicKey: string;
+  setDidPublicKey: React.Dispatch<React.SetStateAction<string>>;
   topicId?: string;
   bladeConnector: any;
   setBladeConnector: React.Dispatch<any>;
@@ -89,27 +93,10 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
   const [selectedMethod, setSelectedMethod] = useState<any>(
     getLocalStorage("selectedMethod")
   );
-  // Credential's public key
-  const [credPublicKey, setCredPublicKey] = useState(
-    getLocalStorage("credPublicKey") || ""
+  // DID's keys
+  const [didPublicKey, setDidPublicKey] = useState(
+    getLocalStorage("didPublicKey") || ""
   );
-  // Topic ID for sending/receiving message
-  const topicId = process.env.REACT_APP_TOPIC_ID;
-  // Blade wallet connector
-  const [bladeConnector, setBladeConnector] = useState<
-    BladeConnector | undefined
-  >();
-  // Blade wallet signer(user)
-  const [signer, setSigner] = useState<BladeSigner | null>(null);
-  // Blade wallet account ID
-  const [accountId, setaccountId] = useState("");
-
-  const [vcResponse, setVcResponse] = useState<any>(
-    getLocalStorage("vcResponse")
-  );
-
-  const [responders, setResponders] = useState<Responder[]>([]);
-
   const [didPrivateKey, setDidPrivateKey] = useState(
     getLocalStorage("didPrivateKey") || ""
   );
@@ -132,6 +119,23 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
 
   const [cid, setCid] = useState(getLocalStorage("cid") || "");
 
+  // Topic ID for sending/receiving message
+  const topicId = process.env.REACT_APP_TOPIC_ID;
+  // Blade wallet connector
+  const [bladeConnector, setBladeConnector] = useState<
+    BladeConnector | undefined
+  >();
+  // Blade wallet signer(user)
+  const [signer, setSigner] = useState<BladeSigner | null>(null);
+  // Blade wallet account ID
+  const [accountId, setaccountId] = useState("");
+
+  const [vcResponse, setVcResponse] = useState<any>(
+    getLocalStorage("vcResponse")
+  );
+
+  const [responders, setResponders] = useState<Responder[]>([]);
+
   const client = useMemo(() => {
     return createHederaClient(
       process.env.REACT_APP_HEDERA_ACCOUNT_ID || "",
@@ -149,8 +153,8 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
     setVerifiableCredential,
     selectedMethod,
     setSelectedMethod,
-    credPublicKey,
-    setCredPublicKey,
+    didPublicKey,
+    setDidPublicKey,
     topicId,
     bladeConnector,
     setBladeConnector,
@@ -178,10 +182,11 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
     cipher,
   };
 
+  // store data in localstorage when they're updated
   useEffect(() => {
     setLocalStorage("verifiableCredential", verifiableCredential);
     setLocalStorage("credentialDid", credentialDid);
-    setLocalStorage("credPublicKey", credPublicKey);
+    setLocalStorage("didPublicKey", didPublicKey);
     setLocalStorage("verificationMethods", verificationMethods);
     setLocalStorage("selectedMethod", selectedMethod);
     setLocalStorage("didPrivateKey", didPrivateKey);
@@ -189,7 +194,7 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
     setLocalStorage("cid", cid);
     setLocalStorage("vcResponse", vcResponse);
   }, [
-    credPublicKey,
+    didPublicKey,
     credentialDid,
     selectedMethod,
     vcVerificaitonResult,
@@ -198,7 +203,24 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
     cid,
     vcResponse,
     didPrivateKey,
+    credentialVerificationKey,
   ]);
+
+  // derive verificationKey from DID's keys
+  useEffect(() => {
+    if (selectedMethod && didPrivateKey && didPublicKey) {
+      const { id, type } = selectedMethod;
+      deriveEdVerificationKey({
+        id,
+        did: credentialDid,
+        privateKeyHex: didPrivateKey,
+        publicKeyHex: didPublicKey,
+        type,
+      }).then((verificationKey) => {
+        setCredentialVerificationKey(verificationKey);
+      });
+    }
+  }, [didPublicKey, credentialDid, didPrivateKey, selectedMethod]);
 
   return <AppContext.Provider value={appState}>{children}</AppContext.Provider>;
 };

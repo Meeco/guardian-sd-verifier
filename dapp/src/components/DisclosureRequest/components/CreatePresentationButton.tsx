@@ -10,28 +10,32 @@ import {
 const CreatePresentationButton = ({
   handleCreatePresentationRequest,
   createPresentationSuccess,
+  createPresentationErrMsg,
 }: {
   handleCreatePresentationRequest: () => void;
   createPresentationSuccess?: boolean;
+  createPresentationErrMsg: string;
 }) => {
-  const { loading, credentialKey } = useContext(AppContext);
+  const { activeLoaders, credentialVerificationKey } = useContext(AppContext);
 
-  if (credentialKey) {
+  if (credentialVerificationKey) {
     return (
       <>
         <ButtonWithLoader
           onClick={handleCreatePresentationRequest}
           text="Create presentation"
-          loading={loading.id === "createPresentationRequest"}
+          loading={activeLoaders.includes("createPresentationRequest")}
         />
         <StatusLabel
           isSuccess={
-            loading.id === "createPresentationRequest"
+            activeLoaders.includes("createPresentationRequest")
               ? undefined
               : createPresentationSuccess
           }
           text={
-            createPresentationSuccess ? "Created" : "Create Presentation Failed"
+            createPresentationSuccess
+              ? "Created"
+              : createPresentationErrMsg || "Create Presentation Failed"
           }
         />
       </>

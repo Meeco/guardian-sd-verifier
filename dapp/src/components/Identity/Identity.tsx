@@ -30,8 +30,8 @@ const Identity = () => {
     activeLoaders,
     addLoader,
     removeLoader,
-    credPublicKey,
-    setCredPublicKey,
+    didPublicKey,
+    setDidPublicKey,
     verifiableCredential,
     setVerifiableCredential,
     selectedMethod,
@@ -82,11 +82,11 @@ const Identity = () => {
         switch (type) {
           case "Ed25519VerificationKey2018":
             const { publicKeyJwk } = selectedMethod;
-            setCredPublicKey(getPublicKeyHexFromJwk(publicKeyJwk));
+            setDidPublicKey(getPublicKeyHexFromJwk(publicKeyJwk));
             break;
           case "Ed25519VerificationKey2020":
             const { publicKeyMultibase } = selectedMethod;
-            setCredPublicKey(
+            setDidPublicKey(
               Buffer.from(base58btc.decode(publicKeyMultibase)).toString("hex")
             );
             break;
@@ -97,7 +97,7 @@ const Identity = () => {
         console.log({ error });
       }
     },
-    [setCredPublicKey]
+    [setDidPublicKey]
   );
 
   // Get verification method from user uploaded credential
@@ -161,7 +161,7 @@ const Identity = () => {
           id: selectedMethod.id,
           did: credentialDid,
           privateKeyHex,
-          publicKeyHex: credPublicKey,
+          publicKeyHex: didPublicKey,
           type: selectedMethod.type,
         });
 
@@ -175,7 +175,7 @@ const Identity = () => {
 
         console.log({ verificationPublicKeyHex });
 
-        if (credPublicKey === verificationPublicKeyHex) {
+        if (didPublicKey === verificationPublicKeyHex) {
           setDidPrivateKey(privateKeyHex);
           setCredentialVerificationKey(verificationKey);
           setvcVerificaitonResult(undefined);

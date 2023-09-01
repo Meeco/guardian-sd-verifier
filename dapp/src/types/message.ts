@@ -24,7 +24,6 @@ export interface QueryResponseMessage {
   request_id: string;
   responder_did: string;
   offer_hbar: number;
-  response_ephem_public_key: string;
 }
 
 /**
@@ -32,12 +31,9 @@ export interface QueryResponseMessage {
  */
 export interface PresentationRequestMessage {
   operation: MessageType.PRESENTATION_REQUEST;
-  recipient_did: string;
   request_id: string;
+  recipient_did: string;
   request_file_id: string;
-  request_file_encrypted_key_id: string;
-  requester_did: string;
-  request_file_encryption_key_type: string;
 }
 /**
  * A message from a PEx responder to a verifier fulfilling a presentation request
@@ -45,11 +41,8 @@ export interface PresentationRequestMessage {
 export interface PresentationResponseMessage {
   operation: MessageType.PRESENTATION_RESPONSE;
   request_id: string;
-  recipient_did?: string;
-  response_file_id?: string;
-  request_file_encrypted_key_id: string;
-  responder_did: string;
-  request_file_encryption_key_type: string;
+  recipient_did: string;
+  response_file_id: string;
   error?: {
     code: string;
     message: string;

@@ -17,7 +17,7 @@ const GetVcButton = ({
   getVcSchemeSuccess?: boolean;
   selectedContext?: string;
 }) => {
-  const { loading, vcResponse } = useContext(AppContext);
+  const { activeLoaders, vcResponse } = useContext(AppContext);
 
   if (vcResponse) {
     return (
@@ -25,11 +25,13 @@ const GetVcButton = ({
         <ButtonWithLoader
           onClick={handleGetFields}
           text="Get VC Scheme"
-          loading={loading.id === "handleGetFields"}
+          loading={activeLoaders.includes("handleGetFields")}
         />
         <StatusLabel
           isSuccess={
-            loading.id === "handleGetFields" ? undefined : getVcSchemeSuccess
+            activeLoaders.includes("handleGetFields")
+              ? undefined
+              : getVcSchemeSuccess
           }
           text={
             getVcSchemeSuccess

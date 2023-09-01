@@ -16,8 +16,9 @@ const exploreLworksUrl = "https://explore.lworks.io/testnet/topics";
 const VcQuery = () => {
   const {
     signer,
-    loading,
-    setLoading,
+    activeLoaders,
+    addLoader,
+    removeLoader,
     vcResponse,
     setVcResponse,
     responders,
@@ -25,6 +26,7 @@ const VcQuery = () => {
     topicId,
     cid,
     setCid,
+    credentialDid,
   } = useContext(AppContext);
 
   const [getRespondersSuccess, setGetRespondersSuccess] = useState<
@@ -34,13 +36,13 @@ const VcQuery = () => {
 
   const handleFetchIpfs = async () => {
     try {
-      setLoading({ id: "handleFetchIpfs" });
+      addLoader("handleFetchIpfs");
       const file = await fetchIPFSFile(cid, { resultType: ResultType.JSON });
       setVcResponse(file);
-      setLoading({ id: undefined });
+      removeLoader("handleFetchIpfs");
     } catch (error) {
       setVcResponse(null);
-      setLoading({ id: undefined });
+      removeLoader("handleFetchIpfs");
       console.log({ error });
     }
   };
@@ -48,15 +50,14 @@ const VcQuery = () => {
   const handleQueryResponders = useCallback(async () => {
     if (signer) {
       try {
-        setLoading({ id: "handleQueryResponders" });
+        addLoader("handleQueryResponders");
         const requestId = uuidv4();
-        // const presentationDefinition = createPresentationDefinition(vcId);
         // create presentation query message
         const presentationQuery: PresentationQueryMessage = {
           operation: MessageType.PRESENTATION_QUERY,
           request_id: requestId,
           vc_id: vcResponse?.id,
-          requester_did: process.env.REACT_APP_REQUESTER_DID || "",
+          requester_did: credentialDid,
           limit_hbar: 1,
         };
 
@@ -91,27 +92,35 @@ const VcQuery = () => {
                 });
                 setResponders(responders);
                 setGetRespondersSuccess(true);
-                setLoading({ id: undefined });
+                removeLoader("handleQueryResponders");
               } else {
                 setgetRespondersErrMsg("No responder found");
                 setGetRespondersSuccess(false);
-                setLoading({ id: undefined });
+                removeLoader("handleQueryResponders");
               }
             } else {
               setGetRespondersSuccess(false);
               setgetRespondersErrMsg("Query Responders Failed");
-              setLoading({ id: undefined });
+              removeLoader("handleQueryResponders");
             }
           }
         );
       } catch (error) {
         console.log({ error });
-        setLoading({ id: undefined });
+        removeLoader("handleQueryResponders");
         setGetRespondersSuccess(false);
         setgetRespondersErrMsg((error as any).message);
       }
     }
-  }, [setLoading, setResponders, signer, topicId, vcResponse?.id]);
+  }, [
+    addLoader,
+    credentialDid,
+    removeLoader,
+    setResponders,
+    signer,
+    topicId,
+    vcResponse?.id,
+  ]);
 
   const handleChangeCid = (e: React.ChangeEvent<any>) => {
     setCid(e.target.value);
@@ -150,12 +159,12 @@ const VcQuery = () => {
           <Button
             onClick={handleFetchIpfs}
             text="Get VC"
-            loading={loading.id === "handleFetchIpfs"}
+            loading={activeLoaders.includes("handleFetchIpfs")}
             disabled={!cid}
           />
           <StatusLabel
             isSuccess={
-              loading.id === "handleFetchIpfs"
+              activeLoaders.includes("handleFetchIpfs")
                 ? undefined
                 : fetchVcResponseSuccess
             }

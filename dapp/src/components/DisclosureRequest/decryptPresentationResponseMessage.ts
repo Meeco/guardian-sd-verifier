@@ -15,10 +15,12 @@ const decryptPresentationResponseMessage = async ({
   client,
   cipher,
   presentationResponseMessage,
+  credentialVerificationKey,
 }: {
   client: Client;
   cipher: any;
   presentationResponseMessage?: PresentationResponseMessage;
+  credentialVerificationKey: any;
 }) => {
   if (presentationResponseMessage?.error) {
     const { error } = presentationResponseMessage;
@@ -39,16 +41,11 @@ const decryptPresentationResponseMessage = async ({
       const fileContents = Buffer.from(fileContentsBuffer).toString("utf-8");
 
       const keyAgreementKey = await deriveKeyAgreementKey({
-        did: process.env.REACT_APP_REQUESTER_DID || "",
-        didKeyId: process.env.REACT_APP_REQUESTER_DID_KEY_ID || "",
-        privateKeyStr:
-          process.env.REACT_APP_RREQUESTER_DID_PRIVATE_KEY_HEX || "",
-        publicKeyStr: process.env.REACT_APP_RREQUESTER_DID_PUBLIC_KEY_HEX || "",
-        type: "",
+        verificationKey: credentialVerificationKey,
       });
 
       const decrypted = await cipher.decryptObject({
-        jwe: fileContents,
+        jwe: JSON.parse(fileContents),
         keyAgreementKey,
       });
 

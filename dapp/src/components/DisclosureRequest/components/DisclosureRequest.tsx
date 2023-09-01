@@ -19,20 +19,24 @@ const DisclosureRequest = () => {
     client,
     signer,
     topicId,
-    loading,
-    setLoading,
+    activeLoaders,
+    addLoader,
+    removeLoader,
     verifiableCredential,
     vcResponse,
-    credentialKey,
+    credentialVerificationKey,
     responders,
     setResponders,
+    selectedMethod,
     cipher,
   } = useContext(AppContext);
 
   const credentialSubject = verifiableCredential?.credentialSubject;
 
   const [selectedContext, setSelectedContext] = useState<string | undefined>();
-  const [credentialType, setCredntialType] = useState<string | undefined>();
+  const [credentialSubjectType, setCredntialSubjectType] = useState<
+    string | undefined
+  >();
   const [presentationRequest, setPresentationRequest] = useState<any>();
 
   const [selectableFields, setSelectableFields] = useState<string[]>([]);
@@ -44,6 +48,7 @@ const DisclosureRequest = () => {
   const [createPresentationSuccess, setCreatePresentationSuccess] = useState<
     boolean | undefined
   >(undefined);
+  const [createPresentationErrMsg, setCreatePresentationErrMsg] = useState("");
 
   const displayedFields = useMemo(
     () => selectableFields.filter((field) => field !== "select-all"),
@@ -54,7 +59,7 @@ const DisclosureRequest = () => {
     presentationResponse: any,
     did: string
   ) => {
-    if (loading.id === `handleSendRequest-${did}`) {
+    if (activeLoaders.includes(`handleSendRequest-${did}`)) {
       return;
     }
     if (presentationResponse !== undefined) {
@@ -72,7 +77,7 @@ const DisclosureRequest = () => {
 
   const handleGetFields = useCallback(async () => {
     try {
-      setLoading({ id: "handleGetFields" });
+      addLoader("handleGetFields");
       const selectedContext = vcResponse["@context"].filter((context: string) =>
         context.startsWith("https://ipfs.io/ipfs/")
       )[0];
@@ -80,11 +85,11 @@ const DisclosureRequest = () => {
 
       const contextDocument = await (await fetch(selectedContext)).json();
 
-      const credentialType = vcResponse.credentialSubject.type;
-      setCredntialType(credentialType);
+      const credentialSubjectType = vcResponse.credentialSubject.type;
+      setCredntialSubjectType(credentialSubjectType);
 
       const credentialContext =
-        contextDocument["@context"][credentialType]["@context"];
+        contextDocument["@context"][credentialSubjectType]["@context"];
       const contextFields = Object.keys(credentialContext);
       const preservedFields = [
         "@version",
@@ -98,13 +103,13 @@ const DisclosureRequest = () => {
       );
       setSelectableFields([...selectableFields, "select-all"]);
       setGetVcSchemeSuccess(true);
-      setLoading({ id: undefined });
+      removeLoader("handleGetFields");
     } catch (error) {
-      setLoading({ id: undefined });
+      removeLoader("handleGetFields");
       setGetVcSchemeSuccess(false);
       console.log({ error });
     }
-  }, [setLoading, vcResponse]);
+  }, [addLoader, removeLoader, vcResponse]);
 
   const handleSelectField = (e: React.ChangeEvent<any>) => {
     if (selectedFields.includes(e?.target.id)) {
@@ -123,24 +128,32 @@ const DisclosureRequest = () => {
   };
 
   const handleCreatePresentationRequest = () => {
-    if (credentialKey)
-      createPresentationRequest({
-        credentialSubject,
-        credentialKey,
-        selectedFields,
-        setCreatePresentationSuccess,
-        setLoading,
-        setPresentationRequest,
-        vcResponse,
-        verifiableCredential,
-      });
+    if (credentialVerificationKey) {
+      try {
+        createPresentationRequest({
+          credentialSubject,
+          credentialVerificationKey,
+          selectedMethod,
+          selectedFields,
+          setCreatePresentationSuccess,
+          addLoader,
+          removeLoader,
+          setPresentationRequest,
+          vcResponse,
+          verifiableCredential,
+        });
+        setCreatePresentationErrMsg("");
+      } catch (error) {
+        setCreatePresentationErrMsg((error as any).message);
+      }
+    }
   };
 
   return (
     <Accordion.Item eventKey={EventKey.DisclosureRequest}>
       <Accordion.Header>
         <b>Disclosure Request&nbsp;</b>{" "}
-        {credentialType ? `(${credentialType})` : ""}
+        {credentialSubjectType ? `(${credentialSubjectType})` : ""}
       </Accordion.Header>
       <Accordion.Body>
         <div className="d-flex mt-2 align-items-center">
@@ -180,6 +193,7 @@ const DisclosureRequest = () => {
                   handleCreatePresentationRequest
                 }
                 createPresentationSuccess={createPresentationSuccess}
+                createPresentationErrMsg={createPresentationErrMsg}
               />
             </div>
             {presentationRequest && (
@@ -252,7 +266,8 @@ const DisclosureRequest = () => {
                             handleSendPresentationRequest({
                               responderDid: did,
                               encyptedKeyId,
-                              setLoading,
+                              addLoader,
+                              removeLoader,
                               presentationRequest,
                               signer,
                               topicId,
@@ -260,15 +275,18 @@ const DisclosureRequest = () => {
                               client,
                               responders,
                               setResponders,
+                              credentialVerificationKey,
                             })
                           }
                           text="Send request"
-                          loading={loading.id === `handleSendRequest-${did}`}
+                          loading={activeLoaders.includes(
+                            `handleSendRequest-${did}`
+                          )}
                         />
                       )}
                       <StatusLabel
                         isSuccess={
-                          loading.id === `handleSendRequest-${did}`
+                          activeLoaders.includes(`handleSendRequest-${did}`)
                             ? undefined
                             : isSuccess
                         }

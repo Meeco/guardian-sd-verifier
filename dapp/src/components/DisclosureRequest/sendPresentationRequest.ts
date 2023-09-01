@@ -5,7 +5,6 @@ import { fetchResolveDid } from "../../didService";
 import { createFile } from "../../fileService";
 import { MessageType, PresentationRequestMessage } from "../../types";
 import { deriveKeyAgreementKey } from "../../utils";
-import { handlePollPresentationResponseRequest } from "./handlePollPresentationResponseRequest";
 
 // Get presentation response from HCS
 const sendPresentationRequest = async ({
@@ -28,14 +27,14 @@ const sendPresentationRequest = async ({
 
     const didDocument = await fetchResolveDid(responderDid);
 
-    const edVerificationKey = didDocument.publicKey.filter((item: any) => {
+    const verificationKey = didDocument.publicKey.filter((item: any) => {
       const keyId = item.id.split("#")[1];
       return encyptedKeyId === `${keyId}`;
     })[0];
 
     const responderKeyAgreement = await deriveKeyAgreementKey({
-      edVerificationKey,
-      type: edVerificationKey.type,
+      verificationKey,
+      type: verificationKey.type,
     });
 
     const keyResolver = async () => responderKeyAgreement;
@@ -60,33 +59,22 @@ const sendPresentationRequest = async ({
       recipient_did: responderDid,
       request_id: requestId,
       request_file_id: fileId?.toString() || "",
-      request_file_encrypted_key_id: encyptedKeyId,
-      requester_did: process.env.REACT_APP_REQUESTER_DID || "",
-      request_file_encryption_key_type: "X25519",
     };
 
     // send presentation request to HCS
     const presentationRequestMessageStr = JSON.stringify(
       presentationRequestMessage
     );
-    const timeStamp = Date.now();
-    const presentationResponseMessage = submitMessage(
+    const isSuccess = await submitMessage(
       presentationRequestMessageStr,
       signer,
       topicId
-    ).then(async (isSuccess) => {
-      if (isSuccess) {
-        return handlePollPresentationResponseRequest({
-          requestId,
-          topicId,
-          timeStamp,
-        });
-      }
-    });
+    );
 
-    return presentationResponseMessage;
+    return { isSuccess, requestId };
   } catch (error) {
     console.log({ error });
+    return { isSuccess: false, requestId: undefined };
   }
 };
 
