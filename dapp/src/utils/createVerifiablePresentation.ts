@@ -8,18 +8,10 @@ import { v4 } from "uuid";
  * - `verifiableCredential` - the imported verifiable credential with proof
  * - `challenge` - the challenge string
  * - `documentLoader` that will need to be able to load DIDs and context URLs
- * - `key` - e.g.
- *  ```
- *    await Ed25519VerificationKey2018.from({
- *      id: 'did:key:abcd#1234',
- *      controller: 'did:key:abcd,
- *      type: 'Ed25519VerificationKey2018',
- *      publicKeyBase58: 'z6m...',
- *      privateKeyBase58: '7vt...',
- *    })
- *  ```
+ * - `verificationKey` - Ed25519VerificationKey2020 key
+ * - `suite` - suite for sign the presentation
  */
-export const createAuthDetails = async ({
+const createVerifiablePresentation = async ({
   verifiableCredential,
   challenge,
   documentLoader,
@@ -45,11 +37,7 @@ export const createAuthDetails = async ({
     documentLoader,
   });
 
-  const authDetails = {
-    verifiablePresentation: {
-      ...vp,
-    },
-  };
-
-  return authDetails;
+  return vp;
 };
+
+export default createVerifiablePresentation;

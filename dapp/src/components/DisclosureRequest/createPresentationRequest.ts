@@ -1,6 +1,9 @@
 import { Ed25519VerificationKey2020 } from "@digitalbazaar/ed25519-verification-key-2020";
-import { createSuite, documentLoader } from "../../utils";
-import { createAuthDetails } from "../../utils/createAuthDetails";
+import {
+  createSuite,
+  createVerifiablePresentation,
+  documentLoader,
+} from "../../utils";
 import { createPresentationDefinition } from "./createPresentationDefinition";
 
 const createPresentationRequest = async ({
@@ -43,14 +46,20 @@ const createPresentationRequest = async ({
             ...credentialVerificationKey,
             keyPair: credentialVerificationKey,
           });
-    // create authorization_details
-    const authDetails = await createAuthDetails({
+
+    const vp = await createVerifiablePresentation({
       verifiableCredential,
       challenge: "challenge",
       documentLoader,
       verificationKey: verificationKey2020,
       suite,
     });
+
+    const authDetails = {
+      verifiablePresentation: {
+        ...vp,
+      },
+    };
 
     const presentationDefinition = createPresentationDefinition(
       vcResponse.id,

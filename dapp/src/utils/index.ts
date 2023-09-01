@@ -1,4 +1,5 @@
 export { default as createSuite } from "./createSuite";
+export { default as createVerifiablePresentation } from "./createVerifiablePresentation";
 export { default as decryptData } from "./decryptData";
 export { default as deriveEdVerificationKey } from "./deriveEdVerificationKey";
 export { default as deriveKeyAgreementKey } from "./deriveKeyAgreementKey";
