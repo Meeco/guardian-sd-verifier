@@ -16,7 +16,7 @@ import { EventKey } from "../../constants";
 import { fetchResolveDid } from "../../didService";
 import { documentLoader } from "../../utils";
 import deriveEdVerificationKey from "../../utils/deriveEdVerificationKey";
-import getPublicKeyHexFromJwk from "../../utils/getPublicKeyHexFromJwk";
+import derivePublicKeyHexFromJwk from "../../utils/derivePublicKeyHexFromJwk";
 import { AppContext } from "../AppProvider";
 import {
   AccordianToggleButton,
@@ -82,7 +82,7 @@ const Identity = () => {
         switch (type) {
           case "Ed25519VerificationKey2018":
             const { publicKeyJwk } = selectedMethod;
-            setDidPublicKey(getPublicKeyHexFromJwk(publicKeyJwk));
+            setDidPublicKey(derivePublicKeyHexFromJwk(publicKeyJwk));
             break;
           case "Ed25519VerificationKey2020":
             const { publicKeyMultibase } = selectedMethod;

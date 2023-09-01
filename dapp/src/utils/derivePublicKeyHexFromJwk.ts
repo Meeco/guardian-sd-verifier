@@ -6,11 +6,11 @@ interface JWK {
   x: string;
 }
 
-const getPublicKeyHexFromJwk = (jwk: JWK) => {
+const derivePublicKeyHexFromJwk = (jwk: JWK) => {
   const buffer = Buffer.from(jwk.x, "base64");
   const hex = buffer.toString("hex");
 
   return hex;
 };
 
-export default getPublicKeyHexFromJwk;
+export default derivePublicKeyHexFromJwk;
