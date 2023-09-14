@@ -19,15 +19,17 @@ const deriveEdVerificationKey = async ({
 }) => {
   let edKey;
   if (type === "Ed25519VerificationKey2018") {
+    const privateKeyBase58 = privateKeyHex
+      ? bs58.encode(Buffer.from(privateKeyHex, "hex"))
+      : undefined;
+    const publicKeyBase58 = bs58.encode(Buffer.from(publicKeyHex, "hex"));
     edKey = await Ed25519VerificationKey2020.fromEd25519VerificationKey2018({
       keyPair: {
         id,
         controller: did,
         type: "Ed25519VerificationKey2018",
-        privateKeyBase58: privateKeyHex
-          ? bs58.encode(Buffer.from(privateKeyHex, "hex"))
-          : undefined,
-        publicKeyBase58: bs58.encode(Buffer.from(publicKeyHex, "hex")),
+        privateKeyBase58,
+        publicKeyBase58,
       },
     });
   } else {
