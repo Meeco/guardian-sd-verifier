@@ -9,14 +9,14 @@ import { deriveKeyAgreementKey } from "../../utils";
 // Get presentation response from HCS
 const sendPresentationRequest = async ({
   responderDid,
-  encyptedKeyId = "did-root-key",
+  encryptedKeyId = "did-root-key",
   presentationRequest,
   signer,
   topicId,
   cipher,
 }: {
   presentationRequest: any;
-  encyptedKeyId: string;
+  encryptedKeyId: string;
   responderDid: string;
   signer: BladeSigner;
   topicId?: string;
@@ -27,9 +27,12 @@ const sendPresentationRequest = async ({
 
     const didDocument = await fetchResolveDid(responderDid);
 
-    const verificationKey = didDocument.publicKey.filter((item: any) => {
+    // Different key types use a different property
+    const verificationKey = (
+      didDocument.publicKey ?? didDocument.verificationMethod
+    ).filter((item: any) => {
       const keyId = item.id.split("#")[1];
-      return encyptedKeyId === `${keyId}`;
+      return encryptedKeyId === `${keyId}`;
     })[0];
 
     const responderKeyAgreement = await deriveKeyAgreementKey({

@@ -24,7 +24,7 @@ const GetVcButton = ({
       <>
         <ButtonWithLoader
           onClick={handleGetFields}
-          text="Get VC Scheme"
+          text="Get VC Schema"
           loading={activeLoaders.includes("handleGetFields")}
         />
         <StatusLabel
@@ -35,8 +35,8 @@ const GetVcButton = ({
           }
           text={
             getVcSchemeSuccess
-              ? "Get VC Scheme Success"
-              : "Get VC Scheme Failed"
+              ? "Get VC Schema Success"
+              : "Get VC Schema Failed"
           }
         />
         {selectedContext ? (

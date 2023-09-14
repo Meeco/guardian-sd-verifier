@@ -175,7 +175,9 @@ const Identity = () => {
 
         console.log({ verificationPublicKeyHex });
 
-        if (didPublicKey === verificationPublicKeyHex) {
+        // Use includes as a 2018 key has a header that will be stripped off
+        // resulting in a slightly different key
+        if (verificationPublicKeyHex.includes(didPublicKey)) {
           setDidPrivateKey(privateKeyHex);
           setCredentialVerificationKey(verificationKey);
           setvcVerificaitonResult(undefined);
@@ -305,7 +307,7 @@ const Identity = () => {
                 </div>
               )}
               <div className="mt-4">
-                <Form.Label>DID Private Key</Form.Label>
+                <Form.Label>DID Private Key (Hex)</Form.Label>
                 <Form.Control
                   className="w-50"
                   type="text"

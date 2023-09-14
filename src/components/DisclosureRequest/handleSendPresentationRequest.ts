@@ -8,7 +8,7 @@ import sendPresentationRequest from "./sendPresentationRequest";
 // Send presentation request to HCS
 const handleSendPresentationRequest = async ({
   responderDid,
-  encyptedKeyId,
+  encryptedKeyId,
   addLoader,
   removeLoader,
   presentationRequest,
@@ -21,7 +21,7 @@ const handleSendPresentationRequest = async ({
   credentialVerificationKey,
 }: {
   responderDid: string;
-  encyptedKeyId: string;
+  encryptedKeyId: string;
   addLoader: (id: string) => void;
   removeLoader: (removedId: string) => void;
   presentationRequest: any;
@@ -39,7 +39,7 @@ const handleSendPresentationRequest = async ({
 
     await sendPresentationRequest({
       responderDid,
-      encyptedKeyId,
+      encryptedKeyId,
       presentationRequest,
       signer,
       topicId,
