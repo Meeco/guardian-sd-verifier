@@ -28,17 +28,22 @@ const sendPresentationRequest = async ({
     const didDocument = await fetchResolveDid(responderDid);
 
     // Different key types use a different property
-    const verificationKey = (
+    const verificationKeys = (
       didDocument.publicKey ?? didDocument.verificationMethod
-    ).filter((item: any) => {
-      const keyId = item.id.split("#")[1];
-      return encryptedKeyId === `${keyId}`;
-    })[0];
+    ).filter(
+      (item: any) =>
+        encryptedKeyId === item.id ||
+        encryptedKeyId === item.id.split("#").pop()
+    );
 
-    const responderKeyAgreement = await deriveKeyAgreementKey({
-      verificationKey,
-      type: verificationKey.type,
-    });
+    if (verificationKeys.length < 1) {
+      throw new Error(
+        `No key found for did document "${responderDid}" matching id "${encryptedKeyId}"`
+      );
+    }
+    const [verificationKey] = verificationKeys;
+
+    const responderKeyAgreement = await deriveKeyAgreementKey(verificationKey);
 
     const keyResolver = async () => responderKeyAgreement;
 

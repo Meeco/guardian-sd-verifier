@@ -36,7 +36,6 @@ const handleSendPresentationRequest = async ({
   try {
     addLoader(`handleSendRequest-${responderDid}`);
     const timeStamp = Date.now();
-
     await sendPresentationRequest({
       responderDid,
       encryptedKeyId,
