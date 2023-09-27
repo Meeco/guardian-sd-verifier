@@ -40,9 +40,9 @@ const decryptPresentationResponseMessage = async ({
     if (fileContentsBuffer) {
       const fileContents = Buffer.from(fileContentsBuffer).toString("utf-8");
 
-      const keyAgreementKey = await deriveKeyAgreementKey({
-        verificationKey: credentialVerificationKey,
-      });
+      const keyAgreementKey = await deriveKeyAgreementKey(
+        credentialVerificationKey
+      );
 
       const decrypted = await cipher.decryptObject({
         jwe: JSON.parse(fileContents),

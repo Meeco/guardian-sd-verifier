@@ -60,7 +60,7 @@ export interface LoadingState {
 export interface Responder {
   did: string;
   accountId: string;
-  encyptedKeyId: string;
+  encryptedKeyId: string;
   presentationResponse?: any;
 }
 

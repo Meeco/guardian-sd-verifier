@@ -87,7 +87,7 @@ const VcQuery = () => {
                   return {
                     did: item.responder_did,
                     accountId: item.payer_account_id,
-                    encyptedKeyId: item.response_file_encrypted_key_id,
+                    encryptedKeyId: item.response_file_encrypted_key_id,
                   };
                 });
                 setResponders(responders);

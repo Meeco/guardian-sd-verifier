@@ -243,7 +243,7 @@ const DisclosureRequest = () => {
         {responders &&
           presentationRequest &&
           responders.map((responder) => {
-            const { accountId, did, presentationResponse, encyptedKeyId } =
+            const { accountId, did, presentationResponse, encryptedKeyId } =
               responder;
             const isSuccess = presentationResponseStatus(
               presentationResponse,
@@ -265,7 +265,7 @@ const DisclosureRequest = () => {
                           onClick={() =>
                             handleSendPresentationRequest({
                               responderDid: did,
-                              encyptedKeyId,
+                              encryptedKeyId,
                               addLoader,
                               removeLoader,
                               presentationRequest,
