@@ -1,7 +1,7 @@
 import { useContext } from "react";
-import { EventKey } from "../../../constants";
-import { AppContext } from "../../AppProvider";
-import { AccordianToggleButton, Button, StatusLabel } from "../../common";
+import { EventKey } from "../../constants";
+import { AppContext } from "../AppProvider";
+import { AccordianToggleButton, Button, StatusLabel } from "../common";
 
 const QueryRespondersButton = ({
   handleQueryResponders,

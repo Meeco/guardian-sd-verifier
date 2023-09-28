@@ -321,7 +321,7 @@ const Identity = () => {
                   <>
                     <AccordianToggleButton
                       text="Next"
-                      eventKey={EventKey.VcQuery}
+                      eventKey={EventKey.VCAndPresentationDefinition}
                       isSuccess={
                         activeLoaders.includes("verifyCredential")
                           ? undefined

@@ -25,6 +25,7 @@ export interface AppState {
   didPublicKey: string;
   setDidPublicKey: React.Dispatch<React.SetStateAction<string>>;
   topicId?: string;
+  setTopicId: React.Dispatch<React.SetStateAction<string | undefined>>;
   bladeConnector: any;
   setBladeConnector: React.Dispatch<any>;
   signer: BladeSigner | null;
@@ -51,6 +52,8 @@ export interface AppState {
   cid: string;
   setCid: React.Dispatch<React.SetStateAction<string>>;
   cipher: any;
+  presentationRequest: any;
+  setPresentationRequest: React.Dispatch<any>;
 }
 
 export interface LoadingState {
@@ -120,7 +123,9 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
   const [cid, setCid] = useState(getLocalStorage("cid") || "");
 
   // Topic ID for sending/receiving message
-  const topicId = process.env.REACT_APP_TOPIC_ID;
+  const [topicId, setTopicId] = useState<string | undefined>(
+    process.env.REACT_APP_TOPIC_ID
+  );
   // Blade wallet connector
   const [bladeConnector, setBladeConnector] = useState<
     BladeConnector | undefined
@@ -133,6 +138,8 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
   const [vcResponse, setVcResponse] = useState<any>(
     getLocalStorage("vcResponse")
   );
+
+  const [presentationRequest, setPresentationRequest] = useState<any>();
 
   const [responders, setResponders] = useState<Responder[]>([]);
 
@@ -156,6 +163,7 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
     didPublicKey,
     setDidPublicKey,
     topicId,
+    setTopicId,
     bladeConnector,
     setBladeConnector,
     signer,
@@ -180,6 +188,8 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
     cid,
     setCid,
     cipher,
+    presentationRequest,
+    setPresentationRequest,
   };
 
   // store data in localstorage when they're updated

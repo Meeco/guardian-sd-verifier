@@ -18,6 +18,7 @@ const createPresentationRequest = async ({
   credentialSubject,
   setCreatePresentationSuccess,
   setPresentationRequest,
+  setPresentationDefinition,
 }: {
   addLoader: (id: string) => void;
   removeLoader: (removedId: string) => void;
@@ -31,6 +32,7 @@ const createPresentationRequest = async ({
     React.SetStateAction<boolean | undefined>
   >;
   setPresentationRequest: React.Dispatch<any>;
+  setPresentationDefinition: React.Dispatch<any>;
 }) => {
   addLoader("createPresentationRequest");
   if (credentialVerificationKey) {
@@ -75,6 +77,7 @@ const createPresentationRequest = async ({
       },
     };
 
+    setPresentationDefinition(presentationDefinition);
     setPresentationRequest(contents);
     removeLoader("createPresentationRequest");
     setCreatePresentationSuccess(true);
