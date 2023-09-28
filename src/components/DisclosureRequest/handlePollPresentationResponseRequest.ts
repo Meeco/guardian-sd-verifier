@@ -1,4 +1,4 @@
-import { getTopicMessages } from "../../hederaService";
+import { getTopicMessages } from "../../consensusService";
 import { MessageType, PresentationResponseMessage } from "../../types";
 import { pollRequest } from "../../utils";
 
