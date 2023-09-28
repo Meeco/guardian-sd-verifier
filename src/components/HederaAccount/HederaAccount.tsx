@@ -34,7 +34,7 @@ const HederaAccount = () => {
         <b>Hedera Account&nbsp;</b> {accountId ? `(${accountId})` : undefined}
       </Accordion.Header>
       <Accordion.Body>
-        <p>
+        <p className="fst-italic">
           Connect a Header HBar wallet to pay for transactions to HCS and HFS.
         </p>
         <div className="d-flex mb-3">

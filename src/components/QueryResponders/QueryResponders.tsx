@@ -115,8 +115,8 @@ const QueryResponders = () => {
       </Accordion.Header>
       <Accordion.Body>
         <div className="mt-2">
-          <div className="my-3">
-            <Form.Label>Topic ID</Form.Label>
+          <div className="mt-2 mb-3">
+            <Form.Label>Topic ID (deafult: {topicId})</Form.Label>
             <Form.Control
               type="text"
               placeholder="CID"

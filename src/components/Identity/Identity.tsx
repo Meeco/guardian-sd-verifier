@@ -254,7 +254,7 @@ const Identity = () => {
         {credentialDid ? `(${credentialDid})` : undefined}
       </Accordion.Header>
       <Accordion.Body>
-        <p>
+        <p className="fst-italic">
           Set your DID, and authorisation Verifiable Credential to send your
           presentation request from.
         </p>
