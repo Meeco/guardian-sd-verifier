@@ -11,7 +11,8 @@ import {
   useMemo,
   useState,
 } from "react";
-import { Accordion, Form } from "react-bootstrap";
+import { Accordion, Form, InputGroup } from "react-bootstrap";
+import { EyeFill, EyeSlash } from "react-bootstrap-icons";
 import { EventKey } from "../../constants";
 import { fetchResolveDid } from "../../didService";
 import { documentLoader } from "../../utils";
@@ -51,7 +52,8 @@ const Identity = () => {
   // User uploaded file
   const [file, setFile] = useState<File | undefined>();
 
-  const [displayedKey, setDisplayedKey] = useState(didPrivateKey);
+  const [displayedKey, setDisplayedKey] = useState(didPrivateKey || "");
+  const [isRevealed, setIsRevealed] = useState(false);
 
   const [getVerificationMethodsSuccess, setGetVerificationMethodsSuccess] =
     useState<boolean | undefined>(undefined);
@@ -241,6 +243,10 @@ const Identity = () => {
     }
   };
 
+  const handlePasswordReveal = () => {
+    setIsRevealed((prev) => !prev);
+  };
+
   useEffect(() => {
     if (selectedMethod) {
       getPublicKey(selectedMethod);
@@ -308,13 +314,19 @@ const Identity = () => {
               )}
               <div className="mt-4">
                 <Form.Label>DID Private Key (Hex)</Form.Label>
-                <Form.Control
-                  className="w-50"
-                  type="text"
-                  onChange={handlePrivateKeyChange}
-                  disabled={!selectedMethod}
-                  value={displayedKey}
-                />
+                <InputGroup className="w-50">
+                  <Form.Control
+                    type={isRevealed ? "text" : "password"}
+                    onChange={handlePrivateKeyChange}
+                    disabled={!selectedMethod}
+                    value={displayedKey}
+                  />
+                  <InputGroup.Text>
+                    <i onClick={handlePasswordReveal}>
+                      {isRevealed ? <EyeSlash /> : <EyeFill />}
+                    </i>
+                  </InputGroup.Text>
+                </InputGroup>
               </div>
               <div className="d-flex mt-3">
                 {vcVerificaitonResult ? (
