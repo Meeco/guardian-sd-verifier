@@ -65,7 +65,7 @@ const createPresentationRequest = async ({
 
     const presentationDefinition = createPresentationDefinition(
       vcResponse.id,
-      selectedFields
+      selectedFields.filter(field => field !== 'select-all')
     );
 
     // create presentation query file
