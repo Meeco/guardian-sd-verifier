@@ -151,7 +151,9 @@ const VCAndPresentationDefinition = () => {
         {vcResponse?.id ? `(${vcResponse?.id})` : ""}
       </Accordion.Header>
       <Accordion.Body>
-        <p>Create a request for selective disclosure of a discovered VC</p>
+        <p className="fst-italic">
+          Create a request for selective disclosure of a discovered VC
+        </p>
         <Form.Label>CID</Form.Label>
         <div className="d-flex align-items-center">
           <Form.Control
@@ -246,6 +248,7 @@ const VCAndPresentationDefinition = () => {
                     />
                     <Button
                       className="me-3 mt-3"
+                      variant="outline-primary"
                       onClick={() =>
                         downloadJson(
                           presentationDefinition.presentation_definition,

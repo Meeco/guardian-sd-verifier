@@ -70,12 +70,10 @@ const HederaAccount = () => {
         <p className="fst-italic">
           Connect a Header HBar wallet to pay for transactions to HCS and HFS.
         </p>
-        <div
-          className="connect-btn-group mb-3"
-          onMouseEnter={handleHover}
-          onMouseLeave={handleHover}
-        >
+        <div className="connect-btn-group mb-3">
           <Button
+            onMouseEnter={handleHover}
+            onMouseLeave={handleHover}
             onClick={displayConnect ? handleConnectWallet : handleDisconnect}
             variant={displayConnect ? "outline-primary" : "danger"}
           >

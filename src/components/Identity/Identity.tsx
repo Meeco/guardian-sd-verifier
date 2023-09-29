@@ -52,7 +52,7 @@ const Identity = () => {
   // User uploaded file
   const [file, setFile] = useState<File | undefined>();
 
-  const [displayedKey, setDisplayedKey] = useState(didPrivateKey || "");
+  const [displayedKey, setDisplayedKey] = useState(didPrivateKey);
   const [isRevealed, setIsRevealed] = useState(false);
 
   const [getVerificationMethodsSuccess, setGetVerificationMethodsSuccess] =
