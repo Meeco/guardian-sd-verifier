@@ -4,20 +4,14 @@ import ReactJson from "react-json-view";
 import { EventKey } from "../../../constants";
 import { downloadJson } from "../../../utils";
 import { AppContext } from "../../AppProvider";
-import {
-  AccordianToggleButton,
-  Button as ButtonWithLoader,
-  StatusLabel,
-} from "../../common";
+import { StatusLabel } from "../../common";
 import createPresentationRequest from "../createPresentationRequest";
-import handleSendPresentationRequest from "../handleSendPresentationRequest";
 import CreatePresentationButton from "./CreatePresentationButton";
 import GetVcButton from "./GetVcButton";
 
 const DisclosureRequest = () => {
   const {
     client,
-    signer,
     topicId,
     activeLoaders,
     addLoader,
@@ -230,14 +224,14 @@ const DisclosureRequest = () => {
           </>
         )}
 
-        {!signer ? (
+        {/* {!signer ? (
           <div className="mt-3">
             <AccordianToggleButton
               text={"Connect to wallet"}
               eventKey={EventKey.HederaAccount}
             />
           </div>
-        ) : null}
+        ) : null} */}
 
         {/* ===== Responders section ====== */}
         {responders &&
@@ -260,7 +254,7 @@ const DisclosureRequest = () => {
                   </Accordion.Header>
                   <Accordion.Body>
                     <div className="d-flex mt-2">
-                      {signer && (
+                      {/* {signer && (
                         <ButtonWithLoader
                           onClick={() =>
                             handleSendPresentationRequest({
@@ -283,7 +277,7 @@ const DisclosureRequest = () => {
                             `handleSendRequest-${did}`
                           )}
                         />
-                      )}
+                      )} */}
                       <StatusLabel
                         isSuccess={
                           activeLoaders.includes(`handleSendRequest-${did}`)

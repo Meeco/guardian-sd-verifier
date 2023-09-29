@@ -1,5 +1,6 @@
-import { BladeConnector, BladeSigner } from "@bladelabs/blade-web3.js";
 import { Cipher } from "@digitalbazaar/minimal-cipher";
+import { HashConnect, HashConnectTypes } from "hashconnect";
+import { HashConnectSigner } from "hashconnect/dist/esm/provider/signer";
 import {
   createContext,
   useCallback,
@@ -25,12 +26,18 @@ export interface AppState {
   didPublicKey: string;
   setDidPublicKey: React.Dispatch<React.SetStateAction<string>>;
   topicId?: string;
-  bladeConnector: any;
-  setBladeConnector: React.Dispatch<any>;
-  signer: BladeSigner | null;
-  setSigner: React.Dispatch<React.SetStateAction<BladeSigner | null>>;
+  hashConnectData?: HashConnectTypes.InitilizationData;
+  setHashConnectData: React.Dispatch<
+    React.SetStateAction<HashConnectTypes.InitilizationData | undefined>
+  >;
+  hashconnect?: HashConnect;
+  setHashconnect: React.Dispatch<React.SetStateAction<HashConnect | undefined>>;
+  signer?: HashConnectSigner;
+  setSigner: React.Dispatch<
+    React.SetStateAction<HashConnectSigner | undefined>
+  >;
   accountId: string;
-  setaccountId: React.Dispatch<React.SetStateAction<string>>;
+  setAccountId: React.Dispatch<React.SetStateAction<string>>;
   vcResponse: any;
   setVcResponse: React.Dispatch<any>;
   responders: Responder[];
@@ -121,14 +128,16 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
 
   // Topic ID for sending/receiving message
   const topicId = process.env.REACT_APP_TOPIC_ID;
-  // Blade wallet connector
-  const [bladeConnector, setBladeConnector] = useState<
-    BladeConnector | undefined
-  >();
-  // Blade wallet signer(user)
-  const [signer, setSigner] = useState<BladeSigner | null>(null);
-  // Blade wallet account ID
-  const [accountId, setaccountId] = useState("");
+
+  // Wallet data
+  const [hashConnectData, setHashConnectData] =
+    useState<HashConnectTypes.InitilizationData>();
+
+  const [hashconnect, setHashconnect] = useState<HashConnect>();
+
+  const [signer, setSigner] = useState<HashConnectSigner>();
+  // Wallet's account ID
+  const [accountId, setAccountId] = useState("");
 
   const [vcResponse, setVcResponse] = useState<any>(
     getLocalStorage("vcResponse")
@@ -146,6 +155,12 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
   const cipher = new Cipher(); // by default {version: 'recommended'}
 
   const appState: AppState = {
+    hashConnectData,
+    setHashConnectData,
+    hashconnect,
+    setHashconnect,
+    signer,
+    setSigner,
     activeLoaders,
     addLoader,
     removeLoader,
@@ -156,12 +171,8 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
     didPublicKey,
     setDidPublicKey,
     topicId,
-    bladeConnector,
-    setBladeConnector,
-    signer,
-    setSigner,
     accountId,
-    setaccountId,
+    setAccountId,
     vcResponse,
     setVcResponse,
     responders,

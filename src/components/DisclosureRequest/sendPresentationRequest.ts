@@ -1,6 +1,5 @@
 import { BladeSigner } from "@bladelabs/blade-web3.js";
 import { v4 as uuidv4 } from "uuid";
-import { submitMessage } from "../../consensusService";
 import { fetchResolveDid } from "../../didService";
 import { createFile } from "../../fileService";
 import { MessageType, PresentationRequestMessage } from "../../types";
@@ -73,13 +72,13 @@ const sendPresentationRequest = async ({
     const presentationRequestMessageStr = JSON.stringify(
       presentationRequestMessage
     );
-    const isSuccess = await submitMessage(
-      presentationRequestMessageStr,
-      signer,
-      topicId
-    );
+    // const isSuccess = await submitMessage(
+    //   presentationRequestMessageStr,
+    //   signer,
+    //   topicId
+    // );
 
-    return { isSuccess, requestId };
+    return { isSuccess: false, requestId };
   } catch (error) {
     console.log({ error });
     return { isSuccess: false, requestId: undefined };

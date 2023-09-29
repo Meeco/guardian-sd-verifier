@@ -1,7 +1,6 @@
 import { useContext, useEffect } from "react";
 import { Accordion } from "react-bootstrap";
 import "./App.css";
-import initConnection from "./bladeWeb3Service/initConnection";
 import {
   DisclosureRequest,
   HederaAccount,
@@ -10,15 +9,20 @@ import {
 } from "./components";
 import { AppContext } from "./components/AppProvider";
 import { EventKey } from "./constants";
+import { initConnection } from "./hashConnectService";
 
 function App() {
-  const { setBladeConnector } = useContext(AppContext);
+  const { setHashconnect, setHashConnectData, setAccountId, setSigner } =
+    useContext(AppContext);
 
   useEffect(() => {
-    const connector = initConnection();
-    setBladeConnector(connector);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    initConnection({
+      setHashconnect,
+      setHashConnectData,
+      setAccountId,
+      setSigner,
+    });
+  }, [setHashConnectData, setHashconnect, setSigner, setAccountId]);
 
   return (
     <div className="App">

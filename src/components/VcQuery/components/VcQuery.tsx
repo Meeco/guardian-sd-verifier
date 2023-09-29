@@ -46,6 +46,7 @@ const VcQuery = () => {
       console.log({ error });
     }
   };
+  console.log({ signer });
 
   const handleQueryResponders = useCallback(async () => {
     if (signer) {
@@ -64,47 +65,49 @@ const VcQuery = () => {
         const presentationQueryMessage = JSON.stringify(presentationQuery);
         // Send query message to HCS
         const timeStamp = Date.now();
-        submitMessage(presentationQueryMessage, signer, topicId).then(
-          async (isSuccess) => {
-            if (isSuccess) {
-              const queryRespondersMessages = await pollRequest(async () => {
-                // Get query response from mirror node
-                const topicMessages = await getTopicMessages({
-                  topicId: topicId || "",
-                  timeStamp,
-                });
-                const messages = topicMessages?.filter(
-                  (msg) =>
-                    msg.request_id === requestId &&
-                    msg.operation === MessageType.QUERY_RESPONSE
-                );
+        submitMessage({
+          message: presentationQueryMessage,
+          signer,
+          topicId,
+        }).then(async (isSuccess) => {
+          if (isSuccess) {
+            const queryRespondersMessages = await pollRequest(async () => {
+              // Get query response from mirror node
+              const topicMessages = await getTopicMessages({
+                topicId: topicId || "",
+                timeStamp,
+              });
+              const messages = topicMessages?.filter(
+                (msg) =>
+                  msg.request_id === requestId &&
+                  msg.operation === MessageType.QUERY_RESPONSE
+              );
 
-                return messages;
-              }, 15000);
+              return messages;
+            }, 15000);
 
-              if (queryRespondersMessages) {
-                const responders = queryRespondersMessages.map((item: any) => {
-                  return {
-                    did: item.responder_did,
-                    accountId: item.payer_account_id,
-                    encryptedKeyId: item.response_file_encrypted_key_id,
-                  };
-                });
-                setResponders(responders);
-                setGetRespondersSuccess(true);
-                removeLoader("handleQueryResponders");
-              } else {
-                setgetRespondersErrMsg("No responder found");
-                setGetRespondersSuccess(false);
-                removeLoader("handleQueryResponders");
-              }
+            if (queryRespondersMessages) {
+              const responders = queryRespondersMessages.map((item: any) => {
+                return {
+                  did: item.responder_did,
+                  accountId: item.payer_account_id,
+                  encryptedKeyId: item.response_file_encrypted_key_id,
+                };
+              });
+              setResponders(responders);
+              setGetRespondersSuccess(true);
+              removeLoader("handleQueryResponders");
             } else {
+              setgetRespondersErrMsg("No responder found");
               setGetRespondersSuccess(false);
-              setgetRespondersErrMsg("Query Responders Failed");
               removeLoader("handleQueryResponders");
             }
+          } else {
+            setGetRespondersSuccess(false);
+            setgetRespondersErrMsg("Query Responders Failed");
+            removeLoader("handleQueryResponders");
           }
-        );
+        });
       } catch (error) {
         console.log({ error });
         removeLoader("handleQueryResponders");

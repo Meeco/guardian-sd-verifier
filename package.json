@@ -27,6 +27,7 @@
     "bs58": "^5.0.0",
     "buffer": "^6.0.3",
     "crypto-browserify": "^3.12.0",
+    "hashconnect": "^0.2.4",
     "jsonld-signatures": "^11.2.1",
     "multiformats": "^12.0.1",
     "process": "^0.11.10",

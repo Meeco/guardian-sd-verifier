@@ -1,30 +1,26 @@
 import { useContext, useMemo } from "react";
 import { Accordion, Button } from "react-bootstrap";
-import pairWallet from "../../bladeWeb3Service/pairWallet";
 import { EventKey } from "../../constants";
+import { pairWallet } from "../../hashConnectService";
 import { AppContext } from "../AppProvider";
 import { AccordianToggleButton, StatusLabel } from "../common";
 
 const HederaAccount = () => {
-  const { bladeConnector, setSigner, signer, accountId, setaccountId } =
-    useContext(AppContext);
+  const {
+    accountId,
+    setAccountId,
+    setSigner,
+    hashconnect,
+    hashConnectData,
+    signer,
+  } = useContext(AppContext);
 
   const handleConnectWallet = () => {
-    if (bladeConnector) {
-      pairWallet(bladeConnector).then(async (accId) => {
-        const signer = bladeConnector.getSigner();
-        if (signer) {
-          setSigner(signer);
-          setaccountId(accId);
-        }
-      });
-    } else {
-      console.log("bladeConnector is not found");
-    }
+    pairWallet({ hashconnect, hashConnectData, setAccountId, setSigner });
   };
 
   const connectWalletSuccess = useMemo(() => {
-    if (signer) return true;
+    if (signer?.getAccountId()) return true;
     else return undefined;
   }, [signer]);
 
@@ -46,14 +42,7 @@ const HederaAccount = () => {
             {accountId ? (
               `Connected: ${accountId}`
             ) : (
-              <div className="d-flex align-items-center">
-                <img
-                  src="/wallet_connect.png"
-                  alt="wallet_connect"
-                  className="wallet-connect-icon"
-                />
-                WalletConnect
-              </div>
+              <div className="d-flex align-items-center">Connect to Wallet</div>
             )}
           </Button>
           <StatusLabel isSuccess={connectWalletSuccess} text="Connected" />

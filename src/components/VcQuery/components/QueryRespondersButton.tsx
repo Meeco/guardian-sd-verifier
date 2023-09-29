@@ -1,7 +1,6 @@
 import { useContext } from "react";
-import { EventKey } from "../../../constants";
 import { AppContext } from "../../AppProvider";
-import { AccordianToggleButton, Button, StatusLabel } from "../../common";
+import { Button, StatusLabel } from "../../common";
 
 const QueryRespondersButton = ({
   handleQueryResponders,
@@ -12,39 +11,39 @@ const QueryRespondersButton = ({
   getRespondersSuccess?: boolean;
   getRespondersErrMsg: string;
 }) => {
-  const { signer, activeLoaders, vcVerificaitonResult } =
-    useContext(AppContext);
+  const { activeLoaders, vcVerificaitonResult } = useContext(AppContext);
 
-  if (!signer || !vcVerificaitonResult) {
-    return (
-      <AccordianToggleButton
-        text={!signer ? "Connect to wallet" : "Complete Identity section"}
-        eventKey={!signer ? EventKey.HederaAccount : EventKey.Identity}
+  // if (!signer || !vcVerificaitonResult) {
+  //   return (
+  //     <AccordianToggleButton
+  //       text={!signer ? "Connect to wallet" : "Complete Identity section"}
+  //       eventKey={!signer ? EventKey.HederaAccount : EventKey.Identity}
+  //     />
+  //   );
+  // } else {
+
+  return (
+    <>
+      <Button
+        onClick={handleQueryResponders}
+        text="Query Responders"
+        loading={activeLoaders.includes("handleQueryResponders")}
       />
-    );
-  } else {
-    return (
-      <>
-        <Button
-          onClick={handleQueryResponders}
-          text="Query Responders"
-          loading={activeLoaders.includes("handleQueryResponders")}
-        />
-        <StatusLabel
-          isSuccess={
-            activeLoaders.includes("handleQueryResponders")
-              ? undefined
-              : getRespondersSuccess
-          }
-          text={
-            getRespondersSuccess
-              ? "Query Responders Success"
-              : getRespondersErrMsg
-          }
-        />
-      </>
-    );
-  }
+      <StatusLabel
+        isSuccess={
+          activeLoaders.includes("handleQueryResponders")
+            ? undefined
+            : getRespondersSuccess
+        }
+        text={
+          getRespondersSuccess
+            ? "Query Responders Success"
+            : getRespondersErrMsg
+        }
+      />
+    </>
+  );
+  // }
 };
 
 export default QueryRespondersButton;
