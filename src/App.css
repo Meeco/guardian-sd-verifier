@@ -7,6 +7,11 @@
   margin-right: 10px;
 }
 
+.connect-btn-group {
+  width: fit-content;
+  display: flex;
+}
+
 .wallet-connect-icon {
   width: 24px;
   margin-right: 6px;
