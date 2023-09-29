@@ -27,9 +27,7 @@ const VerificationMethods: React.FC<VerificationMethodsProps> = ({
         ? verificationMethods.map((item: any) => (
             <Form.Check
               key={item.id}
-              checked={
-                selectedMethod ? selectedMethod.id === item.id : undefined
-              }
+              checked={selectedMethod ? selectedMethod.id === item.id : false}
               type="radio"
               label={`#${getDisplayedMethod(item.id)} (${item.type})`}
               id={item.id}
