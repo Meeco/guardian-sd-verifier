@@ -1,5 +1,6 @@
-import { BladeSigner } from "@bladelabs/blade-web3.js";
+import { HashConnectSigner } from "hashconnect/dist/esm/provider/signer";
 import { v4 as uuidv4 } from "uuid";
+import { submitMessage } from "../../consensusService";
 import { fetchResolveDid } from "../../didService";
 import { createFile } from "../../fileService";
 import { MessageType, PresentationRequestMessage } from "../../types";
@@ -17,7 +18,7 @@ const sendPresentationRequest = async ({
   presentationRequest: any;
   encryptedKeyId: string;
   responderDid: string;
-  signer: BladeSigner;
+  signer: HashConnectSigner;
   topicId?: string;
   cipher: any;
 }) => {
@@ -72,13 +73,14 @@ const sendPresentationRequest = async ({
     const presentationRequestMessageStr = JSON.stringify(
       presentationRequestMessage
     );
-    // const isSuccess = await submitMessage(
-    //   presentationRequestMessageStr,
-    //   signer,
-    //   topicId
-    // );
 
-    return { isSuccess: false, requestId };
+    const isSuccess = await submitMessage({
+      message: presentationRequestMessageStr,
+      topicId,
+      hcSigner: signer,
+    });
+
+    return { isSuccess, requestId };
   } catch (error) {
     console.log({ error });
     return { isSuccess: false, requestId: undefined };

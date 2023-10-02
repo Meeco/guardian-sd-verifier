@@ -4,8 +4,9 @@ import ReactJson from "react-json-view";
 import { EventKey } from "../../../constants";
 import { downloadJson } from "../../../utils";
 import { AppContext } from "../../AppProvider";
-import { StatusLabel } from "../../common";
+import { Button as ButtonWithLoader, StatusLabel } from "../../common";
 import createPresentationRequest from "../createPresentationRequest";
+import handleSendPresentationRequest from "../handleSendPresentationRequest";
 import CreatePresentationButton from "./CreatePresentationButton";
 import GetVcButton from "./GetVcButton";
 
@@ -23,6 +24,7 @@ const DisclosureRequest = () => {
     setResponders,
     selectedMethod,
     cipher,
+    signer,
   } = useContext(AppContext);
 
   const credentialSubject = verifiableCredential?.credentialSubject;
@@ -254,7 +256,7 @@ const DisclosureRequest = () => {
                   </Accordion.Header>
                   <Accordion.Body>
                     <div className="d-flex mt-2">
-                      {/* {signer && (
+                      {signer && (
                         <ButtonWithLoader
                           onClick={() =>
                             handleSendPresentationRequest({
@@ -277,7 +279,7 @@ const DisclosureRequest = () => {
                             `handleSendRequest-${did}`
                           )}
                         />
-                      )} */}
+                      )}
                       <StatusLabel
                         isSuccess={
                           activeLoaders.includes(`handleSendRequest-${did}`)

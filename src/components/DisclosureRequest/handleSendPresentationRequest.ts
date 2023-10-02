@@ -1,5 +1,5 @@
-import { BladeSigner } from "@bladelabs/blade-web3.js";
 import NodeClient from "@hashgraph/sdk/lib/client/NodeClient";
+import { HashConnectSigner } from "hashconnect/dist/esm/provider/signer";
 import { Responder } from "../AppProvider";
 import decryptPresentationResponseMessage from "./decryptPresentationResponseMessage";
 import { handlePollPresentationResponseRequest } from "./handlePollPresentationResponseRequest";
@@ -25,7 +25,7 @@ const handleSendPresentationRequest = async ({
   addLoader: (id: string) => void;
   removeLoader: (removedId: string) => void;
   presentationRequest: any;
-  signer: BladeSigner;
+  signer: HashConnectSigner;
   topicId?: string;
   cipher: any;
   client: NodeClient;

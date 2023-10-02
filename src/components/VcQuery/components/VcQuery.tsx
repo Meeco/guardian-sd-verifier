@@ -67,7 +67,7 @@ const VcQuery = () => {
         const timeStamp = Date.now();
         submitMessage({
           message: presentationQueryMessage,
-          signer,
+          hcSigner: signer,
           topicId,
         }).then(async (isSuccess) => {
           if (isSuccess) {
