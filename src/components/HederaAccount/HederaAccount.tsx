@@ -1,4 +1,4 @@
-import { useContext, useMemo } from "react";
+import { useContext, useMemo, useState } from "react";
 import { Accordion, Button } from "react-bootstrap";
 import { EventKey } from "../../constants";
 import { pairWallet } from "../../hashConnectService";
@@ -15,14 +15,47 @@ const HederaAccount = () => {
     signer,
   } = useContext(AppContext);
 
+  const [displayConnect, setDisplayConnect] = useState(true);
+
   const handleConnectWallet = () => {
     pairWallet({ hashconnect, hashConnectData, setAccountId, setSigner });
   };
+
+  const handleDisconnect = async () => {
+    // await bladeConnector.killSession();
+    // setSigner(null);
+    // setaccountId("");
+  };
+
+  const handleHover = () => {
+    if (signer) {
+      setDisplayConnect((prev) => !prev);
+    }
+  };
+
+  console.log({ displayConnect });
 
   const connectWalletSuccess = useMemo(() => {
     if (signer?.getAccountId()) return true;
     else return undefined;
   }, [signer]);
+
+  const renderConnectButton = () => (
+    <>
+      {accountId ? (
+        `Connected: ${accountId}`
+      ) : (
+        <div className="d-flex align-items-center">
+          <img
+            src="/wallet_connect.png"
+            alt="wallet_connect"
+            className="wallet-connect-icon"
+          />
+          WalletConnect
+        </div>
+      )}
+    </>
+  );
 
   return (
     <Accordion.Item eventKey={EventKey.HederaAccount}>
@@ -30,30 +63,26 @@ const HederaAccount = () => {
         <b>Hedera Account&nbsp;</b> {accountId ? `(${accountId})` : undefined}
       </Accordion.Header>
       <Accordion.Body>
-        <p>
+        <p className="fst-italic">
           Connect a Header HBar wallet to pay for transactions to HCS and HFS.
         </p>
-        <div className="d-flex mb-3">
+        <div className="connect-btn-group mb-3">
           <Button
-            onClick={handleConnectWallet}
-            disabled={!!signer}
-            variant="outline-primary"
+            onMouseEnter={handleHover}
+            onMouseLeave={handleHover}
+            onClick={displayConnect ? handleConnectWallet : handleDisconnect}
+            variant={displayConnect ? "outline-primary" : "danger"}
           >
-            {accountId ? (
-              `Connected: ${accountId}`
-            ) : (
-              <div className="d-flex align-items-center">Connect to Wallet</div>
-            )}
+            {displayConnect ? renderConnectButton() : "Disconnect"}
           </Button>
           <StatusLabel isSuccess={connectWalletSuccess} text="Connected" />
         </div>
-        <div>
-          <AccordianToggleButton
-            text="Next"
-            disabled={!connectWalletSuccess}
-            eventKey={EventKey.Identity}
-          />
-        </div>
+
+        <AccordianToggleButton
+          text="Next"
+          disabled={!connectWalletSuccess}
+          eventKey={EventKey.Identity}
+        />
       </Accordion.Body>
     </Accordion.Item>
   );

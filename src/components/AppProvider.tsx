@@ -26,6 +26,7 @@ export interface AppState {
   didPublicKey: string;
   setDidPublicKey: React.Dispatch<React.SetStateAction<string>>;
   topicId?: string;
+  setTopicId: React.Dispatch<React.SetStateAction<string | undefined>>;
   hashConnectData?: HashConnectTypes.InitilizationData;
   setHashConnectData: React.Dispatch<
     React.SetStateAction<HashConnectTypes.InitilizationData | undefined>
@@ -58,6 +59,8 @@ export interface AppState {
   cid: string;
   setCid: React.Dispatch<React.SetStateAction<string>>;
   cipher: any;
+  presentationRequest: any;
+  setPresentationRequest: React.Dispatch<any>;
 }
 
 export interface LoadingState {
@@ -127,7 +130,9 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
   const [cid, setCid] = useState(getLocalStorage("cid") || "");
 
   // Topic ID for sending/receiving message
-  const topicId = process.env.REACT_APP_TOPIC_ID;
+  const [topicId, setTopicId] = useState<string | undefined>(
+    process.env.REACT_APP_TOPIC_ID
+  );
 
   // Wallet data
   const [hashConnectData, setHashConnectData] =
@@ -142,6 +147,8 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
   const [vcResponse, setVcResponse] = useState<any>(
     getLocalStorage("vcResponse")
   );
+
+  const [presentationRequest, setPresentationRequest] = useState<any>();
 
   const [responders, setResponders] = useState<Responder[]>([]);
 
@@ -171,6 +178,7 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
     didPublicKey,
     setDidPublicKey,
     topicId,
+    setTopicId,
     accountId,
     setAccountId,
     vcResponse,
@@ -191,6 +199,8 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
     cid,
     setCid,
     cipher,
+    presentationRequest,
+    setPresentationRequest,
   };
 
   // store data in localstorage when they're updated

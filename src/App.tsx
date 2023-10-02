@@ -5,7 +5,8 @@ import {
   DisclosureRequest,
   HederaAccount,
   Identity,
-  VcQuery,
+  QueryResponders,
+  VCAndPresentationDefinition,
 } from "./components";
 import { AppContext } from "./components/AppProvider";
 import { EventKey } from "./constants";
@@ -40,7 +41,8 @@ function App() {
       <Accordion className="mt-4" defaultActiveKey={EventKey.HederaAccount}>
         <HederaAccount />
         <Identity />
-        <VcQuery />
+        <VCAndPresentationDefinition />
+        <QueryResponders />
         <DisclosureRequest />
       </Accordion>
     </div>

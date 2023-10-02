@@ -11,7 +11,7 @@
     "@digitalbazaar/minimal-cipher": "^5.1.1",
     "@digitalbazaar/vc": "^6.0.1",
     "@digitalbazaar/x25519-key-agreement-key-2020": "^3.0.1",
-    "@hashgraph/sdk": "^2.30.0",
+    "@hashgraph/sdk": "^2.34.1",
     "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^13.0.0",
     "@testing-library/user-event": "^13.2.1",
