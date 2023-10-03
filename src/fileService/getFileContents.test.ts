@@ -2,7 +2,7 @@ import { FileContentsQuery } from "@hashgraph/sdk";
 import getFileContents from "./getFileContents";
 
 describe("getFileContents", () => {
-  const client = {} as any;
+  const hcSigner = {} as any;
   const fileId = "0.0.123";
 
   afterEach(() => {
@@ -18,13 +18,13 @@ describe("getFileContents", () => {
       .mockImplementation(mockQuery);
 
     const result = await getFileContents({
-      client,
+      hcSigner,
       fileId,
     });
 
     expect(setFileId).toHaveBeenCalledWith(fileId);
 
-    expect(mockQuery).toHaveBeenCalledWith(client);
+    expect(mockQuery).toHaveBeenCalledWith(hcSigner);
     expect(result).toEqual(contents);
   });
 
@@ -36,7 +36,7 @@ describe("getFileContents", () => {
     const logSpy = jest.spyOn(console, "log");
 
     const result = await getFileContents({
-      client,
+      hcSigner,
       fileId,
     });
 

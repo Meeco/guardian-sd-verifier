@@ -1,4 +1,3 @@
-import NodeClient from "@hashgraph/sdk/lib/client/NodeClient";
 import { HashConnectSigner } from "hashconnect/dist/esm/provider/signer";
 import { Responder } from "../AppProvider";
 import decryptPresentationResponseMessage from "./decryptPresentationResponseMessage";
@@ -15,7 +14,6 @@ const handleSendPresentationRequest = async ({
   signer,
   topicId,
   cipher,
-  client,
   responders,
   setResponders,
   credentialVerificationKey,
@@ -28,7 +26,6 @@ const handleSendPresentationRequest = async ({
   signer: HashConnectSigner;
   topicId?: string;
   cipher: any;
-  client: NodeClient;
   responders: Responder[];
   setResponders: (value: React.SetStateAction<Responder[]>) => void;
   credentialVerificationKey: any;
@@ -60,7 +57,7 @@ const handleSendPresentationRequest = async ({
             };
           } else {
             const data = await decryptPresentationResponseMessage({
-              client,
+              hcSigner: signer,
               cipher,
               presentationResponseMessage: responseMessage,
               credentialVerificationKey,

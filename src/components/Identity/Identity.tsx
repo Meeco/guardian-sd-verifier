@@ -175,8 +175,6 @@ const Identity = () => {
           base58btc.decode(publicKeyMultibase)
         ).toString("hex");
 
-        console.log({ verificationPublicKeyHex });
-
         // Use includes as a 2018 key has a header that will be stripped off
         // resulting in a slightly different key
         if (verificationPublicKeyHex.includes(didPublicKey)) {

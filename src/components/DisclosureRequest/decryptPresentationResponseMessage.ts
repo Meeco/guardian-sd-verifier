@@ -1,4 +1,4 @@
-import { Client } from "@hashgraph/sdk";
+import { HashConnectSigner } from "hashconnect/dist/esm/provider/signer";
 import { getFileContents } from "../../fileService";
 import { PresentationResponseMessage } from "../../types";
 import { deriveKeyAgreementKey } from "../../utils";
@@ -12,12 +12,12 @@ export interface PresentationResponse {
 }
 
 const decryptPresentationResponseMessage = async ({
-  client,
+  hcSigner,
   cipher,
   presentationResponseMessage,
   credentialVerificationKey,
 }: {
-  client: Client;
+  hcSigner: HashConnectSigner;
   cipher: any;
   presentationResponseMessage?: PresentationResponseMessage;
   credentialVerificationKey: any;
@@ -33,7 +33,7 @@ const decryptPresentationResponseMessage = async ({
     const responseFileId = presentationResponseMessage?.response_file_id || "";
 
     const fileContentsBuffer = await getFileContents({
-      client,
+      hcSigner,
       fileId: responseFileId,
     });
 

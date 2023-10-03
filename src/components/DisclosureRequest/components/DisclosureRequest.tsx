@@ -13,7 +13,6 @@ import handleSendPresentationRequest from "../handleSendPresentationRequest";
 
 const DisclosureRequest = () => {
   const {
-    client,
     topicId,
     activeLoaders,
     addLoader,
@@ -94,7 +93,6 @@ const DisclosureRequest = () => {
                               signer,
                               topicId,
                               cipher,
-                              client,
                               responders,
                               setResponders,
                               credentialVerificationKey,

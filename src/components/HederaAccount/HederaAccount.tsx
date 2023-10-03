@@ -22,9 +22,7 @@ const HederaAccount = () => {
   };
 
   const handleDisconnect = async () => {
-    // await bladeConnector.killSession();
-    // setSigner(null);
-    // setaccountId("");
+    if (hashConnectData) hashconnect?.disconnect(hashConnectData?.topic);
   };
 
   const handleHover = () => {
@@ -32,8 +30,6 @@ const HederaAccount = () => {
       setDisplayConnect((prev) => !prev);
     }
   };
-
-  console.log({ displayConnect });
 
   const connectWalletSuccess = useMemo(() => {
     if (signer?.getAccountId()) return true;
@@ -45,14 +41,7 @@ const HederaAccount = () => {
       {accountId ? (
         `Connected: ${accountId}`
       ) : (
-        <div className="d-flex align-items-center">
-          <img
-            src="/wallet_connect.png"
-            alt="wallet_connect"
-            className="wallet-connect-icon"
-          />
-          WalletConnect
-        </div>
+        <div className="d-flex align-items-center">Connect to wallet</div>
       )}
     </>
   );
