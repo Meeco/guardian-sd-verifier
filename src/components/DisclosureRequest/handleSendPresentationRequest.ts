@@ -6,11 +6,10 @@ import sendPresentationRequest from "./sendPresentationRequest";
 
 // Send presentation request to HCS
 const handleSendPresentationRequest = async ({
+  fileId,
   responderDid,
-  encryptedKeyId,
   addLoader,
   removeLoader,
-  presentationRequest,
   signer,
   topicId,
   cipher,
@@ -18,11 +17,10 @@ const handleSendPresentationRequest = async ({
   setResponders,
   credentialVerificationKey,
 }: {
+  fileId: string;
   responderDid: string;
-  encryptedKeyId: string;
   addLoader: (id: string) => void;
   removeLoader: (removedId: string) => void;
-  presentationRequest: any;
   signer: HashConnectSigner;
   topicId?: string;
   cipher: any;
@@ -34,12 +32,10 @@ const handleSendPresentationRequest = async ({
     addLoader(`handleSendRequest-${responderDid}`);
     const timeStamp = Date.now();
     await sendPresentationRequest({
+      fileId,
       responderDid,
-      encryptedKeyId,
-      presentationRequest,
       signer,
       topicId,
-      cipher,
     }).then(async ({ isSuccess, requestId }) => {
       if (isSuccess && requestId) {
         const responseMessage = await handlePollPresentationResponseRequest({

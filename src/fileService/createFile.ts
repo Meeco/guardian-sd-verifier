@@ -4,6 +4,7 @@ import { HashConnectSigner } from "hashconnect/dist/esm/provider/signer";
 
 const createFile = async (
   hcSigner: HashConnectSigner,
+  provider: any,
   contents: string | Uint8Array
 ) => {
   try {
@@ -16,7 +17,7 @@ const createFile = async (
 
     const res = await transaction.executeWithSigner(signer);
 
-    const receipt = await res.getReceiptWithSigner(signer);
+    const receipt = await provider.getTransactionReceipt(res.transactionId);
 
     const { fileId } = receipt;
     return fileId;

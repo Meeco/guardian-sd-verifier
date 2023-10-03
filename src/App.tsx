@@ -13,8 +13,13 @@ import { EventKey } from "./constants";
 import { initConnection } from "./hashConnectService";
 
 function App() {
-  const { setHashconnect, setHashConnectData, setAccountId, setSigner } =
-    useContext(AppContext);
+  const {
+    setHashconnect,
+    setHashConnectData,
+    setAccountId,
+    setSigner,
+    setProvider,
+  } = useContext(AppContext);
 
   useEffect(() => {
     initConnection({
@@ -22,8 +27,15 @@ function App() {
       setHashConnectData,
       setAccountId,
       setSigner,
+      setProvider,
     });
-  }, [setHashConnectData, setHashconnect, setSigner, setAccountId]);
+  }, [
+    setHashConnectData,
+    setHashconnect,
+    setSigner,
+    setAccountId,
+    setProvider,
+  ]);
 
   return (
     <div className="App">

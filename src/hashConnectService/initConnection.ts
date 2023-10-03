@@ -13,6 +13,7 @@ export const initConnection = async ({
   setHashConnectData,
   setAccountId,
   setSigner,
+  setProvider,
 }: {
   setHashconnect: React.Dispatch<React.SetStateAction<HashConnect | undefined>>;
   setHashConnectData: React.Dispatch<
@@ -22,9 +23,10 @@ export const initConnection = async ({
   setSigner: React.Dispatch<
     React.SetStateAction<HashConnectSigner | undefined>
   >;
+  setProvider: React.Dispatch<React.SetStateAction<any>>;
 }) => {
   //create the hashconnect instance
-  const hashconnect = new HashConnect(true);
+  const hashconnect = new HashConnect();
   //initialize and use returned data
   const hashConnectData = await hashconnect.init(appMetadata, "testnet", false);
 
@@ -37,6 +39,7 @@ export const initConnection = async ({
       hashConnectData.topic,
       accountId
     );
+    setProvider(provider);
 
     const signer = hashconnect.getSigner(provider);
     setSigner(signer);

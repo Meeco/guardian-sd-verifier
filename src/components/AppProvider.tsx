@@ -37,6 +37,8 @@ export interface AppState {
   setSigner: React.Dispatch<
     React.SetStateAction<HashConnectSigner | undefined>
   >;
+  provider: any;
+  setProvider: React.Dispatch<React.SetStateAction<any>>;
   accountId: string;
   setAccountId: React.Dispatch<React.SetStateAction<string>>;
   vcResponse: any;
@@ -141,6 +143,8 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
   const [hashconnect, setHashconnect] = useState<HashConnect>();
 
   const [signer, setSigner] = useState<HashConnectSigner>();
+
+  const [provider, setProvider] = useState<any>();
   // Wallet's account ID
   const [accountId, setAccountId] = useState("");
 
@@ -168,6 +172,8 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
     setHashconnect,
     signer,
     setSigner,
+    provider,
+    setProvider,
     activeLoaders,
     addLoader,
     removeLoader,

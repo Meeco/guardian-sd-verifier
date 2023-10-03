@@ -1,4 +1,5 @@
-import { useContext } from "react";
+import { HashConnectSigner } from "hashconnect/dist/esm/provider/signer";
+import { useCallback, useContext, useState } from "react";
 import { Accordion, Button } from "react-bootstrap";
 import ReactJson from "react-json-view";
 import { EventKey } from "../../../constants";
@@ -9,10 +10,17 @@ import {
   Button as ButtonWithLoader,
   StatusLabel,
 } from "../../common";
+import createEncryptedFile from "../createEncryptedFile";
 import handleSendPresentationRequest from "../handleSendPresentationRequest";
+
+interface FileResponse {
+  did: string;
+  fileId: string;
+}
 
 const DisclosureRequest = () => {
   const {
+    provider,
     topicId,
     activeLoaders,
     addLoader,
@@ -24,6 +32,35 @@ const DisclosureRequest = () => {
     cipher,
     signer,
   } = useContext(AppContext);
+
+  const [fileResponses, setFileResponses] = useState<FileResponse[]>([]);
+
+  const getResponderFile = useCallback(
+    (did: string) => {
+      return fileResponses.find((item) => item.did === did);
+    },
+    [fileResponses]
+  );
+
+  const fileResponseStatus = (did: string) => {
+    if (activeLoaders.includes(`createEncryptedFile-${did}`)) {
+      return;
+    }
+
+    const file = getResponderFile(did);
+    if (file) {
+      if (file.fileId) return true;
+      else return false;
+    }
+  };
+
+  const fileResponseStatusMessage = (did: string) => {
+    const file = getResponderFile(did);
+    if (file) {
+      if (file.fileId) return `fileId: ${file.fileId}`;
+      else return "Create file failed";
+    } else return "";
+  };
 
   const presentationResponseStatus = (
     presentationResponse: any,
@@ -44,6 +81,30 @@ const DisclosureRequest = () => {
       else return presentationResponse?.error?.message ?? "Send request failed";
     } else return "";
   };
+
+  const handleCreateEncryptedFile = useCallback(
+    async (encryptedKeyId: string, did: string, signer: HashConnectSigner) => {
+      const { fileId } = await createEncryptedFile({
+        encryptedKeyId,
+        cipher,
+        responderDid: did,
+        presentationRequest,
+        signer,
+        provider,
+        addLoader,
+        removeLoader,
+      });
+      if (fileId) {
+        setFileResponses((prev) => [
+          ...prev,
+          { did, fileId: fileId.toString() },
+        ]);
+      } else {
+        setFileResponses((prev) => [...prev, { did, fileId: "" }]);
+      }
+    },
+    [addLoader, cipher, presentationRequest, provider, removeLoader]
+  );
 
   return (
     <Accordion.Item eventKey={EventKey.DisclosureRequest}>
@@ -66,6 +127,10 @@ const DisclosureRequest = () => {
           responders.map((responder) => {
             const { accountId, did, presentationResponse, encryptedKeyId } =
               responder;
+
+            const isCreateFileSuccess = fileResponseStatus(did);
+            const file = getResponderFile(did);
+
             const isSuccess = presentationResponseStatus(
               presentationResponse,
               did
@@ -80,16 +145,40 @@ const DisclosureRequest = () => {
                     {did} ({accountId})
                   </Accordion.Header>
                   <Accordion.Body>
-                    <div className="d-flex mt-2">
-                      {signer && (
+                    {signer && (
+                      <div className="d-flex mt-2">
+                        <ButtonWithLoader
+                          onClick={() =>
+                            handleCreateEncryptedFile(
+                              encryptedKeyId,
+                              did,
+                              signer
+                            )
+                          }
+                          text="Create request file"
+                          loading={activeLoaders.includes(
+                            `createEncryptedFile-${did}`
+                          )}
+                        />
+                        <StatusLabel
+                          isSuccess={
+                            activeLoaders.includes(`createEncryptedFile-${did}`)
+                              ? undefined
+                              : isCreateFileSuccess
+                          }
+                          text={fileResponseStatusMessage(did)}
+                        />
+                      </div>
+                    )}
+                    {file?.fileId && signer ? (
+                      <div className="d-flex mt-2">
                         <ButtonWithLoader
                           onClick={() =>
                             handleSendPresentationRequest({
+                              fileId: file.fileId,
                               responderDid: did,
-                              encryptedKeyId,
                               addLoader,
                               removeLoader,
-                              presentationRequest,
                               signer,
                               topicId,
                               cipher,
@@ -98,21 +187,21 @@ const DisclosureRequest = () => {
                               credentialVerificationKey,
                             })
                           }
-                          text="Send request"
+                          text="Send Presentation Request"
                           loading={activeLoaders.includes(
                             `handleSendRequest-${did}`
                           )}
                         />
-                      )}
-                      <StatusLabel
-                        isSuccess={
-                          activeLoaders.includes(`handleSendRequest-${did}`)
-                            ? undefined
-                            : isSuccess
-                        }
-                        text={statusText}
-                      />
-                    </div>
+                        <StatusLabel
+                          isSuccess={
+                            activeLoaders.includes(`handleSendRequest-${did}`)
+                              ? undefined
+                              : isSuccess
+                          }
+                          text={statusText}
+                        />
+                      </div>
+                    ) : null}
 
                     {/* =====Presentation Response section ====== */}
                     {presentationResponse?.data ? (
