@@ -1,4 +1,5 @@
-import { useContext, useEffect } from "react";
+import { HashConnect } from "hashconnect";
+import { useContext, useEffect, useState } from "react";
 import { Accordion } from "react-bootstrap";
 import "./App.css";
 import {
@@ -21,15 +22,27 @@ function App() {
     setProvider,
   } = useContext(AppContext);
 
+  const [hcInstance, setHcInstance] = useState<HashConnect>();
+
   useEffect(() => {
-    initConnection({
-      setHashconnect,
-      setHashConnectData,
-      setAccountId,
-      setSigner,
-      setProvider,
-    });
+    //create the hashconnect instance
+    const hashconnect = new HashConnect();
+    setHcInstance(hashconnect);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (hcInstance)
+      initConnection({
+        hcInstance,
+        setHashconnect,
+        setHashConnectData,
+        setAccountId,
+        setSigner,
+        setProvider,
+      });
   }, [
+    hcInstance,
     setHashConnectData,
     setHashconnect,
     setSigner,

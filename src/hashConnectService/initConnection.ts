@@ -9,12 +9,14 @@ const appMetadata = {
 };
 
 export const initConnection = async ({
+  hcInstance,
   setHashconnect,
   setHashConnectData,
   setAccountId,
   setSigner,
   setProvider,
 }: {
+  hcInstance: HashConnect;
   setHashconnect: React.Dispatch<React.SetStateAction<HashConnect | undefined>>;
   setHashConnectData: React.Dispatch<
     React.SetStateAction<HashConnectTypes.InitilizationData | undefined>
@@ -25,26 +27,25 @@ export const initConnection = async ({
   >;
   setProvider: React.Dispatch<React.SetStateAction<any>>;
 }) => {
-  //create the hashconnect instance
-  const hashconnect = new HashConnect();
   //initialize and use returned data
-  const hashConnectData = await hashconnect.init(appMetadata, "testnet", false);
+  const hashConnectData = await hcInstance.init(appMetadata, "testnet", false);
+  console.log({ hashConnectData });
 
   if (hashConnectData.savedPairings.length > 0) {
     const accountId = hashConnectData.savedPairings[0].accountIds[0];
     setAccountId(accountId);
 
-    const provider = hashconnect.getProvider(
+    const provider = hcInstance.getProvider(
       "testnet",
       hashConnectData.topic,
       accountId
     );
     setProvider(provider);
 
-    const signer = hashconnect.getSigner(provider);
+    const signer = hcInstance.getSigner(provider);
     setSigner(signer);
   }
 
-  setHashconnect(hashconnect);
+  setHashconnect(hcInstance);
   setHashConnectData(hashConnectData);
 };
