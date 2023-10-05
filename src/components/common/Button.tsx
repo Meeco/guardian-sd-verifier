@@ -4,6 +4,7 @@ interface ButtonProps {
   onClick: () => void;
   text: string;
   loading?: boolean;
+  requireApproval?: boolean;
   disabled?: boolean;
 }
 
@@ -11,6 +12,7 @@ const Button: React.FC<ButtonProps> = ({
   onClick,
   text,
   loading,
+  requireApproval,
   disabled,
 }) => {
   return (
@@ -25,6 +27,13 @@ const Button: React.FC<ButtonProps> = ({
             aria-hidden="true"
           />
           <span className="mx-2">Waiting for response...</span>
+          {requireApproval ? (
+            <div>
+              <sub className="mx-2">
+                (Please approve the transaction on wallet)
+              </sub>
+            </div>
+          ) : null}
         </>
       ) : (
         text

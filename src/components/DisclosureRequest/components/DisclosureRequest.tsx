@@ -205,6 +205,7 @@ const DisclosureRequest = () => {
                           }
                           text="Create request file"
                           loading={activeLoaders.includes(createFileLoaderId)}
+                          requireApproval
                           disabled={
                             activeLoaders.length > 0
                               ? !activeLoaders.find(
@@ -243,6 +244,7 @@ const DisclosureRequest = () => {
                           }
                           text="Send Presentation Request"
                           loading={activeLoaders.includes(sendRequestLoaderId)}
+                          requireApproval
                           disabled={
                             activeLoaders.length > 0
                               ? !activeLoaders.find(

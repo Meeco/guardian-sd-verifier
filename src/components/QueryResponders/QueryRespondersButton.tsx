@@ -29,6 +29,7 @@ const QueryRespondersButton = ({
           onClick={handleQueryResponders}
           text="Query Responders"
           loading={activeLoaders.includes("handleQueryResponders")}
+          requireApproval
         />
         <StatusLabel
           isSuccess={
