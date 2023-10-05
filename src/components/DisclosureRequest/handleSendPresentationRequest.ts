@@ -69,53 +69,59 @@ const handleSendPresentationRequest = async ({
               presentationResponseMessage: responseMessage,
               credentialVerificationKey,
             });
+            console.log({ data });
             presentationResponse = {
               data,
             };
           }
-        }
-
-        if (presentationResponse) {
-          const selectedIndex = responders.findIndex(
-            (item) => item.did === responderDid
-          );
-
-          setResponders((prev) => {
-            const updatedResponders = responders.map((r, index) => {
-              if (index === selectedIndex) {
-                return {
-                  ...prev[index],
-                  presentationResponse,
-                };
-              } else return prev[index];
-            });
-
-            return updatedResponders;
-          });
         } else {
-          throw new Error("Send request failed");
+          presentationResponse = {
+            error: { message: "Send request failed" },
+          };
         }
+
+        if (!presentationResponse) {
+          presentationResponse = {
+            error: { message: "Unable to process the request file." },
+          };
+        }
+
+        const selectedIndex = responders.findIndex(
+          (item) => item.did === responderDid
+        );
+
+        setResponders((prev) => {
+          const updatedResponders = responders.map((_, index) => {
+            if (index === selectedIndex) {
+              return {
+                ...prev[index],
+                presentationResponse,
+              };
+            } else return prev[index];
+          });
+
+          return updatedResponders;
+        });
 
         removeLoader(loaderId);
       }
     });
   } catch (error) {
-    console.log({ error });
+    console.log("send presentation request failed: ", error);
     const selectedIndex = responders.findIndex(
       (item) => item.did === responderDid
     );
-    const updatedResponders = [...responders];
-    updatedResponders[selectedIndex] = {
-      ...updatedResponders[selectedIndex],
-      presentationResponse: null,
-    };
 
     setResponders((prev) => {
       const updatedResponders = responders.map((r, index) => {
         if (index === selectedIndex) {
           return {
             ...prev[index],
-            presentationResponse: null,
+            presentationResponse: {
+              error: {
+                message: (error as any).message,
+              },
+            },
           };
         } else return prev[index];
       });

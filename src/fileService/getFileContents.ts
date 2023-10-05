@@ -9,16 +9,10 @@ const getFileContents = async ({
   fileId: string;
   hcSigner: HashConnectSigner;
 }) => {
-  try {
-    //Create the query
-    const query = new FileContentsQuery().setFileId(fileId);
-    const contents = await query.executeWithSigner(
-      hcSigner as unknown as Signer
-    );
-    return contents;
-  } catch (error) {
-    console.log("Unable to get file contents");
-  }
+  //Create the query
+  const query = new FileContentsQuery().setFileId(fileId);
+  const contents = await query.executeWithSigner(hcSigner as unknown as Signer);
+  return contents;
 };
 
 export default getFileContents;

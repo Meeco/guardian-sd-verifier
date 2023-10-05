@@ -17,12 +17,15 @@ const createFile = async (
 
     const res = await transaction.executeWithSigner(signer);
 
+    // TODO: Ideally, should get transaction reciept by
+    // const receipt = await res.getReceiptWithSigner(signer);
+    // But currently got res.getReceiptWithSigner is not a function from @hashgraph/sdk
     const receipt = await provider.getTransactionReceipt(res.transactionId);
 
     const { fileId } = receipt;
     return fileId;
   } catch (error) {
-    console.log("Create file transaction failed", error);
+    console.log("Create file transaction failed:", error);
   }
 };
 

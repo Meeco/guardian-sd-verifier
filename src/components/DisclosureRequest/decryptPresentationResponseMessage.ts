@@ -29,29 +29,35 @@ const decryptPresentationResponseMessage = async ({
     };
     return response;
   } else {
-    // get response file's contents
-    const responseFileId = presentationResponseMessage?.response_file_id || "";
+    try {
+      // get response file's contents
+      const responseFileId =
+        presentationResponseMessage?.response_file_id || "";
 
-    const fileContentsBuffer = await getFileContents({
-      hcSigner,
-      fileId: responseFileId,
-    });
-
-    if (fileContentsBuffer) {
-      const fileContents = Buffer.from(fileContentsBuffer).toString("utf-8");
-
-      const keyAgreementKey = await deriveKeyAgreementKey(
-        credentialVerificationKey
-      );
-
-      const decrypted = await cipher.decryptObject({
-        jwe: JSON.parse(fileContents),
-        keyAgreementKey,
+      const fileContentsBuffer = await getFileContents({
+        hcSigner,
+        fileId: responseFileId,
       });
 
-      return decrypted;
-    } else {
-      throw new Error("response file is empty");
+      if (fileContentsBuffer) {
+        const fileContents = Buffer.from(fileContentsBuffer).toString("utf-8");
+
+        const keyAgreementKey = await deriveKeyAgreementKey(
+          credentialVerificationKey
+        );
+
+        const decrypted = await cipher.decryptObject({
+          jwe: JSON.parse(fileContents),
+          keyAgreementKey,
+        });
+
+        return decrypted;
+      } else {
+        throw new Error("Unable to get file contents");
+      }
+    } catch (error) {
+      console.log("decrypt presentation response failed: ", error);
+      throw error;
     }
   }
 };
