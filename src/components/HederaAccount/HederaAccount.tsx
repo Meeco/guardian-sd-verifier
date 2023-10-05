@@ -28,10 +28,12 @@ const HederaAccount = () => {
     pairWallet({ hashconnect, hashConnectData, setAccountId, setSigner });
   };
 
-  const handleDisconnect = async () => {
+  const handleDisconnect = (reload?: boolean) => {
     if (hashConnectData) {
       hashconnect?.disconnect(hashConnectData?.topic);
       hashconnect?.clearConnectionsAndData();
+    }
+    if (reload) {
       window.location.reload();
     }
   };
@@ -60,15 +62,6 @@ const HederaAccount = () => {
   const handleSelectNetwork = (network: NetworkType) => {
     setSelectedNetwork(network);
     setDisplayModal(true);
-    // setNetworks((prev) =>
-    //   prev.map((item) => {
-    //     if (item.type === selectedNetwork) {
-    //       return { ...item, active: true };
-    //     } else {
-    //       return { ...item, active: false };
-    //     }
-    //   })
-    // );
   };
 
   const handleClose = () => {
@@ -76,7 +69,7 @@ const HederaAccount = () => {
   };
 
   const handleConfirm = () => {
-    localStorage.removeItem("hashconnectData");
+    handleDisconnect();
     setNetwork(selectedNetwork);
     window.location.reload();
   };
@@ -117,7 +110,11 @@ const HederaAccount = () => {
             <Button
               onMouseEnter={handleHover}
               onMouseLeave={handleHover}
-              onClick={displayConnect ? handleConnectWallet : handleDisconnect}
+              onClick={
+                displayConnect
+                  ? handleConnectWallet
+                  : () => handleDisconnect(true)
+              }
               variant={displayConnect ? "outline-primary" : "danger"}
             >
               {displayConnect ? renderConnectButton() : "Disconnect"}
