@@ -29,16 +29,15 @@ Ensure `.env.example` is copied as `.env` and completed with all properties.
 
 Dependencies:
 
-- Blade wallet application on mobile phone
+- Hashpack extension on browser or application on mobile phone
 
 Folder strucutre:
 
-- `bladeWeb3Service` - Functions relevant to blade-web3.js library
+- `hashConnectService` - Functions relevant to hashconnect library e.g., init connection, connect to wallet
 - `components` - React components
-- `consensusService` - Functions relevant to Hedera consensus service e.g., make topic, submit message to topic, get topic's messages
+- `consensusService` - Functions relevant to Hedera consensus service e.g., submit message to topic, get topic's messages
 - `didService` - Functions relevant to DID e.g., resolve did
 - `fileService` - Functions relevant to Hedera file sevice e.g., create file, get file's contents
-- `hederaService` - Functions relevant to Hedera e.g., create Hedera client instance
 - `mock` - Mock files for testing
 - `types` - e.g., message types
 - `utils` - Utility functions e.g., decrypt data, documentLoader, poll request, derive key

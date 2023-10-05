@@ -1,14 +1,7 @@
 import { Cipher } from "@digitalbazaar/minimal-cipher";
 import { HashConnect, HashConnectTypes } from "hashconnect";
 import { HashConnectSigner } from "hashconnect/dist/esm/provider/signer";
-import {
-  createContext,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
-import { createHederaClient } from "../hederaService";
+import { createContext, useCallback, useEffect, useState } from "react";
 import {
   deriveEdVerificationKey,
   getLocalStorage,
@@ -52,7 +45,6 @@ export interface AppState {
   setVcResponse: React.Dispatch<any>;
   responders: Responder[];
   setResponders: React.Dispatch<React.SetStateAction<Responder[]>>;
-  client: any;
   vcVerificaitonResult?: boolean;
   setvcVerificaitonResult: React.Dispatch<
     React.SetStateAction<boolean | undefined>
@@ -167,13 +159,6 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
 
   const [responders, setResponders] = useState<Responder[]>([]);
 
-  const client = useMemo(() => {
-    return createHederaClient(
-      process.env.REACT_APP_HEDERA_ACCOUNT_ID || "",
-      process.env.REACT_APP_HEDERA_PRIVATE_KEY || ""
-    );
-  }, []);
-
   const cipher = new Cipher(); // by default {version: 'recommended'}
 
   const appState: AppState = {
@@ -204,7 +189,6 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
     setVcResponse,
     responders,
     setResponders,
-    client,
     vcVerificaitonResult,
     setvcVerificaitonResult,
     credentialDid,
