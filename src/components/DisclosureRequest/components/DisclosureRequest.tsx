@@ -144,10 +144,18 @@ const DisclosureRequest = () => {
       </Accordion.Header>
       <Accordion.Body>
         {!signer ? (
-          <div className="mt-3">
+          <div className="mt-2">
             <AccordianToggleButton
               text={"Connect to wallet"}
               eventKey={EventKey.HederaAccount}
+            />
+          </div>
+        ) : null}
+        {!presentationRequest ? (
+          <div className="mt-2">
+            <AccordianToggleButton
+              text={"Create Presentation"}
+              eventKey={EventKey.VCAndPresentationDefinition}
             />
           </div>
         ) : null}
