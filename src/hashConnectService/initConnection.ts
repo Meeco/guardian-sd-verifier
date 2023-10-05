@@ -1,5 +1,6 @@
 import { HashConnect, HashConnectTypes } from "hashconnect";
 import { HashConnectSigner } from "hashconnect/dist/esm/provider/signer";
+import { NetworkType } from "../components/AppProvider";
 
 const appMetadata = {
   name: "Hedera Guardian Selective Disclosure",
@@ -9,6 +10,7 @@ const appMetadata = {
 };
 
 export const initConnection = async ({
+  network,
   hcInstance,
   setHashconnect,
   setHashConnectData,
@@ -16,6 +18,7 @@ export const initConnection = async ({
   setSigner,
   setProvider,
 }: {
+  network: NetworkType;
   hcInstance: HashConnect;
   setHashconnect: React.Dispatch<React.SetStateAction<HashConnect | undefined>>;
   setHashConnectData: React.Dispatch<
@@ -28,7 +31,7 @@ export const initConnection = async ({
   setProvider: React.Dispatch<React.SetStateAction<any>>;
 }) => {
   //initialize and use returned data
-  const hashConnectData = await hcInstance.init(appMetadata, "testnet", false);
+  const hashConnectData = await hcInstance.init(appMetadata, network, false);
   console.log({ hashConnectData });
 
   if (hashConnectData.savedPairings.length > 0) {
@@ -36,7 +39,7 @@ export const initConnection = async ({
     setAccountId(accountId);
 
     const provider = hcInstance.getProvider(
-      "testnet",
+      network,
       hashConnectData.topic,
       accountId
     );

@@ -15,6 +15,7 @@ import { initConnection } from "./hashConnectService";
 
 function App() {
   const {
+    network,
     setHashconnect,
     setHashConnectData,
     setAccountId,
@@ -34,6 +35,7 @@ function App() {
   useEffect(() => {
     if (hcInstance)
       initConnection({
+        network,
         hcInstance,
         setHashconnect,
         setHashConnectData,
@@ -42,6 +44,7 @@ function App() {
         setProvider,
       });
   }, [
+    network,
     hcInstance,
     setHashConnectData,
     setHashconnect,

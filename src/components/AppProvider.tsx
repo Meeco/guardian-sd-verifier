@@ -15,7 +15,14 @@ import {
   setLocalStorage,
 } from "../utils";
 
+export enum NetworkType {
+  testnet = "testnet",
+  mainnet = "mainnet",
+}
+
 export interface AppState {
+  network: NetworkType;
+  setNetwork: React.Dispatch<React.SetStateAction<NetworkType>>;
   activeLoaders: string[];
   addLoader: (id: string) => void;
   removeLoader: (removedId: string) => void;
@@ -142,6 +149,10 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
 
   const [hashconnect, setHashconnect] = useState<HashConnect>();
 
+  const [network, setNetwork] = useState<NetworkType>(
+    getLocalStorage("network") || NetworkType.testnet
+  );
+
   const [signer, setSigner] = useState<HashConnectSigner>();
 
   const [provider, setProvider] = useState<any>();
@@ -185,6 +196,8 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
     setDidPublicKey,
     topicId,
     setTopicId,
+    network,
+    setNetwork,
     accountId,
     setAccountId,
     vcResponse,
@@ -211,6 +224,7 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
 
   // store data in localstorage when they're updated
   useEffect(() => {
+    setLocalStorage("network", network);
     setLocalStorage("verifiableCredential", verifiableCredential);
     setLocalStorage("credentialDid", credentialDid);
     setLocalStorage("didPublicKey", didPublicKey);
@@ -231,6 +245,7 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
     vcResponse,
     didPrivateKey,
     credentialVerificationKey,
+    network,
   ]);
 
   // derive verificationKey from DID's keys

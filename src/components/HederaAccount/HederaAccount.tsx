@@ -1,28 +1,39 @@
 import { useContext, useMemo, useState } from "react";
-import { Accordion, Button } from "react-bootstrap";
+import { Accordion, Button, Dropdown } from "react-bootstrap";
 import { EventKey } from "../../constants";
 import { pairWallet } from "../../hashConnectService";
-import { AppContext } from "../AppProvider";
+import { AppContext, NetworkType } from "../AppProvider";
 import { AccordianToggleButton, StatusLabel } from "../common";
+import ChangeNetworkModal from "./ChangeNetworkModal";
 
 const HederaAccount = () => {
   const {
     accountId,
     setAccountId,
+    signer,
     setSigner,
     hashconnect,
     hashConnectData,
-    signer,
+    network,
+    setNetwork,
   } = useContext(AppContext);
 
   const [displayConnect, setDisplayConnect] = useState(true);
+  const [selectedNetwork, setSelectedNetwork] = useState(network);
+  const [displayModal, setDisplayModal] = useState(false);
+
+  const availableNetWorks = [NetworkType.testnet, NetworkType.mainnet];
 
   const handleConnectWallet = () => {
     pairWallet({ hashconnect, hashConnectData, setAccountId, setSigner });
   };
 
   const handleDisconnect = async () => {
-    if (hashConnectData) hashconnect?.disconnect(hashConnectData?.topic);
+    if (hashConnectData) {
+      hashconnect?.disconnect(hashConnectData?.topic);
+      hashconnect?.clearConnectionsAndData();
+      window.location.reload();
+    }
   };
 
   const handleHover = () => {
@@ -46,34 +57,82 @@ const HederaAccount = () => {
     </>
   );
 
-  return (
-    <Accordion.Item eventKey={EventKey.HederaAccount}>
-      <Accordion.Header>
-        <b>Hedera Account&nbsp;</b> {accountId ? `(${accountId})` : undefined}
-      </Accordion.Header>
-      <Accordion.Body>
-        <p className="fst-italic">
-          Connect a Header HBar wallet to pay for transactions to HCS and HFS.
-        </p>
-        <div className="connect-btn-group mb-3">
-          <Button
-            onMouseEnter={handleHover}
-            onMouseLeave={handleHover}
-            onClick={displayConnect ? handleConnectWallet : handleDisconnect}
-            variant={displayConnect ? "outline-primary" : "danger"}
-          >
-            {displayConnect ? renderConnectButton() : "Disconnect"}
-          </Button>
-          <StatusLabel isSuccess={connectWalletSuccess} text="Connected" />
-        </div>
+  const handleSelectNetwork = (network: NetworkType) => {
+    setSelectedNetwork(network);
+    setDisplayModal(true);
+    // setNetworks((prev) =>
+    //   prev.map((item) => {
+    //     if (item.type === selectedNetwork) {
+    //       return { ...item, active: true };
+    //     } else {
+    //       return { ...item, active: false };
+    //     }
+    //   })
+    // );
+  };
 
-        <AccordianToggleButton
-          text="Next"
-          disabled={!connectWalletSuccess}
-          eventKey={EventKey.Identity}
-        />
-      </Accordion.Body>
-    </Accordion.Item>
+  const handleClose = () => {
+    setDisplayModal(false);
+  };
+
+  const handleConfirm = () => {
+    localStorage.removeItem("hashconnectData");
+    setNetwork(selectedNetwork);
+    window.location.reload();
+  };
+
+  return (
+    <>
+      <ChangeNetworkModal
+        show={displayModal}
+        handleClose={handleClose}
+        handleConfirm={handleConfirm}
+      />
+      <Accordion.Item eventKey={EventKey.HederaAccount}>
+        <Accordion.Header>
+          <b>Hedera Account&nbsp;</b> {accountId ? `(${accountId})` : undefined}
+        </Accordion.Header>
+        <Accordion.Body>
+          <p className="fst-italic">
+            Connect a Header HBar wallet to pay for transactions to HCS and HFS.
+          </p>
+          <div className="my-3">
+            <p>Select Hedera network</p>
+            <Dropdown>
+              <Dropdown.Toggle>{network}</Dropdown.Toggle>
+              <Dropdown.Menu>
+                {availableNetWorks.map((item) => (
+                  <Dropdown.Item
+                    key={item}
+                    active={item === network}
+                    onClick={() => handleSelectNetwork(item)}
+                  >
+                    {item}
+                  </Dropdown.Item>
+                ))}
+              </Dropdown.Menu>
+            </Dropdown>
+          </div>
+          <div className="connect-btn-group mb-3">
+            <Button
+              onMouseEnter={handleHover}
+              onMouseLeave={handleHover}
+              onClick={displayConnect ? handleConnectWallet : handleDisconnect}
+              variant={displayConnect ? "outline-primary" : "danger"}
+            >
+              {displayConnect ? renderConnectButton() : "Disconnect"}
+            </Button>
+            <StatusLabel isSuccess={connectWalletSuccess} text="Connected" />
+          </div>
+
+          <AccordianToggleButton
+            text="Next"
+            disabled={!connectWalletSuccess}
+            eventKey={EventKey.Identity}
+          />
+        </Accordion.Body>
+      </Accordion.Item>
+    </>
   );
 };
 
