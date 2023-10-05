@@ -22,7 +22,7 @@ const ChangeNetworkModal: FC<ChangeNetworkModalProps> = ({
         the page. Do you want to proceed?
       </Modal.Body>
       <Modal.Footer>
-        <Button variant="secondary" onClick={handleClose}>
+        <Button variant="outline-primary" onClick={handleClose}>
           Cancel
         </Button>
         <Button variant="primary" onClick={handleConfirm}>

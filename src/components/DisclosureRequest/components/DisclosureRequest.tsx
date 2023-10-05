@@ -238,7 +238,7 @@ const DisclosureRequest = () => {
                               responders,
                               setResponders,
                               credentialVerificationKey,
-                              loaderId: createFileLoaderId,
+                              loaderId: sendRequestLoaderId,
                             })
                           }
                           text="Send Presentation Request"

@@ -5,6 +5,7 @@ import { pairWallet } from "../../hashConnectService";
 import { AppContext, NetworkType } from "../AppProvider";
 import { AccordianToggleButton, StatusLabel } from "../common";
 import ChangeNetworkModal from "./ChangeNetworkModal";
+import ConnectWalletModal from "./ConnectWalletModal";
 
 const HederaAccount = () => {
   const {
@@ -20,12 +21,15 @@ const HederaAccount = () => {
 
   const [displayConnect, setDisplayConnect] = useState(true);
   const [selectedNetwork, setSelectedNetwork] = useState(network);
-  const [displayModal, setDisplayModal] = useState(false);
+  const [displayChangeNetworkModal, setDisplayChangeNetworkModal] =
+    useState(false);
+  const [displayConnectwalletModal, setDisplayConnectwalletModal] =
+    useState(false);
 
   const availableNetWorks = [NetworkType.testnet, NetworkType.mainnet];
 
   const handleConnectWallet = () => {
-    pairWallet({ hashconnect, hashConnectData, setAccountId, setSigner });
+    pairWallet({ hashconnect });
   };
 
   const handleDisconnect = (reload?: boolean) => {
@@ -61,25 +65,43 @@ const HederaAccount = () => {
 
   const handleSelectNetwork = (network: NetworkType) => {
     setSelectedNetwork(network);
-    setDisplayModal(true);
+    setDisplayChangeNetworkModal(true);
   };
 
-  const handleClose = () => {
-    setDisplayModal(false);
+  const handleCloseChangeNetworkModal = () => {
+    setDisplayChangeNetworkModal(false);
   };
 
-  const handleConfirm = () => {
+  const handleConfirmChangeNetworkModal = () => {
     handleDisconnect();
     setNetwork(selectedNetwork);
     window.location.reload();
   };
 
+  const handleClickConnectButton = () => {
+    setDisplayConnectwalletModal(true);
+  };
+
+  const handleCloseConnectWaletModal = () => {
+    setDisplayConnectwalletModal(false);
+  };
+
   return (
     <>
       <ChangeNetworkModal
-        show={displayModal}
-        handleClose={handleClose}
-        handleConfirm={handleConfirm}
+        show={displayChangeNetworkModal}
+        handleClose={handleCloseChangeNetworkModal}
+        handleConfirm={handleConfirmChangeNetworkModal}
+      />
+      <ConnectWalletModal
+        show={displayConnectwalletModal}
+        handleClose={handleCloseConnectWaletModal}
+        handleConnectWallet={handleConnectWallet}
+        hashconnect={hashconnect}
+        pairingString={hashConnectData?.pairingString}
+        hashConnectData={hashConnectData}
+        setAccountId={setAccountId}
+        setSigner={setSigner}
       />
       <Accordion.Item eventKey={EventKey.HederaAccount}>
         <Accordion.Header>
@@ -112,7 +134,7 @@ const HederaAccount = () => {
               onMouseLeave={handleHover}
               onClick={
                 displayConnect
-                  ? handleConnectWallet
+                  ? handleClickConnectButton
                   : () => handleDisconnect(true)
               }
               variant={displayConnect ? "outline-primary" : "danger"}
