@@ -42,8 +42,8 @@ const DisclosureRequest = () => {
     [fileResponses]
   );
 
-  const fileResponseStatus = (did: string) => {
-    if (activeLoaders.includes(`createEncryptedFile-${did}`)) {
+  const fileResponseStatus = (did: string, loaderId: string) => {
+    if (activeLoaders.includes(loaderId)) {
       return;
     }
 
@@ -64,9 +64,9 @@ const DisclosureRequest = () => {
 
   const presentationResponseStatus = (
     presentationResponse: any,
-    did: string
+    loaderId: string
   ) => {
-    if (activeLoaders.includes(`handleSendRequest-${did}`)) {
+    if (activeLoaders.includes(loaderId)) {
       return;
     }
     if (presentationResponse !== undefined) {
@@ -83,7 +83,30 @@ const DisclosureRequest = () => {
   };
 
   const handleCreateEncryptedFile = useCallback(
-    async (encryptedKeyId: string, did: string, signer: HashConnectSigner) => {
+    async ({
+      encryptedKeyId,
+      did,
+      signer,
+      loaderId,
+    }: {
+      encryptedKeyId: string;
+      did: string;
+      signer: HashConnectSigner;
+      loaderId: string;
+    }) => {
+      // Remove old file before creating new file
+      setFileResponses((prev) => prev.filter((item) => item.did !== did));
+
+      // Remove old response from responder before sending new request
+      setResponders((prev) =>
+        prev.map((responder) => {
+          if (responder.did === did) {
+            return { ...responder, presentationResponse: undefined };
+          } else return responder;
+        })
+      );
+
+      // Create new file
       const { fileId } = await createEncryptedFile({
         encryptedKeyId,
         cipher,
@@ -93,6 +116,7 @@ const DisclosureRequest = () => {
         provider,
         addLoader,
         removeLoader,
+        loaderId,
       });
       if (fileId) {
         setFileResponses((prev) => [
@@ -103,7 +127,14 @@ const DisclosureRequest = () => {
         setFileResponses((prev) => [...prev, { did, fileId: "" }]);
       }
     },
-    [addLoader, cipher, presentationRequest, provider, removeLoader]
+    [
+      addLoader,
+      cipher,
+      presentationRequest,
+      provider,
+      removeLoader,
+      setResponders,
+    ]
   );
 
   return (
@@ -128,13 +159,21 @@ const DisclosureRequest = () => {
             const { accountId, did, presentationResponse, encryptedKeyId } =
               responder;
 
-            const isCreateFileSuccess = fileResponseStatus(did);
             const file = getResponderFile(did);
 
-            const isSuccess = presentationResponseStatus(
+            const sendRequestLoaderId = `handleSendRequest-${did}`;
+            const createFileLoaderId = `createEncryptedFile-${did}`;
+
+            const isSentRequestSuccess = presentationResponseStatus(
               presentationResponse,
-              did
+              sendRequestLoaderId
             );
+
+            const isCreateFileSuccess = fileResponseStatus(
+              did,
+              createFileLoaderId
+            );
+
             const statusText =
               presentationResponseStatusMessage(presentationResponse);
 
@@ -149,20 +188,26 @@ const DisclosureRequest = () => {
                       <div className="d-flex mt-2">
                         <ButtonWithLoader
                           onClick={() =>
-                            handleCreateEncryptedFile(
+                            handleCreateEncryptedFile({
                               encryptedKeyId,
                               did,
-                              signer
-                            )
+                              signer,
+                              loaderId: createFileLoaderId,
+                            })
                           }
                           text="Create request file"
-                          loading={activeLoaders.includes(
-                            `createEncryptedFile-${did}`
-                          )}
+                          loading={activeLoaders.includes(createFileLoaderId)}
+                          disabled={
+                            activeLoaders.length > 0
+                              ? !activeLoaders.find(
+                                  (item) => item === createFileLoaderId
+                                )
+                              : false
+                          }
                         />
                         <StatusLabel
                           isSuccess={
-                            activeLoaders.includes(`createEncryptedFile-${did}`)
+                            activeLoaders.includes(createFileLoaderId)
                               ? undefined
                               : isCreateFileSuccess
                           }
@@ -185,18 +230,24 @@ const DisclosureRequest = () => {
                               responders,
                               setResponders,
                               credentialVerificationKey,
+                              loaderId: createFileLoaderId,
                             })
                           }
                           text="Send Presentation Request"
-                          loading={activeLoaders.includes(
-                            `handleSendRequest-${did}`
-                          )}
+                          loading={activeLoaders.includes(sendRequestLoaderId)}
+                          disabled={
+                            activeLoaders.length > 0
+                              ? !activeLoaders.find(
+                                  (item) => item === sendRequestLoaderId
+                                )
+                              : false
+                          }
                         />
                         <StatusLabel
                           isSuccess={
-                            activeLoaders.includes(`handleSendRequest-${did}`)
+                            activeLoaders.includes(sendRequestLoaderId)
                               ? undefined
-                              : isSuccess
+                              : isSentRequestSuccess
                           }
                           text={statusText}
                         />

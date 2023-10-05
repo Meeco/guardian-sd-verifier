@@ -16,6 +16,7 @@ const handleSendPresentationRequest = async ({
   responders,
   setResponders,
   credentialVerificationKey,
+  loaderId,
 }: {
   fileId: string;
   responderDid: string;
@@ -27,9 +28,19 @@ const handleSendPresentationRequest = async ({
   responders: Responder[];
   setResponders: (value: React.SetStateAction<Responder[]>) => void;
   credentialVerificationKey: any;
+  loaderId: string;
 }) => {
   try {
-    addLoader(`handleSendRequest-${responderDid}`);
+    addLoader(loaderId);
+    // Remove old response from responder before sending new request
+    setResponders((prev) =>
+      prev.map((responder) => {
+        if (responder.did === responderDid) {
+          return { ...responder, presentationResponse: undefined };
+        } else return responder;
+      })
+    );
+
     const timeStamp = Date.now();
     await sendPresentationRequest({
       fileId,
@@ -85,7 +96,7 @@ const handleSendPresentationRequest = async ({
           throw new Error("Send request failed");
         }
 
-        removeLoader(`handleSendRequest-${responderDid}`);
+        removeLoader(loaderId);
       }
     });
   } catch (error) {
@@ -111,7 +122,7 @@ const handleSendPresentationRequest = async ({
 
       return updatedResponders;
     });
-    removeLoader(`handleSendRequest-${responderDid}`);
+    removeLoader(loaderId);
   }
 };
 

@@ -13,6 +13,7 @@ const createEncryptedFile = async ({
   provider,
   addLoader,
   removeLoader,
+  loaderId,
 }: {
   presentationRequest: any;
   encryptedKeyId: string;
@@ -22,9 +23,10 @@ const createEncryptedFile = async ({
   provider: any;
   addLoader: (id: string) => void;
   removeLoader: (removedId: string) => void;
+  loaderId: string;
 }) => {
   try {
-    addLoader(`createEncryptedFile-${responderDid}`);
+    addLoader(loaderId);
 
     const didDocument = await fetchResolveDid(responderDid);
 
@@ -67,12 +69,12 @@ const createEncryptedFile = async ({
       JSON.stringify(encryptedMessage)
     );
 
-    removeLoader(`createEncryptedFile-${responderDid}`);
+    removeLoader(loaderId);
 
     return { fileId };
   } catch (error) {
     console.log({ error });
-    removeLoader(`createEncryptedFile-${responderDid}`);
+    removeLoader(loaderId);
     return { fileId: null };
   }
 };
