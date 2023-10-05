@@ -29,7 +29,7 @@ const HederaAccount = () => {
   const availableNetWorks = [NetworkType.testnet, NetworkType.mainnet];
 
   const handleConnectWallet = () => {
-    pairWallet({ hashconnect });
+    pairWallet(hashconnect);
   };
 
   const handleDisconnect = (reload?: boolean) => {
