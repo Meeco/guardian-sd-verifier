@@ -1,6 +1,6 @@
 import { TopicMessageSubmitTransaction } from "@hashgraph/sdk";
 import { Signer } from "@hashgraph/sdk/lib/Signer";
-import { HashConnectSigner } from "hashconnect/dist/esm/provider/signer";
+import { HashConnectSigner } from "hashconnect/dist/cjs/provider/signer";
 
 const submitMessage = async ({
   message,
