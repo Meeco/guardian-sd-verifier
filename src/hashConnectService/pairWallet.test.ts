@@ -1,3 +1,4 @@
+import { jest } from "@jest/globals";
 import { HashConnect } from "hashconnect";
 import { pairWallet } from "./pairWallet";
 

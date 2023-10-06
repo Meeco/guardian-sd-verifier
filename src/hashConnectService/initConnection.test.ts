@@ -1,9 +1,18 @@
-import { HashConnect, HashConnectTypes } from "hashconnect";
-import { NetworkType } from "../components/AppProvider";
+import { jest } from "@jest/globals";
+import { HashConnect, HashConnectTypes } from "hashconnect/dist/cjs/main";
 import { initConnection } from "./initConnection";
+
+enum NetworkType {
+  testnet = "testnet",
+  mainnet = "mainnet",
+}
 
 describe("initConnection", () => {
   const hashConnect = new HashConnect();
+
+  const accountId = "0.0.1234";
+  const topicId = "0.0.1730327";
+
   const mockInitData = (
     metadata: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata,
     network: "testnet" | "mainnet" | "previewnet",
@@ -11,24 +20,24 @@ describe("initConnection", () => {
   ) =>
     new Promise<any>((resolve) => {
       resolve({
-        topic: "0.0.1234",
+        topic: topicId,
         pairingString: "abc123",
         encryptionKey: "key123",
-        savedPairings: [{ metadata, network } as any],
+        savedPairings: [{ metadata, network, accountIds: [accountId] } as any],
       });
     });
-
-  const mockSetAccountId = jest.fn();
-  const mockSetHashconnect = jest.fn();
-  const mockSetHashconnectData = jest.fn();
-  const mockSetProvider = jest.fn();
-  const mockSetSigner = jest.fn();
 
   it("should init the conection", async () => {
     jest.spyOn(HashConnect.prototype, "init").mockImplementation(mockInitData);
 
-    const hashConnectData = await initConnection({
-      hcInstance: hashConnect,
+    const mockSetAccountId = jest.fn();
+    const mockSetHashconnect = jest.fn();
+    const mockSetHashconnectData = jest.fn();
+    const mockSetProvider = jest.fn();
+    const mockSetSigner = jest.fn();
+
+    await initConnection({
+      hcInstance: hashConnect as any,
       network: NetworkType.testnet,
       setAccountId: mockSetAccountId,
       setHashconnect: mockSetHashconnect,
@@ -37,6 +46,10 @@ describe("initConnection", () => {
       setSigner: mockSetSigner,
     });
 
-    console.log({ hashConnectData });
+    expect(mockSetAccountId).toBeCalledWith(accountId);
+    expect(mockSetHashconnect).toBeCalledWith(hashConnect);
+    expect(mockSetHashconnectData).toBeCalled();
+    expect(mockSetProvider).toBeCalled();
+    expect(mockSetSigner).toBeCalled();
   });
 });

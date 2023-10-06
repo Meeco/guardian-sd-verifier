@@ -1,3 +1,4 @@
+import { jest } from "@jest/globals";
 import mockDidDoc from "../mock/did_document.json";
 import fetchResolveDid from "./fetchResolveDid";
 describe("fetchResolveDid", () => {
@@ -10,7 +11,7 @@ describe("fetchResolveDid", () => {
       Promise.resolve({
         json: () => Promise.resolve(mockDidDoc),
       })
-    ) as jest.Mock;
+    ) as unknown as jest.Mock;
 
     const data = await fetchResolveDid("123");
     expect(data).toEqual(mockDidDoc);
@@ -19,7 +20,7 @@ describe("fetchResolveDid", () => {
   it("should handle fetch resolve did failures", async () => {
     global.fetch = jest
       .fn()
-      .mockRejectedValue(new Error("Failed to resolve did"));
+      .mockRejectedValue(new Error("Failed to resolve did")) as any;
 
     const logSpy = jest.spyOn(console, "log");
 

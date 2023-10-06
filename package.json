@@ -48,7 +48,7 @@
   "scripts": {
     "start": "react-app-rewired start",
     "build": "react-app-rewired build",
-    "test": "react-app-rewired test",
+    "test": "node --experimental-vm-modules --no-warnings node_modules/jest/bin/jest.js --config jest.config.json --forceExit",
     "eject": "react-scripts eject",
     "pretty": "prettier --write  \"src/**/*.{js,jsx,ts,tsx,json}\""
   },

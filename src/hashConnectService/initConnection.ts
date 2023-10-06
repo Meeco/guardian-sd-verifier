@@ -2,7 +2,7 @@ import { HashConnect, HashConnectTypes } from "hashconnect";
 import { HashConnectSigner } from "hashconnect/dist/esm/provider/signer";
 import { NetworkType } from "../components/AppProvider";
 
-const appMetadata = {
+export const appMetadata = {
   name: "Hedera Guardian Selective Disclosure",
   description: "Hedera Guardian Selective Disclosure",
   // TODO: upload icon for Hedera Guardian Selective Disclosure
@@ -32,7 +32,6 @@ export const initConnection = async ({
 }) => {
   //initialize and use returned data
   const hashConnectData = await hcInstance.init(appMetadata, network, false);
-  console.log({ hashConnectData });
 
   if (hashConnectData.savedPairings.length > 0) {
     const accountId = hashConnectData.savedPairings[0].accountIds[0];

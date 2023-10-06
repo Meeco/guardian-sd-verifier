@@ -9,6 +9,7 @@ const createFile = async (
 ) => {
   try {
     const signer = hcSigner as unknown as Signer;
+
     //Create the transaction
     const transaction = await new FileCreateTransaction()
       .setContents(contents)
