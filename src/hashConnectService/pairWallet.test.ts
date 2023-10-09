@@ -1,5 +1,5 @@
 import { jest } from "@jest/globals";
-import { HashConnect } from "hashconnect";
+import { HashConnect } from "hashconnect/dist/cjs/main";
 import { pairWallet } from "./pairWallet";
 
 describe("pairWallet", () => {
