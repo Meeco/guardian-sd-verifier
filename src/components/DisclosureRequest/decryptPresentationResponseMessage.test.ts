@@ -24,7 +24,7 @@ describe("decryptPresentationResponseMessage", () => {
     .spyOn(HashConnect.prototype, "init")
     .mockImplementation(() => mockInitData);
 
-  it("should first", async () => {
+  it("should decrypt encrypted response successfully", async () => {
     const sharedEdKey = await Ed25519VerificationKey2020.from({
       type: "Ed25519VerificationKey2020",
       id: "did:hedera:testnet:z6MkmELdkLPDgwzwXSm166M2ut4i2M9GHALUiYvZBz15YzWG_0.0.1136547#did-root-key",
