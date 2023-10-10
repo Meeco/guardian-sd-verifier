@@ -9,6 +9,7 @@ describe("fetchResolveDid", () => {
   it("should fetch resolve did successfully", async () => {
     global.fetch = jest.fn(() =>
       Promise.resolve({
+        ok: true,
         json: () => Promise.resolve(mockDidDoc),
       })
     ) as unknown as jest.Mock;
@@ -18,17 +19,19 @@ describe("fetchResolveDid", () => {
   });
 
   it("should handle fetch resolve did failures", async () => {
-    global.fetch = jest
-      .fn()
-      .mockRejectedValue(new Error("Failed to resolve did")) as any;
-
-    const logSpy = jest.spyOn(console, "log");
-
-    const data = await fetchResolveDid("123");
-    expect(data).toBe(undefined);
-    expect(logSpy).toHaveBeenCalledWith(
-      "Fetch resolve did failed",
-      new Error("Failed to resolve did")
+    const errValue = new Error(
+      'Could not fetch from "http://localhost:5000/1.0/identifiers/123"'
     );
+    global.fetch = jest.fn().mockRejectedValue(errValue) as any;
+
+    let error;
+
+    try {
+      await fetchResolveDid("123");
+    } catch (e) {
+      error = e;
+    } finally {
+      expect(JSON.stringify(error)).toBe(JSON.stringify(errValue));
+    }
   });
 });
