@@ -6,7 +6,9 @@ import { HashConnect } from "hashconnect/dist/cjs/hashconnect";
 import { appMetadata, createMockInitData } from "../../mock/mockInitData";
 import decryptPresentationResponseMessage from "./decryptPresentationResponseMessage";
 
+import { FileContentsQuery } from "@hashgraph/sdk";
 import { Buffer } from "buffer";
+import { MessageType } from "../../types";
 
 global.Buffer = Buffer;
 
@@ -59,6 +61,14 @@ describe("decryptPresentationResponseMessage", () => {
       keyResolver,
     });
 
+    const encryptedBytes = new TextEncoder().encode(JSON.stringify(encrypted));
+
+    jest
+      .spyOn(FileContentsQuery.prototype, "executeWithSigner")
+      .mockImplementation(
+        () => new Promise((resolve) => resolve(encryptedBytes))
+      );
+
     const hashConnectData = await hashConnect.init(
       appMetadata,
       "testnet",
@@ -76,10 +86,15 @@ describe("decryptPresentationResponseMessage", () => {
     const decrypted = await decryptPresentationResponseMessage({
       hcSigner: signer,
       cipher,
-      presentationResponseMessage: encrypted,
-      credentialVerificationKey: keyAgreementKeyShared,
+      presentationResponseMessage: {
+        operation: MessageType.PRESENTATION_RESPONSE,
+        request_id: "123",
+        recipient_did: "123",
+        response_file_id: "123",
+      },
+      credentialVerificationKey: sharedEdKey,
     });
 
-    console.log({ decrypted });
+    expect(JSON.stringify(decrypted)).toBe(JSON.stringify(data));
   });
 });
