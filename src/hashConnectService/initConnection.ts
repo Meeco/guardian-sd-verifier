@@ -1,5 +1,5 @@
-import { HashConnect, HashConnectTypes } from "hashconnect/dist/cjs/main";
-import { HashConnectSigner } from "hashconnect/dist/cjs/provider/signer";
+import { HashConnect, HashConnectTypes } from "hashconnect";
+import { HashConnectSigner } from "hashconnect/dist/esm/provider/signer";
 import { NetworkType } from "../components/AppProvider";
 
 export const appMetadata = {

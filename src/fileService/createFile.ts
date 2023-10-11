@@ -1,6 +1,6 @@
 import { FileCreateTransaction, Hbar } from "@hashgraph/sdk";
 import { Signer } from "@hashgraph/sdk/lib/Signer";
-import { HashConnectSigner } from "hashconnect/dist/cjs/provider/signer";
+import { HashConnectSigner } from "hashconnect/dist/esm/provider/signer";
 
 const createFile = async (
   hcSigner: HashConnectSigner,

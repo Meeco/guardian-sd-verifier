@@ -1,4 +1,4 @@
-import { HashConnect } from "hashconnect/dist/cjs/main";
+import { HashConnect } from "hashconnect";
 import { useContext, useEffect, useState } from "react";
 import { Accordion } from "react-bootstrap";
 import "./App.css";

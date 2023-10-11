@@ -1,6 +1,6 @@
 import { Cipher } from "@digitalbazaar/minimal-cipher";
-import { HashConnect, HashConnectTypes } from "hashconnect/dist/cjs/main";
-import { HashConnectSigner } from "hashconnect/dist/cjs/provider/signer";
+import { HashConnect, HashConnectTypes } from "hashconnect";
+import { HashConnectSigner } from "hashconnect/dist/esm/provider/signer";
 import { createContext, useCallback, useEffect, useState } from "react";
 import {
   deriveEdVerificationKey,

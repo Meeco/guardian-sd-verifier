@@ -1,4 +1,4 @@
-import { HashConnect } from "hashconnect/dist/cjs/main";
+import { HashConnect } from "hashconnect";
 
 export const pairWallet = async (hashconnect?: HashConnect) => {
   if (hashconnect) {
