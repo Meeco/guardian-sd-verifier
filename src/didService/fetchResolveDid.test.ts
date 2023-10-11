@@ -24,13 +24,10 @@ describe("fetchResolveDid", () => {
     );
     global.fetch = jest.fn().mockRejectedValue(errValue) as any;
 
-    let error;
-
     try {
       await fetchResolveDid("123");
-    } catch (e) {
-      error = e;
-    } finally {
+    } catch (error) {
+      // eslint-disable-next-line jest/no-conditional-expect
       expect(JSON.stringify(error)).toBe(JSON.stringify(errValue));
     }
   });
