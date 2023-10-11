@@ -1,12 +1,12 @@
 import { jest } from "@jest/globals";
-import { HashConnect } from "hashconnect/dist/cjs/main";
 import { pairWallet } from "./pairWallet";
 
 describe("pairWallet", () => {
   const mockConnectToLocalWallet = jest.fn();
+  // Cast to any to fix esm/cjs issue
   const mockHashconnect = {
     connectToLocalWallet: mockConnectToLocalWallet,
-  } as unknown as HashConnect;
+  } as any;
 
   it("should connect to wallet", () => {
     pairWallet(mockHashconnect);

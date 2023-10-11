@@ -41,7 +41,8 @@ describe("sendPresentationRequest", () => {
     const { isSuccess } = await sendPresentationRequest({
       fileId: "123",
       responderDid: "123",
-      signer,
+      // Cast to any to fix esm/cjs issue
+      signer: signer as any,
       topicId: "123",
     });
 
@@ -70,7 +71,8 @@ describe("sendPresentationRequest", () => {
     const { isSuccess } = await sendPresentationRequest({
       fileId: "123",
       responderDid: "123",
-      signer,
+      // Cast to any to fix esm/cjs issue
+      signer: signer as any,
       topicId: "123",
     });
 

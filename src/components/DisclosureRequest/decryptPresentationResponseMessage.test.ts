@@ -84,7 +84,8 @@ describe("decryptPresentationResponseMessage", () => {
     const signer = hashConnect.getSigner(provider);
 
     const decrypted = await decryptPresentationResponseMessage({
-      hcSigner: signer,
+      // Cast to any to fix esm/cjs issue
+      hcSigner: signer as any,
       cipher,
       presentationResponseMessage: {
         operation: MessageType.PRESENTATION_RESPONSE,
