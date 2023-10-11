@@ -30,7 +30,6 @@ const deriveKeyAgreementKey = async (verificationKey: any) => {
   } else {
     throw new Error(`Unsupported key type "${type}"`);
   }
-  console.log({ verificationKey2020 });
 
   const keyAgreementKey =
     X25519KeyAgreementKey2020.fromEd25519VerificationKey2020({
