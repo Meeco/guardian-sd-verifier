@@ -25,12 +25,12 @@ const deriveKeyAgreementKey = async (verificationKey: any) => {
     type === "Ed25519VerificationKey2020" ||
     type === "JsonWebKey2020"
   ) {
-    verificationKey2020 = await Ed25519VerificationKey2020.from(
-      verificationKey
-    );
+    verificationKey2020 =
+      await Ed25519VerificationKey2020.from(verificationKey);
   } else {
     throw new Error(`Unsupported key type "${type}"`);
   }
+  console.log({ verificationKey2020 });
 
   const keyAgreementKey =
     X25519KeyAgreementKey2020.fromEd25519VerificationKey2020({

@@ -22,7 +22,6 @@ describe("deriveKeyAgreementKey", () => {
       },
     };
     const keyAgreementKey = await deriveKeyAgreementKey(verificationKey);
-    console.log({ keyAgreementKey });
     expect(keyAgreementKey.type).toBe("X25519KeyAgreementKey2020");
   });
 
