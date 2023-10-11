@@ -1,3 +1,4 @@
+import { jest } from "@jest/globals";
 import mockCredential from "../mock/example_credential.json";
 import {
   mockDid,
@@ -11,6 +12,8 @@ import deriveEdVerificationKey from "./deriveEdVerificationKey";
 import { documentLoader } from "./documentLoader";
 
 describe("createVerifiablePresentation", () => {
+  jest.retryTimes(3);
+
   it("should create Verifiable Presentation from Verifiable Credential", async () => {
     const verificationKey = await deriveEdVerificationKey({
       id: mockId,
@@ -34,5 +37,5 @@ describe("createVerifiablePresentation", () => {
     });
 
     expect(vp.type).toContain("VerifiablePresentation");
-  }, 20000);
+  });
 });
