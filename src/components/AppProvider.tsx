@@ -25,8 +25,8 @@ export interface AppState {
   setSelectedMethod: React.Dispatch<any>;
   didPublicKey: string;
   setDidPublicKey: React.Dispatch<React.SetStateAction<string>>;
-  topicId?: string;
-  setTopicId: React.Dispatch<React.SetStateAction<string | undefined>>;
+  topicId: string;
+  setTopicId: React.Dispatch<React.SetStateAction<string>>;
   hashConnectData?: HashConnectTypes.InitilizationData;
   setHashConnectData: React.Dispatch<
     React.SetStateAction<HashConnectTypes.InitilizationData | undefined>
@@ -131,8 +131,8 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
   const [cid, setCid] = useState(getLocalStorage("cid") || "");
 
   // Topic ID for sending/receiving message
-  const [topicId, setTopicId] = useState<string | undefined>(
-    process.env.REACT_APP_TOPIC_ID
+  const [topicId, setTopicId] = useState<string>(
+    process.env.REACT_APP_DEFAULT_TOPIC_ID || ""
   );
 
   // Wallet data

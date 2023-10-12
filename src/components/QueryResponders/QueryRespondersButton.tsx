@@ -7,10 +7,12 @@ const QueryRespondersButton = ({
   handleQueryResponders,
   getRespondersSuccess,
   getRespondersErrMsg,
+  disabled,
 }: {
   handleQueryResponders: () => Promise<void>;
   getRespondersSuccess?: boolean;
   getRespondersErrMsg: string;
+  disabled?: boolean;
 }) => {
   const { signer, activeLoaders, vcVerificaitonResult } =
     useContext(AppContext);
@@ -26,6 +28,7 @@ const QueryRespondersButton = ({
     return (
       <>
         <Button
+          disabled={disabled}
           onClick={handleQueryResponders}
           text="Query Responders"
           loading={activeLoaders.includes("handleQueryResponders")}

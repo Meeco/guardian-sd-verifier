@@ -1,4 +1,4 @@
-import { useCallback, useContext, useState } from "react";
+import { useCallback, useContext, useRef, useState } from "react";
 import { Accordion, Form } from "react-bootstrap";
 import { BoxArrowUpRight } from "react-bootstrap-icons";
 import { v4 as uuidv4 } from "uuid";
@@ -24,6 +24,8 @@ const QueryResponders = () => {
     credentialDid,
     setTopicId,
   } = useContext(AppContext);
+
+  const defaultTopicIdRef = useRef(process.env.REACT_APP_DEFAULT_TOPIC_ID);
 
   const [getRespondersSuccess, setGetRespondersSuccess] = useState<boolean>();
   const [getRespondersErrMsg, setgetRespondersErrMsg] = useState("");
@@ -117,10 +119,12 @@ const QueryResponders = () => {
       <Accordion.Body>
         <div className="mt-2">
           <div className="mt-2 mb-3">
-            <Form.Label>Topic ID (deafult: {topicId})</Form.Label>
+            <Form.Label>
+              Topic ID (deafult: {defaultTopicIdRef.current})
+            </Form.Label>
             <Form.Control
               type="text"
-              placeholder="CID"
+              placeholder="Topic ID"
               onChange={handleChangeTopicId}
               className="w-50"
               value={topicId}
@@ -128,6 +132,7 @@ const QueryResponders = () => {
           </div>
           <div className="d-flex">
             <QueryRespondersButton
+              disabled={!topicId}
               handleQueryResponders={handleQueryResponders}
               getRespondersSuccess={getRespondersSuccess}
               getRespondersErrMsg={getRespondersErrMsg}
