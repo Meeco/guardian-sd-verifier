@@ -65,7 +65,7 @@ const createPresentationRequest = async ({
 
     const presentationDefinition = createPresentationDefinition(
       vcResponse.id,
-      selectedFields.filter(field => field !== 'select-all')
+      selectedFields.filter((field) => field !== "select-all")
     );
 
     // create presentation query file
@@ -82,6 +82,7 @@ const createPresentationRequest = async ({
     removeLoader("createPresentationRequest");
     setCreatePresentationSuccess(true);
   } else {
+    removeLoader("createPresentationRequest");
     setCreatePresentationSuccess(false);
     throw new Error("Key data is required");
   }
