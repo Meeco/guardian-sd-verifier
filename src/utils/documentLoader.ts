@@ -1,5 +1,5 @@
 import * as ed25519 from "@transmute/did-key-ed25519";
-import { ResultType, fetchIPFSFile } from "./fetchIPFSFile";
+import { ResultType, fetchIPFSFile } from "../fileService";
 import fetchJson from "./fetchJson";
 import resolveDidDocument from "./resolveDid";
 
