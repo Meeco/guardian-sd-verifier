@@ -68,7 +68,6 @@ const handleSendPresentationRequest = async ({
               presentationResponseMessage: responseMessage,
               credentialVerificationKey,
             });
-            console.log({ data });
             presentationResponse = {
               data,
             };
