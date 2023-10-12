@@ -22,8 +22,10 @@ export const handlePollPresentationResponseRequest = async ({
         msg.request_id === requestId &&
         msg.operation === MessageType.PRESENTATION_RESPONSE
     )[0];
+
+    console.log({ message });
     return message;
-  }, 15000);
+  }, 60000);
 
   if (presentationResponseMessage) {
     return presentationResponseMessage;

@@ -2,28 +2,14 @@ import { Ed25519VerificationKey2020 } from "@digitalbazaar/ed25519-verification-
 import { Cipher } from "@digitalbazaar/minimal-cipher";
 import { X25519KeyAgreementKey2020 } from "@digitalbazaar/x25519-key-agreement-key-2020";
 import { jest } from "@jest/globals";
-import { HashConnect } from "hashconnect/dist/cjs/hashconnect";
-import { appMetadata, createMockInitData } from "../../mock/mockInitData";
 import decryptPresentationResponseMessage from "./decryptPresentationResponseMessage";
 
-import { FileContentsQuery } from "@hashgraph/sdk";
 import { Buffer } from "buffer";
 import { MessageType } from "../../types";
 
 global.Buffer = Buffer;
 
 describe("decryptPresentationResponseMessage", () => {
-  const hashConnect = new HashConnect();
-
-  const topicId = "0.0.123";
-  const accountId = "0.0.456";
-
-  const mockInitData = createMockInitData("testnet", topicId, accountId);
-
-  jest
-    .spyOn(HashConnect.prototype, "init")
-    .mockImplementation(() => mockInitData);
-
   it("should decrypt encrypted response successfully", async () => {
     const sharedEdKey = await Ed25519VerificationKey2020.from({
       type: "Ed25519VerificationKey2020",
@@ -61,37 +47,18 @@ describe("decryptPresentationResponseMessage", () => {
       keyResolver,
     });
 
-    const encryptedBytes = new TextEncoder().encode(JSON.stringify(encrypted));
-
-    jest
-      .spyOn(FileContentsQuery.prototype, "executeWithSigner")
-      .mockImplementation(
-        () => new Promise((resolve) => resolve(encryptedBytes))
-      );
-
-    const hashConnectData = await hashConnect.init(
-      appMetadata,
-      "testnet",
-      false
-    );
-
-    const provider = hashConnect.getProvider(
-      "testnet",
-      hashConnectData.topic,
-      accountId
-    );
-
-    const signer = hashConnect.getSigner(provider);
+    global.fetch = jest.fn(() =>
+      Promise.resolve({ json: () => encrypted, status: 200, ok: true })
+    ) as unknown as jest.Mock;
 
     const decrypted = await decryptPresentationResponseMessage({
       // Cast to any to fix esm/cjs issue
-      hcSigner: signer as any,
       cipher,
       presentationResponseMessage: {
         operation: MessageType.PRESENTATION_RESPONSE,
         request_id: "123",
         recipient_did: "123",
-        response_file_id: "123",
+        response_file_cid: "123",
       },
       credentialVerificationKey: sharedEdKey,
     });

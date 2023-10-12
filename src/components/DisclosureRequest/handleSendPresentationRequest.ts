@@ -64,7 +64,6 @@ const handleSendPresentationRequest = async ({
             };
           } else {
             const data = await decryptPresentationResponseMessage({
-              hcSigner: signer,
               cipher,
               presentationResponseMessage: responseMessage,
               credentialVerificationKey,

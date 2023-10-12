@@ -1,5 +1,5 @@
-import { HashConnectSigner } from "hashconnect/dist/esm/provider/signer";
-import { getFileContents } from "../../fileService";
+import { fetchIPFSFile } from "../../fileService";
+import { ResultType } from "../../fileService/fetchIPFSFile";
 import { PresentationResponseMessage } from "../../types";
 import { deriveKeyAgreementKey } from "../../utils";
 
@@ -12,12 +12,10 @@ export interface PresentationResponse {
 }
 
 const decryptPresentationResponseMessage = async ({
-  hcSigner,
   cipher,
   presentationResponseMessage,
   credentialVerificationKey,
 }: {
-  hcSigner: HashConnectSigner;
   cipher: any;
   presentationResponseMessage?: PresentationResponseMessage;
   credentialVerificationKey: any;
@@ -31,23 +29,20 @@ const decryptPresentationResponseMessage = async ({
   } else {
     try {
       // get response file's contents
-      const responseFileId =
-        presentationResponseMessage?.response_file_id || "";
+      const responseFileCid =
+        presentationResponseMessage?.response_file_cid || "";
 
-      const fileContentsBuffer = await getFileContents({
-        hcSigner,
-        fileId: responseFileId,
-      });
-
-      if (fileContentsBuffer) {
-        const fileContents = Buffer.from(fileContentsBuffer).toString("utf-8");
+      if (responseFileCid) {
+        const fileContents = await fetchIPFSFile(responseFileCid, {
+          resultType: ResultType.JSON,
+        });
 
         const keyAgreementKey = await deriveKeyAgreementKey(
           credentialVerificationKey
         );
 
         const decrypted = await cipher.decryptObject({
-          jwe: JSON.parse(fileContents),
+          jwe: fileContents,
           keyAgreementKey,
         });
 
