@@ -1,12 +1,12 @@
 const pollRequest = <T>(
-  func: () => Promise<T>,
+  requestFunction: () => Promise<T>,
   timeOut: number
 ): Promise<T | undefined> => {
   return new Promise((resolve) => {
     try {
       // Run the function every 3 seconds
       const interval = setInterval(async () => {
-        const res = await func();
+        const res = await requestFunction();
         if (res) {
           if (Array.isArray(res)) {
             if (res.length > 0) {
@@ -21,7 +21,7 @@ const pollRequest = <T>(
       }, 3000);
 
       // Stop the interval after reach limit time
-      setTimeout(function () {
+      setTimeout(() => {
         clearInterval(interval);
         resolve(undefined);
       }, timeOut);
