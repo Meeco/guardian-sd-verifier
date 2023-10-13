@@ -226,6 +226,7 @@ const VCAndPresentationDefinition = () => {
             </FormGroup>
             <div className="d-flex mt-3">
               <CreatePresentationButton
+                disabled={!selectedFields.length}
                 handleCreatePresentationRequest={
                   handleCreatePresentationRequest
                 }
