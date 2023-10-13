@@ -73,7 +73,7 @@ describe("createFile", () => {
     expect(setMaxTransactionFee).toHaveBeenCalledWith(new Hbar(2));
 
     expect(mockCreateFile).toHaveBeenCalledWith(signer);
-    expect(fileId).toEqual("0.0.123");
+    expect(fileId).toEqual(mockFileId);
   });
 
   it("should handle creating file transaction failures", async () => {

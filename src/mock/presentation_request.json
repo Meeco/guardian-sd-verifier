@@ -1,0 +1,70 @@
+{
+  "comment": "Note: VP, OIDC, DIDComm, or CHAPI outer wrapper would be here.",
+  "presentation_definition": {
+    "id": "17d904f3-4933-4f67-9f65-ead82cb8f1a6",
+    "input_descriptors": [
+      {
+        "id": "audit",
+        "name": "Audit Report Request",
+        "purpose": "Require further information to complete audit report.",
+        "constraints": {
+          "fields": [
+            {
+              "path": ["$.id"],
+              "filter": {
+                "type": "string",
+                "const": "urn:uuid:688daba5-fbd4-4643-8f9e-eb11289f5cfb"
+              }
+            },
+            {
+              "path": ["$.credentialSubject.field2"]
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "authorization_details": {
+    "verifiablePresentation": {
+      "@context": [
+        "https://www.w3.org/2018/credentials/v1",
+        "https://w3id.org/security/suites/ed25519-2020/v1"
+      ],
+      "type": ["VerifiablePresentation"],
+      "verifiableCredential": [
+        {
+          "@context": [
+            "https://www.w3.org/2018/credentials/v1",
+            "https://www.w3.org/2018/credentials/examples/v1"
+          ],
+          "id": "http://example.edu/credentials/1872",
+          "type": ["VerifiableCredential", "AlumniCredential"],
+          "issuer": "did:key:z6MknDUyDPK834QCtCVesmmacwFGhv8ukqbhoGao5kzzReDG",
+          "issuanceDate": "2010-01-01T19:23:24Z",
+          "credentialSubject": {
+            "id": "did:key:z6Mks2X1aKs8PvepaGbhUghRY3pTBsjQificC4ybNnriSBSM",
+            "alumniOf": "<span lang=\"en\">Example University</span>"
+          },
+          "proof": {
+            "type": "Ed25519Signature2018",
+            "created": "2023-09-14T02:02:38Z",
+            "verificationMethod": "did:key:z6MknDUyDPK834QCtCVesmmacwFGhv8ukqbhoGao5kzzReDG#z6MknDUyDPK834QCtCVesmmacwFGhv8ukqbhoGao5kzzReDG",
+            "proofPurpose": "assertionMethod",
+            "jws": "eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..ySvzGk3iXkvw5CsjpHMzAVKZFD2mrfkWuMIQHlvDzleL17Qf558a9nLq2Ul5WVXB0GHGqe5wFN6zwfFoulGXDg"
+          }
+        }
+      ],
+      "id": "urn:uuid:8924a28a-11ac-4b0d-a64b-8f51d763bbcc",
+      "holder": "did:key:z6Mks2X1aKs8PvepaGbhUghRY3pTBsjQificC4ybNnriSBSM",
+      "proof": {
+        "type": "Ed25519Signature2020",
+        "created": "2023-10-13T03:05:46Z",
+        "verificationMethod": "did:key:z6Mks2X1aKs8PvepaGbhUghRY3pTBsjQificC4ybNnriSBSM#z6Mks2X1aKs8PvepaGbhUghRY3pTBsjQificC4ybNnriSBSM",
+        "proofPurpose": "authentication",
+        "challenge": "challenge",
+        "proofValue": "z5ThtcJ6sodh7F8t58p3V6uQzPPd2Y7tTdtjRDEsSnaxE2iDp1EeXxxT2vXcLvFmukvSuvwV7MiqEDwwC61atBFUF"
+      }
+    },
+    "did": "did:key:z6Mks2X1aKs8PvepaGbhUghRY3pTBsjQificC4ybNnriSBSM"
+  }
+}
