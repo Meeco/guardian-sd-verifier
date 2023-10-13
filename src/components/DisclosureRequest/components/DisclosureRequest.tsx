@@ -58,7 +58,7 @@ const DisclosureRequest = () => {
     const file = getResponderFile(did);
     if (file) {
       if (file.fileId) return `fileId: ${file.fileId}`;
-      else return "Create file failed";
+      else return "Create file failed, please try again";
     } else return "";
   };
 

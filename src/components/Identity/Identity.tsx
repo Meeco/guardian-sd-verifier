@@ -67,7 +67,10 @@ const Identity = () => {
       return "Verified";
     }
     if (vcVerificaitonResult === false)
-      return verifyCredentialErrMsg ?? "VC or private key is invalid";
+      return (
+        `${verifyCredentialErrMsg}, please try again` ??
+        "VC or private key is invalid"
+      );
     else return "";
   }, [vcVerificaitonResult, verifyCredentialErrMsg]);
 

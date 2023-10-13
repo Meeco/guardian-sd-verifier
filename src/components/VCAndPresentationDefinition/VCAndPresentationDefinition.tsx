@@ -130,7 +130,9 @@ const VCAndPresentationDefinition = () => {
         });
         setCreatePresentationErrMsg("");
       } catch (error) {
-        setCreatePresentationErrMsg((error as any).message);
+        setCreatePresentationErrMsg(
+          `${(error as any).message}, please try again`
+        );
       }
     }
   };
