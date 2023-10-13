@@ -32,7 +32,7 @@ describe("createEncryptedFile", () => {
     .spyOn(HashConnect.prototype, "init")
     .mockImplementation(() => mockInitData);
 
-  it("should first", async () => {
+  it("should return fileId when create encrypted file successfully", async () => {
     const hashConnectData = await hashConnect.init(
       appMetadata,
       "testnet",
