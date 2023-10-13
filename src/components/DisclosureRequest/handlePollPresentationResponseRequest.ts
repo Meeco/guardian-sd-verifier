@@ -17,13 +17,13 @@ export const handlePollPresentationResponseRequest = async ({
       topicId: topicId || "",
       timeStamp,
     })) as PresentationResponseMessage[];
+
     const message = topicMessages?.filter(
       (msg) =>
         msg.request_id === requestId &&
         msg.operation === MessageType.PRESENTATION_RESPONSE
     )[0];
 
-    console.log({ message });
     return message;
   }, 60000);
 

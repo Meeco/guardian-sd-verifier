@@ -6,13 +6,13 @@ describe("fetchWithRetry", () => {
   it("should retry and return fetch response", async () => {
     const text = "Hello";
 
-    jest
-      .spyOn(global, "fetch")
+    global.fetch = jest
+      .fn()
       .mockImplementationOnce(async () => Promise.reject({ ok: false }))
       .mockImplementationOnce(async () => Promise.reject({ ok: false }))
       .mockImplementationOnce(async () => {
         return { text, status: 200, ok: true } as any;
-      });
+      }) as unknown as jest.Mock;
 
     const res = await fetchWithRetry({
       url,
@@ -25,13 +25,13 @@ describe("fetchWithRetry", () => {
   it('should reject error when retry attemp is more than "retry"', async () => {
     const text = "Hello";
 
-    jest
-      .spyOn(global, "fetch")
+    global.fetch = jest
+      .fn()
       .mockImplementationOnce(async () => Promise.reject({ ok: false }))
       .mockImplementationOnce(async () => Promise.reject({ ok: false }))
       .mockImplementationOnce(async () => {
         return { text, status: 200, ok: true } as any;
-      });
+      }) as unknown as jest.Mock;
 
     try {
       await fetchWithRetry({
