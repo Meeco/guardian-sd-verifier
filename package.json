@@ -56,7 +56,10 @@
     "extends": [
       "react-app",
       "react-app/jest"
-    ]
+    ],
+    "rules": {
+      "jest/no-conditional-expect": "off"
+    }
   },
   "browserslist": {
     "production": [
