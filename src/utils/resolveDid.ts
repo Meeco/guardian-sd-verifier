@@ -24,13 +24,13 @@ const resolveDidDocument = (did: string) => {
   if (did.startsWith("did:key")) {
     return resolveDid(did);
   } else
-    return fetchJson(
-      `${
+    return fetchJson({
+      url: `${
         did.startsWith("did:hedera")
           ? HEDERA_RESOLVER_HOST
           : UNIVERSAL_RESOLVER_HOST
-      }/${did}`
-    );
+      }/${did}`,
+    });
 };
 
 export default resolveDidDocument;

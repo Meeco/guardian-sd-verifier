@@ -40,7 +40,6 @@ describe("deriveKeyAgreementKey", () => {
         });
       await deriveKeyAgreementKey(keyAgreementKey);
     } catch (error) {
-      // eslint-disable-next-line jest/no-conditional-expect
       expect((error as any).message).toBe(
         'Unsupported key type "X25519KeyAgreementKey2020"'
       );

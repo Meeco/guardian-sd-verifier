@@ -27,7 +27,6 @@ describe("fetchResolveDid", () => {
     try {
       await fetchResolveDid("123");
     } catch (error) {
-      // eslint-disable-next-line jest/no-conditional-expect
       expect(JSON.stringify(error)).toBe(JSON.stringify(errValue));
     }
   });
