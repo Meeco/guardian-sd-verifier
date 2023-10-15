@@ -1,4 +1,4 @@
-import { HashConnectSigner } from "hashconnect/dist/cjs/provider/signer";
+import { HashConnectSigner } from "hashconnect/dist/esm/provider/signer";
 import { v4 as uuidv4 } from "uuid";
 import { submitMessage } from "../../consensusService";
 import { MessageType, PresentationRequestMessage } from "../../types";
