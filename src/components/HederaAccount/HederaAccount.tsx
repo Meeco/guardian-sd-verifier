@@ -23,7 +23,7 @@ const HederaAccount = () => {
   const [selectedNetwork, setSelectedNetwork] = useState(network);
   const [displayChangeNetworkModal, setDisplayChangeNetworkModal] =
     useState(false);
-  const [displayConnectwalletModal, setDisplayConnectwalletModal] =
+  const [displayConnectWalletModal, setDisplayConnectWalletModal] =
     useState(false);
 
   const availableNetWorks = [NetworkType.testnet, NetworkType.mainnet];
@@ -79,11 +79,11 @@ const HederaAccount = () => {
   };
 
   const handleClickConnectButton = () => {
-    setDisplayConnectwalletModal(true);
+    setDisplayConnectWalletModal(true);
   };
 
   const handleCloseConnectWaletModal = () => {
-    setDisplayConnectwalletModal(false);
+    setDisplayConnectWalletModal(false);
   };
 
   return (
@@ -94,7 +94,7 @@ const HederaAccount = () => {
         handleConfirm={handleConfirmChangeNetworkModal}
       />
       <ConnectWalletModal
-        show={displayConnectwalletModal}
+        show={displayConnectWalletModal}
         handleClose={handleCloseConnectWaletModal}
         handleConnectWallet={handleConnectWallet}
         hashconnect={hashconnect}
