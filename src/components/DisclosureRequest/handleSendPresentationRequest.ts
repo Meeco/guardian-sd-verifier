@@ -1,4 +1,4 @@
-import { HashConnectSigner } from "hashconnect/dist/esm/provider/signer";
+import { HashConnectSigner } from "hashconnect/dist/cjs/provider/signer";
 import { Responder } from "../AppProvider";
 import decryptPresentationResponseMessage from "./decryptPresentationResponseMessage";
 import { handlePollPresentationResponseRequest } from "./handlePollPresentationResponseRequest";

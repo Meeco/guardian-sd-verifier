@@ -1,4 +1,4 @@
-import { HashConnectSigner } from "hashconnect/dist/esm/provider/signer";
+import { HashConnectSigner } from "hashconnect/dist/cjs/provider/signer";
 import { fetchResolveDid } from "../../didService";
 import { createFile } from "../../fileService";
 import { deriveKeyAgreementKey } from "../../utils";

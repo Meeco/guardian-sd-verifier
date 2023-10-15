@@ -1,4 +1,4 @@
-import { HashConnectSigner } from "hashconnect/dist/esm/provider/signer";
+import { HashConnectSigner } from "hashconnect/dist/cjs/provider/signer";
 import { useCallback, useContext, useState } from "react";
 import { Accordion, Button } from "react-bootstrap";
 import ReactJson from "react-json-view";
