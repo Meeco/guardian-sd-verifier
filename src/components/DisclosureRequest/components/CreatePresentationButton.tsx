@@ -11,12 +11,12 @@ const CreatePresentationButton = ({
   handleCreatePresentationRequest,
   createPresentationSuccess,
   createPresentationErrMsg,
-  disabled
+  disabled,
 }: {
   handleCreatePresentationRequest: () => void;
   createPresentationSuccess?: boolean;
   createPresentationErrMsg: string;
-  disabled: boolean
+  disabled: boolean;
 }) => {
   const { activeLoaders, credentialVerificationKey } = useContext(AppContext);
 
@@ -24,7 +24,7 @@ const CreatePresentationButton = ({
     return (
       <>
         <ButtonWithLoader
-        disabled={disabled}
+          disabled={disabled}
           onClick={handleCreatePresentationRequest}
           text="Create presentation"
           loading={activeLoaders.includes("createPresentationRequest")}
