@@ -5,7 +5,7 @@ import { HashConnect } from "hashconnect/dist/cjs/hashconnect";
 import { HashConnectProvider } from "hashconnect/dist/cjs/provider/provider";
 import { appMetadata } from "../../hashConnectService";
 import mockDidDocument from "../../mock/did_document.json";
-import mockEncryptedMessage from "../../mock/encryted_message.json";
+import mockEncryptedMessage from "../../mock/encrypted_message.json";
 import { createMockInitData } from "../../mock/mockInitData";
 import mockPresentationRequest from "../../mock/presentation_request.json";
 import createEncryptedFile from "./createEncryptedFile";
