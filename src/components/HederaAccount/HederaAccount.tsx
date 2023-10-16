@@ -1,7 +1,6 @@
 import { useContext, useMemo, useState } from "react";
 import { Accordion, Button, Dropdown } from "react-bootstrap";
 import { EventKey } from "../../constants";
-import { pairWallet } from "../../hashConnectService";
 import { AppContext, NetworkType } from "../AppProvider";
 import { AccordianToggleButton, StatusLabel } from "../common";
 import ChangeNetworkModal from "./ChangeNetworkModal";
@@ -13,6 +12,7 @@ const HederaAccount = () => {
     setAccountId,
     signer,
     setSigner,
+    setProvider,
     hashconnect,
     hashConnectData,
     network,
@@ -29,7 +29,7 @@ const HederaAccount = () => {
   const availableNetWorks = [NetworkType.testnet, NetworkType.mainnet];
 
   const handleConnectWallet = () => {
-    pairWallet(hashconnect);
+    if (hashconnect) hashconnect.connectToLocalWallet();
   };
 
   const handleDisconnect = (reload?: boolean) => {
@@ -102,6 +102,7 @@ const HederaAccount = () => {
         hashConnectData={hashConnectData}
         setAccountId={setAccountId}
         setSigner={setSigner}
+        setProvider={setProvider}
       />
       <Accordion.Item eventKey={EventKey.HederaAccount}>
         <Accordion.Header>

@@ -18,7 +18,7 @@ const createFile = async (
 
     const res = await transaction.executeWithSigner(signer);
 
-    // TODO: Ideally, should get transaction reciept by
+    // Ideally, should get transaction reciept by
     // `const receipt = await res.getReceiptWithSigner(signer);`
     // But currently got `res.getReceiptWithSigner is not a function` error from "@hashgraph/sdk"
     const receipt = await provider.getTransactionReceipt(res.transactionId);
