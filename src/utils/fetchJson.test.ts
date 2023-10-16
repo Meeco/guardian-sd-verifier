@@ -32,7 +32,7 @@ describe("fetchJson", () => {
 
     const response = await fetchJson({
       url: "https://example.com/json",
-      retry: 3,
+      retry: 2,
     });
     expect(response).toEqual({
       key: "value",
