@@ -15,6 +15,7 @@ interface ConnectWalletModalProps {
   setSigner: React.Dispatch<
     React.SetStateAction<HashConnectSigner | undefined>
   >;
+  setProvider: React.Dispatch<React.SetStateAction<any>>;
 }
 
 const ConnectWalletModal: FC<ConnectWalletModalProps> = ({
@@ -26,6 +27,7 @@ const ConnectWalletModal: FC<ConnectWalletModalProps> = ({
   hashConnectData,
   setAccountId,
   setSigner,
+  setProvider,
 }) => {
   const [qrCodeUrl, setQrCodeUrl] = useState("");
 
@@ -47,12 +49,20 @@ const ConnectWalletModal: FC<ConnectWalletModalProps> = ({
           hashConnectData.topic,
           pairingData.accountIds[0]
         );
+        setProvider(provider);
 
         const signer = hashconnect.getSigner(provider);
         setSigner(signer);
         handleClose();
       });
-  }, [handleClose, hashConnectData, hashconnect, setAccountId, setSigner]);
+  }, [
+    handleClose,
+    hashConnectData,
+    hashconnect,
+    setAccountId,
+    setProvider,
+    setSigner,
+  ]);
 
   return (
     <Modal show={show} onHide={handleClose}>
