@@ -299,7 +299,7 @@ const Identity = () => {
                   text={
                     getVerificationMethodsSuccess
                       ? "DID Fetched Success"
-                      : "DID Fetched Failed"
+                      : "DID Fetched Failed, please try again"
                   }
                 />
               </div>
