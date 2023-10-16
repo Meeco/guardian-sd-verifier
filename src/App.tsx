@@ -1,24 +1,57 @@
-import { useContext, useEffect } from "react";
+import { HashConnect } from "hashconnect";
+import { useContext, useEffect, useState } from "react";
 import { Accordion } from "react-bootstrap";
 import "./App.css";
-import initConnection from "./bladeWeb3Service/initConnection";
 import {
   DisclosureRequest,
   HederaAccount,
   Identity,
-  VcQuery,
+  QueryResponders,
+  VCAndPresentationDefinition,
 } from "./components";
 import { AppContext } from "./components/AppProvider";
 import { EventKey } from "./constants";
+import { initConnection } from "./hashConnectService";
 
 function App() {
-  const { setBladeConnector } = useContext(AppContext);
+  const {
+    network,
+    setHashconnect,
+    setHashConnectData,
+    setAccountId,
+    setSigner,
+    setProvider,
+  } = useContext(AppContext);
+
+  const [hcInstance, setHcInstance] = useState<HashConnect>();
 
   useEffect(() => {
-    const connector = initConnection();
-    setBladeConnector(connector);
+    //create the hashconnect instance
+    const hashconnect = new HashConnect();
+    setHcInstance(hashconnect);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (hcInstance)
+      initConnection({
+        network,
+        hcInstance,
+        setHashconnect,
+        setHashConnectData,
+        setAccountId,
+        setSigner,
+        setProvider,
+      });
+  }, [
+    network,
+    hcInstance,
+    setHashConnectData,
+    setHashconnect,
+    setSigner,
+    setAccountId,
+    setProvider,
+  ]);
 
   return (
     <div className="App">
@@ -36,7 +69,8 @@ function App() {
       <Accordion className="mt-4" defaultActiveKey={EventKey.HederaAccount}>
         <HederaAccount />
         <Identity />
-        <VcQuery />
+        <VCAndPresentationDefinition />
+        <QueryResponders />
         <DisclosureRequest />
       </Accordion>
     </div>

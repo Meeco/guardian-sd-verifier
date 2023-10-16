@@ -1,14 +1,10 @@
 export { default as createSuite } from "./createSuite";
 export { default as createVerifiablePresentation } from "./createVerifiablePresentation";
-export { default as decryptData } from "./decryptData";
 export { default as deriveEdVerificationKey } from "./deriveEdVerificationKey";
 export { default as deriveKeyAgreementKey } from "./deriveKeyAgreementKey";
 export * from "./derivePublicKeyHexFromJwk";
 export { documentLoader } from "./documentLoader";
 export { default as downloadJson } from "./downloadJson";
-export { default as encryptData } from "./encryptData";
-export * from "./fetchIPFSFile";
 export { default as fetchJson } from "./fetchJson";
-export * from "./generateRequesterKeys";
 export * from "./localStorageUtils";
 export { default as pollRequest } from "./pollRequest";

@@ -9,6 +9,7 @@ interface JWK {
 const derivePublicKeyHexFromJwk = (jwk: JWK) => {
   const buffer = decodeUrlSafe64(jwk.x);
   const hex = buffer.toString("hex");
+
   return hex;
 };
 

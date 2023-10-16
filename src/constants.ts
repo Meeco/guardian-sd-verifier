@@ -1,6 +1,7 @@
 export enum EventKey {
   HederaAccount = "HederaAccount",
   Identity = "Identity",
-  VcQuery = "VcQuery",
+  VCAndPresentationDefinition = "VCAndPresentationDefinition",
+  QueryResponders = "QueryResponders",
   DisclosureRequest = "DisclosureRequest",
 }

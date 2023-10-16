@@ -1,5 +1,5 @@
 import * as ed25519 from "@transmute/did-key-ed25519";
-import { ResultType, fetchIPFSFile } from "./fetchIPFSFile";
+import { ResultType, fetchIPFSFile } from "../fileService";
 import fetchJson from "./fetchJson";
 import resolveDidDocument from "./resolveDid";
 
@@ -33,7 +33,7 @@ export const documentLoader = async (url: string) => {
           document = await fetchIPFSFile(url, { resultType: ResultType.JSON });
           break;
         case "https":
-          document = await fetchJson(url);
+          document = await fetchJson({ url, retry: 3 });
           break;
         default:
           throw new Error(

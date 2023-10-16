@@ -1,5 +1,8 @@
-const fetchJson = async (url: string) => {
-  return fetch(url)
+import { fetchWithRetry } from "./fetchWithRetry";
+
+const fetchJson = async ({ url, retry }: { url: string; retry?: number }) => {
+  const fetchFunction = retry ? fetchWithRetry({ url, retry }) : fetch(url);
+  return fetchFunction
     .then(async (result) => {
       if (result.ok) {
         return await result.json();

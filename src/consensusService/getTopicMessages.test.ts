@@ -1,3 +1,4 @@
+import { jest } from "@jest/globals";
 import getTopicMessages from "./getTopicMessages";
 
 describe("getTopicMessages", () => {
@@ -16,7 +17,7 @@ describe("getTopicMessages", () => {
             messages: [{ message: encodedStr }],
           }),
       })
-    ) as jest.Mock;
+    ) as unknown as jest.Mock;
 
     const messages = await getTopicMessages({ topicId, timeStamp });
 
@@ -32,7 +33,7 @@ describe("getTopicMessages", () => {
   it("should handle getting topic messages failures", async () => {
     global.fetch = jest
       .fn()
-      .mockRejectedValue(new Error("Failed to get topic messages"));
+      .mockRejectedValue(new Error("Failed to get topic messages")) as any;
 
     const logSpy = jest.spyOn(console, "log");
 

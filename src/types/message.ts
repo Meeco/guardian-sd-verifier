@@ -42,7 +42,7 @@ export interface PresentationResponseMessage {
   operation: MessageType.PRESENTATION_RESPONSE;
   request_id: string;
   recipient_did: string;
-  response_file_id: string;
+  response_file_cid: string;
   error?: {
     code: string;
     message: string;

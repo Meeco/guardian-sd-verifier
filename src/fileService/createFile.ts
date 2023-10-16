@@ -1,33 +1,32 @@
-import { BladeSigner } from "@bladelabs/blade-web3.js";
 import { FileCreateTransaction, Hbar } from "@hashgraph/sdk";
+import { Signer } from "@hashgraph/sdk/lib/Signer";
+import { HashConnectSigner } from "hashconnect/dist/esm/provider/signer";
 
 const createFile = async (
-  bladeSigner: BladeSigner,
+  hcSigner: HashConnectSigner,
+  provider: any,
   contents: string | Uint8Array
 ) => {
   try {
+    const signer = hcSigner as unknown as Signer;
+
     //Create the transaction
     const transaction = await new FileCreateTransaction()
       .setContents(contents)
-      .setMaxTransactionFee(new Hbar(2));
+      .setMaxTransactionFee(new Hbar(2))
+      .freezeWithSigner(signer);
 
-    // populate adds transaction ID and node IDs to the transaction
-    const populatedTransaction = await bladeSigner.populateTransaction(
-      transaction
-    );
-    const signedTransaction = await bladeSigner.signTransaction(
-      populatedTransaction.freeze()
-    );
+    const res = await transaction.executeWithSigner(signer);
 
-    // call executes the transaction
-    const result = await bladeSigner.call(signedTransaction);
+    // Ideally, should get transaction reciept by
+    // `const receipt = await res.getReceiptWithSigner(signer);`
+    // But currently got `res.getReceiptWithSigner is not a function` error from "@hashgraph/sdk"
+    const receipt = await provider.getTransactionReceipt(res.transactionId);
 
-    // //Request the receipt
-    const receipt = await result.getReceiptWithSigner(bladeSigner);
     const { fileId } = receipt;
     return fileId;
   } catch (error) {
-    console.log("Create file transaction failed", error);
+    console.log("Create file transaction failed:", error);
   }
 };
 

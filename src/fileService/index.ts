@@ -1,2 +1,2 @@
 export { default as createFile } from "./createFile";
-export { default as getFileContents } from "./getFileContents";
+export { ResultType, fetchIPFSFile } from "./fetchIPFSFile";

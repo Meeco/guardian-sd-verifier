@@ -1,5 +1,6 @@
-import React, { useCallback, useContext, useMemo, useState } from "react";
-import { Accordion, Button, FormCheck, FormGroup } from "react-bootstrap";
+import { HashConnectSigner } from "hashconnect/dist/esm/provider/signer";
+import { useCallback, useContext, useState } from "react";
+import { Accordion, Button } from "react-bootstrap";
 import ReactJson from "react-json-view";
 import { EventKey } from "../../../constants";
 import { downloadJson } from "../../../utils";
@@ -9,57 +10,63 @@ import {
   Button as ButtonWithLoader,
   StatusLabel,
 } from "../../common";
-import createPresentationRequest from "../createPresentationRequest";
+import createEncryptedFile from "../createEncryptedFile";
 import handleSendPresentationRequest from "../handleSendPresentationRequest";
-import CreatePresentationButton from "./CreatePresentationButton";
-import GetVcButton from "./GetVcButton";
+
+interface FileResponse {
+  did: string;
+  fileId: string;
+}
 
 const DisclosureRequest = () => {
   const {
-    client,
-    signer,
+    provider,
     topicId,
     activeLoaders,
     addLoader,
     removeLoader,
-    verifiableCredential,
-    vcResponse,
     credentialVerificationKey,
     responders,
     setResponders,
-    selectedMethod,
+    presentationRequest,
     cipher,
+    signer,
   } = useContext(AppContext);
 
-  const credentialSubject = verifiableCredential?.credentialSubject;
+  const [fileResponses, setFileResponses] = useState<FileResponse[]>([]);
 
-  const [selectedContext, setSelectedContext] = useState<string | undefined>();
-  const [credentialSubjectType, setCredntialSubjectType] = useState<
-    string | undefined
-  >();
-  const [presentationRequest, setPresentationRequest] = useState<any>();
-
-  const [selectableFields, setSelectableFields] = useState<string[]>([]);
-  const [selectedFields, setSelectedFields] = useState<string[]>([]);
-
-  const [getVcSchemeSuccess, setGetVcSchemeSuccess] = useState<
-    boolean | undefined
-  >(undefined);
-  const [createPresentationSuccess, setCreatePresentationSuccess] = useState<
-    boolean | undefined
-  >(undefined);
-  const [createPresentationErrMsg, setCreatePresentationErrMsg] = useState("");
-
-  const displayedFields = useMemo(
-    () => selectableFields.filter((field) => field !== "select-all"),
-    [selectableFields]
+  const getResponderFile = useCallback(
+    (did: string) => {
+      return fileResponses.find((item) => item.did === did);
+    },
+    [fileResponses]
   );
+
+  const fileResponseStatus = (did: string, loaderId: string) => {
+    if (activeLoaders.includes(loaderId)) {
+      return;
+    }
+
+    const file = getResponderFile(did);
+    if (file) {
+      if (file.fileId) return true;
+      else return false;
+    }
+  };
+
+  const fileResponseStatusMessage = (did: string) => {
+    const file = getResponderFile(did);
+    if (file) {
+      if (file.fileId) return `fileId: ${file.fileId}`;
+      else return "Create file failed, please try again";
+    } else return "";
+  };
 
   const presentationResponseStatus = (
     presentationResponse: any,
-    did: string
+    loaderId: string
   ) => {
-    if (activeLoaders.includes(`handleSendRequest-${did}`)) {
+    if (activeLoaders.includes(loaderId)) {
       return;
     }
     if (presentationResponse !== undefined) {
@@ -75,166 +82,80 @@ const DisclosureRequest = () => {
     } else return "";
   };
 
-  const handleGetFields = useCallback(async () => {
-    try {
-      addLoader("handleGetFields");
-      const selectedContext = vcResponse["@context"].filter((context: string) =>
-        context.startsWith("https://ipfs.io/ipfs/")
-      )[0];
-      setSelectedContext(selectedContext);
+  const handleCreateEncryptedFile = useCallback(
+    async ({
+      encryptedKeyId,
+      did,
+      signer,
+      loaderId,
+    }: {
+      encryptedKeyId: string;
+      did: string;
+      signer: HashConnectSigner;
+      loaderId: string;
+    }) => {
+      // Remove old file before creating new file
+      setFileResponses((prev) => prev.filter((item) => item.did !== did));
 
-      const contextDocument = await (await fetch(selectedContext)).json();
-
-      const credentialSubjectType = vcResponse.credentialSubject.type;
-      setCredntialSubjectType(credentialSubjectType);
-
-      const credentialContext =
-        contextDocument["@context"][credentialSubjectType]["@context"];
-      const contextFields = Object.keys(credentialContext);
-      const preservedFields = [
-        "@version",
-        "@protected",
-        "id",
-        "type",
-        "schema",
-      ];
-      const selectableFields = contextFields.filter(
-        (field) => !preservedFields.includes(field)
+      // Remove old response from responder before sending new request
+      setResponders((prev) =>
+        prev.map((responder) => {
+          if (responder.did === did) {
+            return { ...responder, presentationResponse: undefined };
+          } else return responder;
+        })
       );
-      setSelectableFields([...selectableFields, "select-all"]);
-      setGetVcSchemeSuccess(true);
-      removeLoader("handleGetFields");
-    } catch (error) {
-      removeLoader("handleGetFields");
-      setGetVcSchemeSuccess(false);
-      console.log({ error });
-    }
-  }, [addLoader, removeLoader, vcResponse]);
 
-  const handleSelectField = (e: React.ChangeEvent<any>) => {
-    if (selectedFields.includes(e?.target.id)) {
-      setSelectedFields((prevFields) =>
-        prevFields.filter((field) => e.target.id !== field)
-      );
-    } else {
-      setSelectedFields((prevFields) => [...prevFields, e.target.id]);
-    }
-  };
-
-  const handleSelectAll = () => {
-    if (selectedFields === selectableFields) {
-      setSelectedFields([]);
-    } else setSelectedFields(selectableFields);
-  };
-
-  const handleCreatePresentationRequest = () => {
-    if (credentialVerificationKey) {
-      try {
-        createPresentationRequest({
-          credentialSubject,
-          credentialVerificationKey,
-          selectedMethod,
-          selectedFields,
-          setCreatePresentationSuccess,
-          addLoader,
-          removeLoader,
-          setPresentationRequest,
-          vcResponse,
-          verifiableCredential,
-        });
-        setCreatePresentationErrMsg("");
-      } catch (error) {
-        setCreatePresentationErrMsg((error as any).message);
+      // Create new file
+      const { fileId } = await createEncryptedFile({
+        encryptedKeyId,
+        cipher,
+        responderDid: did,
+        presentationRequest,
+        signer,
+        provider,
+        addLoader,
+        removeLoader,
+        loaderId,
+      });
+      if (fileId) {
+        setFileResponses((prev) => [
+          ...prev,
+          { did, fileId: fileId.toString() },
+        ]);
+      } else {
+        setFileResponses((prev) => [...prev, { did, fileId: "" }]);
       }
-    }
-  };
+    },
+    [
+      addLoader,
+      cipher,
+      presentationRequest,
+      provider,
+      removeLoader,
+      setResponders,
+    ]
+  );
 
   return (
     <Accordion.Item eventKey={EventKey.DisclosureRequest}>
       <Accordion.Header>
-        <b>Disclosure Request&nbsp;</b>{" "}
-        {credentialSubjectType ? `(${credentialSubjectType})` : ""}
+        <b>Disclosure Requests</b>
       </Accordion.Header>
       <Accordion.Body>
-        <div className="d-flex mt-2 align-items-center">
-          <GetVcButton
-            handleGetFields={handleGetFields}
-            getVcSchemeSuccess={getVcSchemeSuccess}
-            selectedContext={selectedContext}
-          />
-        </div>
-        {selectableFields.length > 0 && (
-          <>
-            <FormGroup className="mt-3">
-              <FormCheck
-                key="select-all"
-                id="select-all"
-                type="checkbox"
-                as="input"
-                label="Select all"
-                onChange={handleSelectAll}
-                checked={selectedFields === selectableFields}
-              />
-              {displayedFields.map((field: string) => (
-                <FormCheck
-                  key={field}
-                  id={field}
-                  type="checkbox"
-                  as="input"
-                  label={field}
-                  onChange={handleSelectField}
-                  checked={selectedFields.includes(field)}
-                />
-              ))}
-            </FormGroup>
-            <div className="d-flex mt-3">
-              <CreatePresentationButton
-                handleCreatePresentationRequest={
-                  handleCreatePresentationRequest
-                }
-                createPresentationSuccess={createPresentationSuccess}
-                createPresentationErrMsg={createPresentationErrMsg}
-              />
-            </div>
-            {presentationRequest && (
-              <Accordion className="mt-4">
-                <Accordion.Item eventKey="presentationRequest">
-                  <Accordion.Header>
-                    <div className="d-flex w-100 align-items-center justify-content-between">
-                      Presentation Request Document
-                    </div>
-                  </Accordion.Header>
-                  <Accordion.Body>
-                    <ReactJson
-                      src={presentationRequest}
-                      name="request"
-                      theme={"monokai"}
-                      collapseStringsAfterLength={30}
-                      collapsed
-                    />
-                    <Button
-                      className="me-3 mt-3"
-                      onClick={() =>
-                        downloadJson(
-                          presentationRequest,
-                          "presentation_request.json"
-                        )
-                      }
-                    >
-                      Download
-                    </Button>
-                  </Accordion.Body>
-                </Accordion.Item>
-              </Accordion>
-            )}
-          </>
-        )}
-
         {!signer ? (
-          <div className="mt-3">
+          <div className="mt-2">
             <AccordianToggleButton
               text={"Connect to wallet"}
               eventKey={EventKey.HederaAccount}
+            />
+          </div>
+        ) : null}
+        {!presentationRequest ? (
+          <div className="mt-2">
+            <AccordianToggleButton
+              text={"Create Presentation"}
+              eventKey={EventKey.VCAndPresentationDefinition}
             />
           </div>
         ) : null}
@@ -245,54 +166,103 @@ const DisclosureRequest = () => {
           responders.map((responder) => {
             const { accountId, did, presentationResponse, encryptedKeyId } =
               responder;
-            const isSuccess = presentationResponseStatus(
+
+            const file = getResponderFile(did);
+
+            const sendRequestLoaderId = `handleSendRequest-${did}`;
+            const createFileLoaderId = `createEncryptedFile-${did}`;
+
+            const isSentRequestSuccess = presentationResponseStatus(
               presentationResponse,
-              did
+              sendRequestLoaderId
             );
+
+            const isCreateFileSuccess = fileResponseStatus(
+              did,
+              createFileLoaderId
+            );
+
             const statusText =
               presentationResponseStatusMessage(presentationResponse);
 
             return (
               <Accordion key={did}>
-                <Accordion.Item className="mt-4" eventKey={did}>
+                <Accordion.Item className="mt-2" eventKey={did}>
                   <Accordion.Header>
                     {did} ({accountId})
                   </Accordion.Header>
                   <Accordion.Body>
-                    <div className="d-flex mt-2">
-                      {signer && (
+                    {signer && (
+                      <div className="d-flex mt-2">
+                        <ButtonWithLoader
+                          onClick={() =>
+                            handleCreateEncryptedFile({
+                              encryptedKeyId,
+                              did,
+                              signer,
+                              loaderId: createFileLoaderId,
+                            })
+                          }
+                          text="Create request file"
+                          loading={activeLoaders.includes(createFileLoaderId)}
+                          requireApproval
+                          disabled={
+                            activeLoaders.length > 0
+                              ? !activeLoaders.find(
+                                  (item) => item === createFileLoaderId
+                                )
+                              : false
+                          }
+                        />
+                        <StatusLabel
+                          isSuccess={
+                            activeLoaders.includes(createFileLoaderId)
+                              ? undefined
+                              : isCreateFileSuccess
+                          }
+                          text={fileResponseStatusMessage(did)}
+                        />
+                      </div>
+                    )}
+                    {file?.fileId && signer ? (
+                      <div className="d-flex mt-2">
                         <ButtonWithLoader
                           onClick={() =>
                             handleSendPresentationRequest({
+                              fileId: file.fileId,
                               responderDid: did,
-                              encryptedKeyId,
                               addLoader,
                               removeLoader,
-                              presentationRequest,
                               signer,
                               topicId,
                               cipher,
-                              client,
                               responders,
                               setResponders,
                               credentialVerificationKey,
+                              loaderId: sendRequestLoaderId,
                             })
                           }
-                          text="Send request"
-                          loading={activeLoaders.includes(
-                            `handleSendRequest-${did}`
-                          )}
+                          text="Send Presentation Request"
+                          loading={activeLoaders.includes(sendRequestLoaderId)}
+                          requireApproval
+                          disabled={
+                            activeLoaders.length > 0
+                              ? !activeLoaders.find(
+                                  (item) => item === sendRequestLoaderId
+                                )
+                              : false
+                          }
                         />
-                      )}
-                      <StatusLabel
-                        isSuccess={
-                          activeLoaders.includes(`handleSendRequest-${did}`)
-                            ? undefined
-                            : isSuccess
-                        }
-                        text={statusText}
-                      />
-                    </div>
+                        <StatusLabel
+                          isSuccess={
+                            activeLoaders.includes(sendRequestLoaderId)
+                              ? undefined
+                              : isSentRequestSuccess
+                          }
+                          text={statusText}
+                        />
+                      </div>
+                    ) : null}
 
                     {/* =====Presentation Response section ====== */}
                     {presentationResponse?.data ? (

@@ -1,20 +1,21 @@
-import { BladeConnector, BladeSigner } from "@bladelabs/blade-web3.js";
 import { Cipher } from "@digitalbazaar/minimal-cipher";
-import {
-  createContext,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
-import { createHederaClient } from "../hederaService";
+import { HashConnect, HashConnectTypes } from "hashconnect";
+import { HashConnectSigner } from "hashconnect/dist/esm/provider/signer";
+import { createContext, useCallback, useEffect, useState } from "react";
 import {
   deriveEdVerificationKey,
   getLocalStorage,
   setLocalStorage,
 } from "../utils";
 
+export enum NetworkType {
+  testnet = "testnet",
+  mainnet = "mainnet",
+}
+
 export interface AppState {
+  network: NetworkType;
+  setNetwork: React.Dispatch<React.SetStateAction<NetworkType>>;
   activeLoaders: string[];
   addLoader: (id: string) => void;
   removeLoader: (removedId: string) => void;
@@ -24,18 +25,26 @@ export interface AppState {
   setSelectedMethod: React.Dispatch<any>;
   didPublicKey: string;
   setDidPublicKey: React.Dispatch<React.SetStateAction<string>>;
-  topicId?: string;
-  bladeConnector: any;
-  setBladeConnector: React.Dispatch<any>;
-  signer: BladeSigner | null;
-  setSigner: React.Dispatch<React.SetStateAction<BladeSigner | null>>;
+  topicId: string;
+  setTopicId: React.Dispatch<React.SetStateAction<string>>;
+  hashConnectData?: HashConnectTypes.InitilizationData;
+  setHashConnectData: React.Dispatch<
+    React.SetStateAction<HashConnectTypes.InitilizationData | undefined>
+  >;
+  hashconnect?: HashConnect;
+  setHashconnect: React.Dispatch<React.SetStateAction<HashConnect | undefined>>;
+  signer?: HashConnectSigner;
+  setSigner: React.Dispatch<
+    React.SetStateAction<HashConnectSigner | undefined>
+  >;
+  provider: any;
+  setProvider: React.Dispatch<React.SetStateAction<any>>;
   accountId: string;
-  setaccountId: React.Dispatch<React.SetStateAction<string>>;
+  setAccountId: React.Dispatch<React.SetStateAction<string>>;
   vcResponse: any;
   setVcResponse: React.Dispatch<any>;
   responders: Responder[];
   setResponders: React.Dispatch<React.SetStateAction<Responder[]>>;
-  client: any;
   vcVerificaitonResult?: boolean;
   setvcVerificaitonResult: React.Dispatch<
     React.SetStateAction<boolean | undefined>
@@ -51,6 +60,8 @@ export interface AppState {
   cid: string;
   setCid: React.Dispatch<React.SetStateAction<string>>;
   cipher: any;
+  presentationRequest: any;
+  setPresentationRequest: React.Dispatch<any>;
 }
 
 export interface LoadingState {
@@ -120,32 +131,45 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
   const [cid, setCid] = useState(getLocalStorage("cid") || "");
 
   // Topic ID for sending/receiving message
-  const topicId = process.env.REACT_APP_TOPIC_ID;
-  // Blade wallet connector
-  const [bladeConnector, setBladeConnector] = useState<
-    BladeConnector | undefined
-  >();
-  // Blade wallet signer(user)
-  const [signer, setSigner] = useState<BladeSigner | null>(null);
-  // Blade wallet account ID
-  const [accountId, setaccountId] = useState("");
+  const [topicId, setTopicId] = useState<string>(
+    process.env.REACT_APP_DEFAULT_TOPIC_ID || ""
+  );
+
+  // Wallet data
+  const [hashConnectData, setHashConnectData] =
+    useState<HashConnectTypes.InitilizationData>();
+
+  const [hashconnect, setHashconnect] = useState<HashConnect>();
+
+  const [network, setNetwork] = useState<NetworkType>(
+    getLocalStorage("network") || NetworkType.testnet
+  );
+
+  const [signer, setSigner] = useState<HashConnectSigner>();
+
+  const [provider, setProvider] = useState<any>();
+  // Wallet's account ID
+  const [accountId, setAccountId] = useState("");
 
   const [vcResponse, setVcResponse] = useState<any>(
     getLocalStorage("vcResponse")
   );
 
-  const [responders, setResponders] = useState<Responder[]>([]);
+  const [presentationRequest, setPresentationRequest] = useState<any>();
 
-  const client = useMemo(() => {
-    return createHederaClient(
-      process.env.REACT_APP_HEDERA_ACCOUNT_ID || "",
-      process.env.REACT_APP_HEDERA_PRIVATE_KEY || ""
-    );
-  }, []);
+  const [responders, setResponders] = useState<Responder[]>([]);
 
   const cipher = new Cipher(); // by default {version: 'recommended'}
 
   const appState: AppState = {
+    hashConnectData,
+    setHashConnectData,
+    hashconnect,
+    setHashconnect,
+    signer,
+    setSigner,
+    provider,
+    setProvider,
     activeLoaders,
     addLoader,
     removeLoader,
@@ -156,17 +180,15 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
     didPublicKey,
     setDidPublicKey,
     topicId,
-    bladeConnector,
-    setBladeConnector,
-    signer,
-    setSigner,
+    setTopicId,
+    network,
+    setNetwork,
     accountId,
-    setaccountId,
+    setAccountId,
     vcResponse,
     setVcResponse,
     responders,
     setResponders,
-    client,
     vcVerificaitonResult,
     setvcVerificaitonResult,
     credentialDid,
@@ -180,10 +202,13 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
     cid,
     setCid,
     cipher,
+    presentationRequest,
+    setPresentationRequest,
   };
 
   // store data in localstorage when they're updated
   useEffect(() => {
+    setLocalStorage("network", network);
     setLocalStorage("verifiableCredential", verifiableCredential);
     setLocalStorage("credentialDid", credentialDid);
     setLocalStorage("didPublicKey", didPublicKey);
@@ -204,6 +229,7 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
     vcResponse,
     didPrivateKey,
     credentialVerificationKey,
+    network,
   ]);
 
   // derive verificationKey from DID's keys

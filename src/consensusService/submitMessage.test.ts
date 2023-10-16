@@ -1,50 +1,49 @@
 import { TopicMessageSubmitTransaction } from "@hashgraph/sdk";
+import { jest } from "@jest/globals";
+import { HashConnect } from "hashconnect/dist/cjs/main";
+import { appMetadata } from "../hashConnectService";
+import { createMockInitData } from "../mock/mockInitData";
 import submitMessage from "./submitMessage";
 
 describe("submitMessage", () => {
-  const client = {} as any;
+  const hashConnect = new HashConnect();
 
-  afterEach(() => {
-    jest.clearAllMocks();
-  });
+  const message = "Hello, world";
+  const topicId = "0.0.123";
+  const accountId = "0.0.456";
 
-  it("submit a message successfully", async () => {
-    const executeMock = jest
-      .spyOn(TopicMessageSubmitTransaction.prototype, "execute")
-      .mockResolvedValueOnce({
-        getReceipt: jest.fn().mockResolvedValueOnce({ status: 0 }),
-      } as any);
+  const mockInitData = createMockInitData("testnet", topicId, accountId);
 
-    const message = "Hello, world!";
-    const topicId = "0.0.123";
+  jest
+    .spyOn(HashConnect.prototype, "init")
+    .mockImplementation(() => mockInitData);
 
-    const logSpy = jest.spyOn(console, "log");
-
-    await submitMessage(message, client, topicId);
-    expect(executeMock).toHaveBeenCalledWith(client);
-
-    expect(logSpy).toHaveBeenNthCalledWith(
-      1,
-      "The message transaction status: 0"
+  it("should submit message successfully", async () => {
+    const hashConnectData = await hashConnect.init(
+      appMetadata,
+      "testnet",
+      false
     );
-    expect(logSpy).toHaveBeenNthCalledWith(2, "Complete");
-  });
 
-  it("handles message submit failures", async () => {
+    const provider = hashConnect.getProvider(
+      "testnet",
+      hashConnectData.topic,
+      accountId
+    );
+
+    const signer = hashConnect.getSigner(provider);
+
+    const mockSubmitMessage = (jest.fn() as any).mockResolvedValue(true);
+
     jest
-      .spyOn(TopicMessageSubmitTransaction.prototype, "execute")
-      .mockRejectedValueOnce(new Error("Failed to submit message"));
+      .spyOn(TopicMessageSubmitTransaction.prototype, "executeWithSigner")
+      .mockImplementation(mockSubmitMessage);
 
-    const logSpy = jest.spyOn(console, "log");
-
-    const message = "Hello, world!";
-    const topicId = "0.0.123";
-
-    await submitMessage(message, client, topicId);
-
-    expect(logSpy).toHaveBeenCalledWith(
-      "Submit message failed",
-      new Error("Failed to submit message")
-    );
+    const res = await submitMessage({
+      message,
+      topicId,
+      hcSigner: signer as any,
+    });
+    expect(res).toBe(true);
   });
 });

@@ -27,6 +27,7 @@ const getTopicMessages = async ({
         },
       }
     );
+
     const data: TopicMessages = await res.json();
     const messages = data.messages.map((item) => {
       return {

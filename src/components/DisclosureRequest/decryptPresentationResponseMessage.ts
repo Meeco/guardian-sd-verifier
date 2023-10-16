@@ -1,5 +1,5 @@
-import { Client } from "@hashgraph/sdk";
-import { getFileContents } from "../../fileService";
+import { fetchIPFSFile } from "../../fileService";
+import { ResultType } from "../../fileService/fetchIPFSFile";
 import { PresentationResponseMessage } from "../../types";
 import { deriveKeyAgreementKey } from "../../utils";
 
@@ -12,12 +12,10 @@ export interface PresentationResponse {
 }
 
 const decryptPresentationResponseMessage = async ({
-  client,
   cipher,
   presentationResponseMessage,
   credentialVerificationKey,
 }: {
-  client: Client;
   cipher: any;
   presentationResponseMessage?: PresentationResponseMessage;
   credentialVerificationKey: any;
@@ -29,29 +27,32 @@ const decryptPresentationResponseMessage = async ({
     };
     return response;
   } else {
-    // get response file's contents
-    const responseFileId = presentationResponseMessage?.response_file_id || "";
+    try {
+      // get response file's contents
+      const responseFileCid =
+        presentationResponseMessage?.response_file_cid || "";
 
-    const fileContentsBuffer = await getFileContents({
-      client,
-      fileId: responseFileId,
-    });
+      if (responseFileCid) {
+        const fileContents = await fetchIPFSFile(responseFileCid, {
+          resultType: ResultType.JSON,
+        });
 
-    if (fileContentsBuffer) {
-      const fileContents = Buffer.from(fileContentsBuffer).toString("utf-8");
+        const keyAgreementKey = await deriveKeyAgreementKey(
+          credentialVerificationKey
+        );
 
-      const keyAgreementKey = await deriveKeyAgreementKey(
-        credentialVerificationKey
-      );
+        const decrypted = await cipher.decryptObject({
+          jwe: fileContents,
+          keyAgreementKey,
+        });
 
-      const decrypted = await cipher.decryptObject({
-        jwe: JSON.parse(fileContents),
-        keyAgreementKey,
-      });
-
-      return decrypted;
-    } else {
-      throw new Error("response file is empty");
+        return decrypted;
+      } else {
+        throw new Error("Unable to get file contents");
+      }
+    } catch (error) {
+      console.log("decrypt presentation response failed: ", error);
+      throw error;
     }
   }
 };

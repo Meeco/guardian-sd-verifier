@@ -1,5 +1,4 @@
-import { BladeSigner } from "@bladelabs/blade-web3.js";
-import NodeClient from "@hashgraph/sdk/lib/client/NodeClient";
+import { HashConnectSigner } from "hashconnect/dist/esm/provider/signer";
 import { Responder } from "../AppProvider";
 import decryptPresentationResponseMessage from "./decryptPresentationResponseMessage";
 import { handlePollPresentationResponseRequest } from "./handlePollPresentationResponseRequest";
@@ -7,42 +6,47 @@ import sendPresentationRequest from "./sendPresentationRequest";
 
 // Send presentation request to HCS
 const handleSendPresentationRequest = async ({
+  fileId,
   responderDid,
-  encryptedKeyId,
   addLoader,
   removeLoader,
-  presentationRequest,
   signer,
   topicId,
   cipher,
-  client,
   responders,
   setResponders,
   credentialVerificationKey,
+  loaderId,
 }: {
+  fileId: string;
   responderDid: string;
-  encryptedKeyId: string;
   addLoader: (id: string) => void;
   removeLoader: (removedId: string) => void;
-  presentationRequest: any;
-  signer: BladeSigner;
+  signer: HashConnectSigner;
   topicId?: string;
   cipher: any;
-  client: NodeClient;
   responders: Responder[];
   setResponders: (value: React.SetStateAction<Responder[]>) => void;
   credentialVerificationKey: any;
+  loaderId: string;
 }) => {
   try {
-    addLoader(`handleSendRequest-${responderDid}`);
+    addLoader(loaderId);
+    // Remove old response from responder before sending new request
+    setResponders((prev) =>
+      prev.map((responder) => {
+        if (responder.did === responderDid) {
+          return { ...responder, presentationResponse: undefined };
+        } else return responder;
+      })
+    );
+
     const timeStamp = Date.now();
     await sendPresentationRequest({
+      fileId,
       responderDid,
-      encryptedKeyId,
-      presentationRequest,
       signer,
       topicId,
-      cipher,
     }).then(async ({ isSuccess, requestId }) => {
       if (isSuccess && requestId) {
         const responseMessage = await handlePollPresentationResponseRequest({
@@ -60,7 +64,6 @@ const handleSendPresentationRequest = async ({
             };
           } else {
             const data = await decryptPresentationResponseMessage({
-              client,
               cipher,
               presentationResponseMessage: responseMessage,
               credentialVerificationKey,
@@ -69,56 +72,61 @@ const handleSendPresentationRequest = async ({
               data,
             };
           }
-        }
-
-        if (presentationResponse) {
-          const selectedIndex = responders.findIndex(
-            (item) => item.did === responderDid
-          );
-
-          setResponders((prev) => {
-            const updatedResponders = responders.map((r, index) => {
-              if (index === selectedIndex) {
-                return {
-                  ...prev[index],
-                  presentationResponse,
-                };
-              } else return prev[index];
-            });
-
-            return updatedResponders;
-          });
         } else {
-          throw new Error("Send request failed");
+          presentationResponse = {
+            error: { message: "Send request failed" },
+          };
         }
 
-        removeLoader(`handleSendRequest-${responderDid}`);
+        if (!presentationResponse) {
+          presentationResponse = {
+            error: { message: "Unable to process the request file." },
+          };
+        }
+
+        const selectedIndex = responders.findIndex(
+          (item) => item.did === responderDid
+        );
+
+        setResponders((prev) => {
+          const updatedResponders = responders.map((_, index) => {
+            if (index === selectedIndex) {
+              return {
+                ...prev[index],
+                presentationResponse,
+              };
+            } else return prev[index];
+          });
+
+          return updatedResponders;
+        });
+
+        removeLoader(loaderId);
       }
     });
   } catch (error) {
-    console.log({ error });
+    console.log("send presentation request failed: ", error);
     const selectedIndex = responders.findIndex(
       (item) => item.did === responderDid
     );
-    const updatedResponders = [...responders];
-    updatedResponders[selectedIndex] = {
-      ...updatedResponders[selectedIndex],
-      presentationResponse: null,
-    };
 
     setResponders((prev) => {
       const updatedResponders = responders.map((r, index) => {
         if (index === selectedIndex) {
           return {
             ...prev[index],
-            presentationResponse: null,
+            presentationResponse: {
+              error: {
+                message: (error as any).message,
+              },
+            },
           };
         } else return prev[index];
       });
 
       return updatedResponders;
     });
-    removeLoader(`handleSendRequest-${responderDid}`);
+    removeLoader(loaderId);
   }
 };
 

@@ -11,7 +11,8 @@ import {
   useMemo,
   useState,
 } from "react";
-import { Accordion, Form } from "react-bootstrap";
+import { Accordion, Form, InputGroup } from "react-bootstrap";
+import { EyeFill, EyeSlash } from "react-bootstrap-icons";
 import { EventKey } from "../../constants";
 import { fetchResolveDid } from "../../didService";
 import { documentLoader } from "../../utils";
@@ -52,6 +53,7 @@ const Identity = () => {
   const [file, setFile] = useState<File | undefined>();
 
   const [displayedKey, setDisplayedKey] = useState(didPrivateKey);
+  const [isRevealed, setIsRevealed] = useState(false);
 
   const [getVerificationMethodsSuccess, setGetVerificationMethodsSuccess] =
     useState<boolean | undefined>(undefined);
@@ -65,7 +67,10 @@ const Identity = () => {
       return "Verified";
     }
     if (vcVerificaitonResult === false)
-      return verifyCredentialErrMsg ?? "VC or private key is invalid";
+      return (
+        `${verifyCredentialErrMsg}, please try again` ??
+        "VC or private key is invalid"
+      );
     else return "";
   }, [vcVerificaitonResult, verifyCredentialErrMsg]);
 
@@ -173,8 +178,6 @@ const Identity = () => {
           base58btc.decode(publicKeyMultibase)
         ).toString("hex");
 
-        console.log({ verificationPublicKeyHex });
-
         // Use includes as a 2018 key has a header that will be stripped off
         // resulting in a slightly different key
         if (verificationPublicKeyHex.includes(didPublicKey)) {
@@ -241,6 +244,10 @@ const Identity = () => {
     }
   };
 
+  const handlePasswordReveal = () => {
+    setIsRevealed((prev) => !prev);
+  };
+
   useEffect(() => {
     if (selectedMethod) {
       getPublicKey(selectedMethod);
@@ -254,7 +261,7 @@ const Identity = () => {
         {credentialDid ? `(${credentialDid})` : undefined}
       </Accordion.Header>
       <Accordion.Body>
-        <p>
+        <p className="fst-italic">
           Set your DID, and authorisation Verifiable Credential to send your
           presentation request from.
         </p>
@@ -308,20 +315,26 @@ const Identity = () => {
               )}
               <div className="mt-4">
                 <Form.Label>DID Private Key (Hex)</Form.Label>
-                <Form.Control
-                  className="w-50"
-                  type="text"
-                  onChange={handlePrivateKeyChange}
-                  disabled={!selectedMethod}
-                  value={displayedKey}
-                />
+                <InputGroup className="w-50">
+                  <Form.Control
+                    type={isRevealed ? "text" : "password"}
+                    onChange={handlePrivateKeyChange}
+                    disabled={!selectedMethod}
+                    value={displayedKey}
+                  />
+                  <InputGroup.Text>
+                    <i onClick={handlePasswordReveal}>
+                      {isRevealed ? <EyeSlash /> : <EyeFill />}
+                    </i>
+                  </InputGroup.Text>
+                </InputGroup>
               </div>
               <div className="d-flex mt-3">
                 {vcVerificaitonResult ? (
                   <>
                     <AccordianToggleButton
                       text="Next"
-                      eventKey={EventKey.VcQuery}
+                      eventKey={EventKey.VCAndPresentationDefinition}
                       isSuccess={
                         activeLoaders.includes("verifyCredential")
                           ? undefined

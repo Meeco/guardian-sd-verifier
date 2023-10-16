@@ -1,4 +1,4 @@
-import { getTopicMessages } from "../../hederaService";
+import { getTopicMessages } from "../../consensusService";
 import { MessageType, PresentationResponseMessage } from "../../types";
 import { pollRequest } from "../../utils";
 
@@ -17,13 +17,15 @@ export const handlePollPresentationResponseRequest = async ({
       topicId: topicId || "",
       timeStamp,
     })) as PresentationResponseMessage[];
+
     const message = topicMessages?.filter(
       (msg) =>
         msg.request_id === requestId &&
         msg.operation === MessageType.PRESENTATION_RESPONSE
     )[0];
+
     return message;
-  }, 15000);
+  }, 60000);
 
   if (presentationResponseMessage) {
     return presentationResponseMessage;
