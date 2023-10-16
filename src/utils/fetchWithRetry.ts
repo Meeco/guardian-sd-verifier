@@ -20,7 +20,7 @@ export async function fetchWithRetry({
     }
 
     const count = retryCount || 0;
-    if (count < retry - 1) {
+    if (count <= retry - 1) {
       return fetchWithRetry({ url, retry, retryCount: count + 1 });
     } else {
       throw new Error(
@@ -29,7 +29,7 @@ export async function fetchWithRetry({
     }
   } catch (error) {
     const count = retryCount || 0;
-    if (count < retry - 1) {
+    if (count <= retry - 1) {
       return fetchWithRetry({ url, retry, retryCount: count + 1 });
     } else {
       console.log(error);

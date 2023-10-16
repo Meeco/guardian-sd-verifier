@@ -16,7 +16,7 @@ describe("fetchWithRetry", () => {
 
     const res = await fetchWithRetry({
       url,
-      retry: 3,
+      retry: 2,
     });
 
     expect(res.text).toBe(text);
@@ -36,7 +36,7 @@ describe("fetchWithRetry", () => {
     try {
       await fetchWithRetry({
         url,
-        retry: 2,
+        retry: 1,
       });
     } catch (error) {
       expect((error as any).message).toBe(`Could not fetch from "${url}"`);
