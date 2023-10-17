@@ -2,7 +2,7 @@ import { jest } from "@jest/globals";
 import getTransactionDetailsById from "./getTransactionDetailsById";
 
 describe("getTransactionDetailsById", () => {
-  it("should first", async () => {
+  it("should get transaction details successfully", async () => {
     const mockTransactionId = "0.0.123";
     const mockFileId = "0.0.456";
     const network = "testnet" as any;
