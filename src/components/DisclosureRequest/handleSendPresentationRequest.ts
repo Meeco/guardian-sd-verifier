@@ -1,5 +1,5 @@
 import { HashConnectSigner } from "hashconnect/dist/esm/provider/signer";
-import { Responder } from "../AppProvider";
+import { NetworkType, Responder } from "../AppProvider";
 import decryptPresentationResponseMessage from "./decryptPresentationResponseMessage";
 import { handlePollPresentationResponseRequest } from "./handlePollPresentationResponseRequest";
 import sendPresentationRequest from "./sendPresentationRequest";
@@ -17,6 +17,7 @@ const handleSendPresentationRequest = async ({
   setResponders,
   credentialVerificationKey,
   loaderId,
+  network,
 }: {
   fileId: string;
   responderDid: string;
@@ -29,6 +30,7 @@ const handleSendPresentationRequest = async ({
   setResponders: (value: React.SetStateAction<Responder[]>) => void;
   credentialVerificationKey: any;
   loaderId: string;
+  network: NetworkType;
 }) => {
   try {
     addLoader(loaderId);
@@ -53,6 +55,7 @@ const handleSendPresentationRequest = async ({
           requestId,
           topicId,
           timeStamp,
+          network,
         });
 
         let presentationResponse: any;

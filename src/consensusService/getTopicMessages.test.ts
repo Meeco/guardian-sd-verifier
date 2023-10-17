@@ -6,6 +6,8 @@ describe("getTopicMessages", () => {
   const encodedStr =
     "ewogICJvcGVyYXRpb24iOiAicXVlcnktcmVzcG9uc2UiLAogICJyZXNwb25kZXJfZGlkIjogIjAuMC4xMjMiLAogICJvZmZlcl9oYmFyIjogMQp9Cg==";
   const timeStamp = 123456789;
+  // importing "NetworkType" from "AppProvider.tsx" cause ESM error, have to case to any to avoid the error
+  const network = "testnet" as any;
   afterEach(() => {
     jest.clearAllMocks();
   });
@@ -19,7 +21,7 @@ describe("getTopicMessages", () => {
       })
     ) as unknown as jest.Mock;
 
-    const messages = await getTopicMessages({ topicId, timeStamp });
+    const messages = await getTopicMessages({ topicId, timeStamp, network });
 
     expect(messages).toEqual([
       {
@@ -37,7 +39,7 @@ describe("getTopicMessages", () => {
 
     const logSpy = jest.spyOn(console, "log");
 
-    const messages = await getTopicMessages({ topicId, timeStamp });
+    const messages = await getTopicMessages({ topicId, timeStamp, network });
 
     expect(messages).toBe(undefined);
     expect(logSpy).toHaveBeenCalledWith(

@@ -2,6 +2,8 @@ import { jest } from "@jest/globals";
 import { handlePollPresentationResponseRequest } from "./handlePollPresentationResponseRequest";
 
 describe("handlePollPresentationResponseRequest", () => {
+  // importing "NetworkType" from "AppProvider.tsx" cause ESM error, have to case to any to avoid the error
+  const network = "testnet" as any;
   it("should return the presentation response message when it exists", async () => {
     // Mock the getTopicMessages function to return a presentation response message
     const topicMessage = {
@@ -32,6 +34,7 @@ describe("handlePollPresentationResponseRequest", () => {
     const result = await handlePollPresentationResponseRequest({
       requestId: topicMessage.request_id,
       timeStamp,
+      network,
     });
 
     expect(JSON.stringify(result)).toEqual(JSON.stringify(topicMessage));

@@ -16,11 +16,11 @@ It can be run locally with node >= 16:
 
 Ensure `.env.example` is copied as `.env` and completed with all properties.
 
-| Property                     | Description                                          |
-| ---------------------------- | ---------------------------------------------------- |
-| `REACT_APP_TOPIC_ID`         | Default topic for sending/receiving message from HCS |
-| `REACT_APP_MIRROR_NODE_URL`  | Hedera's mirror node REST API Url                    |
-| `REACT_APP_DID_RESOLVER_URL` | Url of did resolver on verifier side                 |
+| Property                             | Description                                                   |
+| ------------------------------------ | ------------------------------------------------------------- |
+| `REACT_APP_DEFAULT_TESTNET_TOPIC_ID` | Default topic for sending/receiving message from HCS(testnet) |
+| `REACT_APP_DEFAULT_MAINNET_TOPIC_ID` | Default topic for sending/receiving message from HCS(mainnet) |
+| `REACT_APP_DID_RESOLVER_URL`         | Url of did resolver on verifier side                          |
 
 - Install dependencies with `yarn` (`npm i -g yarn` to install yarn if you do not have it installed)
 - `yarn start` to start the responder listening on the configured topics

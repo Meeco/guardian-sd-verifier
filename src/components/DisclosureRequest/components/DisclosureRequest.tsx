@@ -31,6 +31,7 @@ const DisclosureRequest = () => {
     presentationRequest,
     cipher,
     signer,
+    network,
   } = useContext(AppContext);
 
   const [fileResponses, setFileResponses] = useState<FileResponse[]>([]);
@@ -159,6 +160,14 @@ const DisclosureRequest = () => {
             />
           </div>
         ) : null}
+        {responders.length === 0 ? (
+          <div className="mt-2">
+            <AccordianToggleButton
+              text={"Query Responders"}
+              eventKey={EventKey.QueryResponders}
+            />
+          </div>
+        ) : null}
 
         {/* ===== Responders section ====== */}
         {responders &&
@@ -240,6 +249,7 @@ const DisclosureRequest = () => {
                               setResponders,
                               credentialVerificationKey,
                               loaderId: sendRequestLoaderId,
+                              network,
                             })
                           }
                           text="Send Presentation Request"

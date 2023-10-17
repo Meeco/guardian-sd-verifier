@@ -1,4 +1,4 @@
-import { useCallback, useContext, useRef, useState } from "react";
+import { useCallback, useContext, useState } from "react";
 import { Accordion, Form } from "react-bootstrap";
 import { BoxArrowUpRight } from "react-bootstrap-icons";
 import { v4 as uuidv4 } from "uuid";
@@ -9,8 +9,6 @@ import { pollRequest } from "../../utils";
 import { AppContext } from "../AppProvider";
 import { AccordianToggleButton } from "../common";
 import QueryRespondersButton from "./QueryRespondersButton";
-
-const exploreLworksUrl = "https://explore.lworks.io/testnet/topics";
 
 const QueryResponders = () => {
   const {
@@ -23,9 +21,11 @@ const QueryResponders = () => {
     topicId,
     credentialDid,
     setTopicId,
+    network,
+    defaultTopicId,
   } = useContext(AppContext);
 
-  const defaultTopicIdRef = useRef(process.env.REACT_APP_DEFAULT_TOPIC_ID);
+  const exploreLworksUrl = `https://explore.lworks.io/${network}/topics`;
 
   const [getRespondersSuccess, setGetRespondersSuccess] = useState<boolean>();
   const [getRespondersErrMsg, setgetRespondersErrMsg] = useState("");
@@ -58,6 +58,7 @@ const QueryResponders = () => {
             const topicMessages = await getTopicMessages({
               topicId: topicId || "",
               timeStamp,
+              network,
             });
             const messages = topicMessages?.filter(
               (msg) =>
@@ -66,7 +67,7 @@ const QueryResponders = () => {
             );
 
             return messages;
-          }, 15000);
+          }, 30000);
 
           if (queryRespondersMessages) {
             const responders = queryRespondersMessages.map((item: any) => {
@@ -99,6 +100,7 @@ const QueryResponders = () => {
   }, [
     addLoader,
     credentialDid,
+    network,
     removeLoader,
     setResponders,
     signer,
@@ -118,9 +120,7 @@ const QueryResponders = () => {
       <Accordion.Body>
         <div className="mt-2">
           <div className="mt-2 mb-3">
-            <Form.Label>
-              Topic ID (deafult: {defaultTopicIdRef.current})
-            </Form.Label>
+            <Form.Label>Topic ID (deafult: {defaultTopicId})</Form.Label>
             <Form.Control
               type="text"
               placeholder="Topic ID"
