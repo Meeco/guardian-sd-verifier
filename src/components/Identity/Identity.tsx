@@ -76,6 +76,7 @@ const Identity = () => {
 
   const isExtractDidSuccess = useMemo(() => {
     if (file) return !!credentialDid;
+    if (credentialDid) return true;
     return undefined;
   }, [credentialDid, file]);
 
