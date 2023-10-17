@@ -108,7 +108,7 @@ const DisclosureRequest = () => {
       );
 
       // Create new file
-      const { fileId } = await createEncryptedFile({
+      const fileId = await createEncryptedFile({
         encryptedKeyId,
         cipher,
         responderDid: did,
@@ -118,6 +118,7 @@ const DisclosureRequest = () => {
         addLoader,
         removeLoader,
         loaderId,
+        network,
       });
       if (fileId) {
         setFileResponses((prev) => [
@@ -135,6 +136,7 @@ const DisclosureRequest = () => {
       provider,
       removeLoader,
       setResponders,
+      network,
     ]
   );
 

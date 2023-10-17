@@ -16,15 +16,9 @@ const createFile = async (
       .setMaxTransactionFee(new Hbar(2))
       .freezeWithSigner(signer);
 
-    const res = await transaction.executeWithSigner(signer);
+    const { transactionId } = await transaction.executeWithSigner(signer);
 
-    // Ideally, should get transaction reciept by
-    // `const receipt = await res.getReceiptWithSigner(signer);`
-    // But currently got `res.getReceiptWithSigner is not a function` error from "@hashgraph/sdk"
-    const receipt = await provider.getTransactionReceipt(res.transactionId);
-
-    const { fileId } = receipt;
-    return fileId;
+    return transactionId;
   } catch (error) {
     console.log("Create file transaction failed:", error);
   }
