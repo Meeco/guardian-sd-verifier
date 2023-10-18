@@ -1,0 +1,16 @@
+{
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  // Configurations to allow the "jest" and "jest runner" extensions to work with ESM
+  "jest.nodeEnv": {
+    "NODE_OPTIONS": "--experimental-vm-modules"
+  },
+  "jest.jestCommandLine": "NODE_OPTIONS=--experimental-vm-modules npx jest",
+  "jestrunner.jestCommand": "node --experimental-vm-modules --no-warnings node_modules/jest/bin/jest.js",
+  "jestrunner.debugOptions": {
+    "runtimeVersion": "16",
+    "env": {
+      "NODE_OPTIONS": "--experimental-vm-modules"
+    }
+  }
+}

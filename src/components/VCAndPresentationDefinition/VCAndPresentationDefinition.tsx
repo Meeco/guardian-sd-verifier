@@ -27,21 +27,24 @@ const VCAndPresentationDefinition = () => {
     credentialVerificationKey,
     selectedMethod,
     verifiableCredential,
+    presentationRequest,
     setPresentationRequest,
+    selectableFields,
+    setSelectableFields,
+    selectedFields,
+    setSelectedFields,
+    presentationDefinition,
+    setPresentationDefinition,
   } = useContext(AppContext);
 
   const [selectedContext, setSelectedContext] = useState<string | undefined>();
-  const [presentationDefinition, setPresentationDefinition] = useState<any>();
-
-  const [selectableFields, setSelectableFields] = useState<string[]>([]);
-  const [selectedFields, setSelectedFields] = useState<string[]>([]);
 
   const [getVcSchemeSuccess, setGetVcSchemeSuccess] = useState<
     boolean | undefined
   >(undefined);
   const [createPresentationSuccess, setCreatePresentationSuccess] = useState<
     boolean | undefined
-  >(undefined);
+  >(!!presentationRequest ? true : undefined);
   const [createPresentationErrMsg, setCreatePresentationErrMsg] = useState("");
 
   const displayedFields = useMemo(
@@ -104,7 +107,7 @@ const VCAndPresentationDefinition = () => {
       setGetVcSchemeSuccess(false);
       console.log({ error });
     }
-  }, [addLoader, removeLoader, vcResponse]);
+  }, [addLoader, removeLoader, setSelectableFields, vcResponse]);
 
   const handleSelectAll = () => {
     if (selectedFields === selectableFields) {

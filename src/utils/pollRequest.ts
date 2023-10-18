@@ -1,34 +1,24 @@
-const pollRequest = <T>(
+const pollRequest = async <T>(
   requestFunction: () => Promise<T>,
-  timeOut: number
+  timeOut: number,
+  pollInterval = 3000
 ): Promise<T | undefined> => {
-  return new Promise((resolve) => {
-    try {
-      // Run the function every 3 seconds
-      const interval = setInterval(async () => {
-        const res = await requestFunction();
-        if (res) {
-          if (Array.isArray(res)) {
-            if (res.length > 0) {
-              clearInterval(interval);
-              resolve(res);
-            }
-          } else {
-            clearInterval(interval);
-            resolve(res);
-          }
-        }
-      }, 3000);
+  const wait = (time: number, result: string) =>
+    new Promise((resolve) => setTimeout(() => resolve(result), time));
+  const fail = wait(timeOut, "fail");
 
-      // Stop the interval after reach limit time
-      setTimeout(() => {
-        clearInterval(interval);
-        resolve(undefined);
-      }, timeOut);
+  let res;
+  while (!res) {
+    try {
+      res = await requestFunction();
     } catch (error) {
       console.log("pollRequest failed: ", error);
     }
-  });
+    if (res) return res;
+
+    const next = await Promise.race([fail, wait(pollInterval, "retry")]);
+    if (next === "fail") throw new Error("Polling time limit exceeded");
+  }
 };
 
 export default pollRequest;

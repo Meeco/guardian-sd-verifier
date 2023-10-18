@@ -2,6 +2,8 @@ import { HashConnectSigner } from "hashconnect/dist/esm/provider/signer";
 import { fetchResolveDid } from "../../didService";
 import { createFile } from "../../fileService";
 import { deriveKeyAgreementKey } from "../../utils";
+import { NetworkType } from "../AppProvider";
+import { handlePollTransactionDetails } from "./handlePollTransactionDetails";
 
 // Get presentation response from HCS
 const createEncryptedFile = async ({
@@ -14,6 +16,7 @@ const createEncryptedFile = async ({
   addLoader,
   removeLoader,
   loaderId,
+  network,
 }: {
   presentationRequest: any;
   encryptedKeyId: string;
@@ -24,6 +27,7 @@ const createEncryptedFile = async ({
   addLoader: (id: string) => void;
   removeLoader: (removedId: string) => void;
   loaderId: string;
+  network: NetworkType;
 }) => {
   try {
     addLoader(loaderId);
@@ -63,19 +67,27 @@ const createEncryptedFile = async ({
       keyResolver,
     }); // jwe
 
-    const fileId = await createFile(
+    const transactionId = await createFile(
       signer,
       provider,
       JSON.stringify(encryptedMessage)
     );
 
-    removeLoader(loaderId);
+    if (transactionId) {
+      const tx = await handlePollTransactionDetails({
+        transactionId: transactionId?.toString(),
+        network,
+      });
 
-    return { fileId };
+      removeLoader(loaderId);
+      const fileId = tx.entity_id;
+
+      return fileId;
+    }
   } catch (error) {
     console.log({ error });
     removeLoader(loaderId);
-    return { fileId: null };
+    return null;
   }
 };
 

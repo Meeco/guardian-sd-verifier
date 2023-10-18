@@ -31,6 +31,7 @@ const DisclosureRequest = () => {
     presentationRequest,
     cipher,
     signer,
+    network,
   } = useContext(AppContext);
 
   const [fileResponses, setFileResponses] = useState<FileResponse[]>([]);
@@ -107,7 +108,7 @@ const DisclosureRequest = () => {
       );
 
       // Create new file
-      const { fileId } = await createEncryptedFile({
+      const fileId = await createEncryptedFile({
         encryptedKeyId,
         cipher,
         responderDid: did,
@@ -117,6 +118,7 @@ const DisclosureRequest = () => {
         addLoader,
         removeLoader,
         loaderId,
+        network,
       });
       if (fileId) {
         setFileResponses((prev) => [
@@ -134,6 +136,7 @@ const DisclosureRequest = () => {
       provider,
       removeLoader,
       setResponders,
+      network,
     ]
   );
 
@@ -156,6 +159,14 @@ const DisclosureRequest = () => {
             <AccordianToggleButton
               text={"Create Presentation"}
               eventKey={EventKey.VCAndPresentationDefinition}
+            />
+          </div>
+        ) : null}
+        {responders.length === 0 ? (
+          <div className="mt-2">
+            <AccordianToggleButton
+              text={"Query Responders"}
+              eventKey={EventKey.QueryResponders}
             />
           </div>
         ) : null}
@@ -240,6 +251,7 @@ const DisclosureRequest = () => {
                               setResponders,
                               credentialVerificationKey,
                               loaderId: sendRequestLoaderId,
+                              network,
                             })
                           }
                           text="Send Presentation Request"

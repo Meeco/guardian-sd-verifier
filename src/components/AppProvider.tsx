@@ -16,6 +16,7 @@ export enum NetworkType {
 export interface AppState {
   network: NetworkType;
   setNetwork: React.Dispatch<React.SetStateAction<NetworkType>>;
+  defaultTopicId: string;
   activeLoaders: string[];
   addLoader: (id: string) => void;
   removeLoader: (removedId: string) => void;
@@ -43,6 +44,10 @@ export interface AppState {
   setAccountId: React.Dispatch<React.SetStateAction<string>>;
   vcResponse: any;
   setVcResponse: React.Dispatch<any>;
+  selectableFields: string[];
+  setSelectableFields: React.Dispatch<React.SetStateAction<string[]>>;
+  selectedFields: string[];
+  setSelectedFields: React.Dispatch<React.SetStateAction<string[]>>;
   responders: Responder[];
   setResponders: React.Dispatch<React.SetStateAction<Responder[]>>;
   vcVerificaitonResult?: boolean;
@@ -62,6 +67,8 @@ export interface AppState {
   cipher: any;
   presentationRequest: any;
   setPresentationRequest: React.Dispatch<any>;
+  presentationDefinition: any;
+  setPresentationDefinition: React.Dispatch<any>;
 }
 
 export interface LoadingState {
@@ -130,20 +137,23 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
 
   const [cid, setCid] = useState(getLocalStorage("cid") || "");
 
-  // Topic ID for sending/receiving message
-  const [topicId, setTopicId] = useState<string>(
-    process.env.REACT_APP_DEFAULT_TOPIC_ID || ""
+  const [network, setNetwork] = useState<NetworkType>(
+    getLocalStorage("network") || NetworkType.testnet
   );
+
+  const defaultTopicId =
+    network === NetworkType.testnet
+      ? process.env.REACT_APP_DEFAULT_TESTNET_TOPIC_ID || ""
+      : process.env.REACT_APP_DEFAULT_MAINNET_TOPIC_ID || "";
+
+  // Topic ID for sending/receiving message
+  const [topicId, setTopicId] = useState<string>(defaultTopicId);
 
   // Wallet data
   const [hashConnectData, setHashConnectData] =
     useState<HashConnectTypes.InitilizationData>();
 
   const [hashconnect, setHashconnect] = useState<HashConnect>();
-
-  const [network, setNetwork] = useState<NetworkType>(
-    getLocalStorage("network") || NetworkType.testnet
-  );
 
   const [signer, setSigner] = useState<HashConnectSigner>();
 
@@ -155,7 +165,21 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
     getLocalStorage("vcResponse")
   );
 
-  const [presentationRequest, setPresentationRequest] = useState<any>();
+  const [selectableFields, setSelectableFields] = useState<string[]>(
+    getLocalStorage("selectableFields") || []
+  );
+
+  const [selectedFields, setSelectedFields] = useState<string[]>(
+    getLocalStorage("selectedFields") || []
+  );
+
+  const [presentationDefinition, setPresentationDefinition] = useState<any>(
+    getLocalStorage("presentationDefinition")
+  );
+
+  const [presentationRequest, setPresentationRequest] = useState<any>(
+    getLocalStorage("presentationRequest")
+  );
 
   const [responders, setResponders] = useState<Responder[]>([]);
 
@@ -183,10 +207,17 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
     setTopicId,
     network,
     setNetwork,
+    defaultTopicId,
     accountId,
     setAccountId,
     vcResponse,
     setVcResponse,
+    selectableFields,
+    setSelectableFields,
+    selectedFields,
+    setSelectedFields,
+    presentationDefinition,
+    setPresentationDefinition,
     responders,
     setResponders,
     vcVerificaitonResult,
@@ -218,6 +249,10 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
     setLocalStorage("vcVerificaitonResult", vcVerificaitonResult);
     setLocalStorage("cid", cid);
     setLocalStorage("vcResponse", vcResponse);
+    setLocalStorage("selectableFields", selectableFields);
+    setLocalStorage("selectedFields", selectedFields);
+    setLocalStorage("presentationDefinition", presentationDefinition);
+    setLocalStorage("presentationRequest", presentationRequest);
   }, [
     didPublicKey,
     credentialDid,
@@ -230,6 +265,10 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
     didPrivateKey,
     credentialVerificationKey,
     network,
+    selectableFields,
+    selectedFields,
+    presentationRequest,
+    presentationDefinition,
   ]);
 
   // derive verificationKey from DID's keys

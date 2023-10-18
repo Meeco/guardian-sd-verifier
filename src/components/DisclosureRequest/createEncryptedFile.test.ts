@@ -2,7 +2,6 @@ import { Cipher } from "@digitalbazaar/minimal-cipher";
 import { FileCreateTransaction } from "@hashgraph/sdk";
 import { jest } from "@jest/globals";
 import { HashConnect } from "hashconnect/dist/cjs/hashconnect";
-import { HashConnectProvider } from "hashconnect/dist/cjs/provider/provider";
 import { appMetadata } from "../../hashConnectService";
 import mockDidDocument from "../../mock/did_document.json";
 import mockEncryptedMessage from "../../mock/encrypted_message.json";
@@ -14,7 +13,7 @@ describe("createEncryptedFile", () => {
   const hashConnect = new HashConnect();
   const accountId = "0.0.1234";
   const topicId = "0.0.1730327";
-  const transactionId = "0.0.123";
+  const mockTransactionId = "0.0.123";
   const mockFileId = "0.0.123";
 
   const cipher = new Cipher();
@@ -25,6 +24,9 @@ describe("createEncryptedFile", () => {
     "did:key:z6MkhcPeozxbmYopWVJYGEr7JFpyNPDynBKSpSRwqBZEgr5u#z6MkhcPeozxbmYopWVJYGEr7JFpyNPDynBKSpSRwqBZEgr5u";
   const responderDid =
     "did:key:z6MkhcPeozxbmYopWVJYGEr7JFpyNPDynBKSpSRwqBZEgr5u";
+
+  // importing "NetworkType" from "AppProvider.tsx" cause ESM error, have to case to any to avoid the error
+  const network = "testnet" as any;
 
   const mockInitData = createMockInitData("testnet", topicId, accountId);
 
@@ -47,18 +49,23 @@ describe("createEncryptedFile", () => {
 
     const signer = hashConnect.getSigner(provider) as any;
 
-    global.fetch = jest.fn().mockImplementationOnce(async () => {
-      return { json: () => mockDidDocument, status: 200, ok: true } as any;
-    }) as unknown as jest.Mock;
+    global.fetch = jest
+      .fn()
+      .mockImplementationOnce(async () => {
+        return { json: () => mockDidDocument, status: 200, ok: true } as any;
+      })
+      .mockImplementationOnce(async () => {
+        return {
+          json: () => ({
+            transactions: [{ entity_id: mockFileId }],
+          }),
+          status: 200,
+          ok: true,
+        } as any;
+      }) as unknown as jest.Mock;
 
     const mockCreateFile = (jest.fn() as any).mockResolvedValue({
-      getReceipt: (jest.fn() as any).mockResolvedValue({
-        transactionId: transactionId,
-      }),
-    });
-
-    const mockGetTransactionReceipt = (jest.fn() as any).mockResolvedValue({
-      fileId: mockFileId,
+      transactionId: mockTransactionId,
     });
 
     jest
@@ -66,14 +73,10 @@ describe("createEncryptedFile", () => {
       .mockImplementation(mockCreateFile);
 
     jest
-      .spyOn(HashConnectProvider.prototype, "getTransactionReceipt")
-      .mockImplementation(mockGetTransactionReceipt);
-
-    jest
       .spyOn(Cipher.prototype, "encryptObject")
       .mockImplementation(() => mockEncryptedMessage);
 
-    const { fileId } = await createEncryptedFile({
+    const fileId = await createEncryptedFile({
       responderDid,
       encryptedKeyId,
       presentationRequest: mockPresentationRequest,
@@ -83,6 +86,7 @@ describe("createEncryptedFile", () => {
       removeLoader,
       signer,
       provider,
+      network,
     });
 
     expect(fileId).toEqual(mockFileId);
