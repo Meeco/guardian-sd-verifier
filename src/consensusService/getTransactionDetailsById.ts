@@ -24,7 +24,7 @@ const getTransactionDetailsById = async ({
 
     if (transactions.length > 0) return transactions[0];
   } catch (error) {
-    console.log("Get topic messages failed", error);
+    console.log("Get transaction details failed:", error);
   }
 };
 

@@ -43,7 +43,7 @@ describe("getTopicMessages", () => {
 
     expect(messages).toBe(undefined);
     expect(logSpy).toHaveBeenCalledWith(
-      "Get topic messages failed",
+      "Get topic messages failed:",
       new Error("Failed to get topic messages")
     );
   });

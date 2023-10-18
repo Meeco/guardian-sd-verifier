@@ -10,6 +10,8 @@ describe("handlePollTransactionDetails", () => {
     global.fetch = jest
       .fn()
       .mockImplementationOnce(async () => Promise.reject({ ok: false }))
+      .mockImplementationOnce(async () => Promise.reject({ ok: false }))
+      .mockImplementationOnce(async () => Promise.reject({ ok: false }))
       .mockImplementationOnce(async () => {
         return {
           json: () => ({
@@ -23,7 +25,9 @@ describe("handlePollTransactionDetails", () => {
     const tx = await handlePollTransactionDetails({
       transactionId: mockTransactionId,
       network,
+      pollInterval: 200,
+      pollTimeout: 3000,
     });
     expect(tx.entity_id).toBe(mockFileId);
-  }, 10000);
+  });
 });

@@ -40,7 +40,7 @@ const getTopicMessages = async ({
     });
     return messages;
   } catch (error) {
-    console.log("Get topic messages failed", error);
+    console.log("Get topic messages failed:", error);
   }
 };
 

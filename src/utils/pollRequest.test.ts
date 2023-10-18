@@ -3,28 +3,29 @@ import pollRequest from "./pollRequest";
 
 describe("pollRequest", () => {
   it("should return response when got response from requestFunction", async () => {
-    const mockFunc = jest
-      .fn()
-      .mockImplementation(() => new Promise((resolve) => resolve(true))) as any;
-    const res = await pollRequest(mockFunc, 3000);
-    expect(res).toBe(true);
+    const mockFunc = jest.fn().mockImplementation(async () => {
+      return {
+        data: 123,
+      } as any;
+    }) as unknown as jest.Mock;
+    const res = (await pollRequest(mockFunc, 300, 300)) as any;
+    expect(res.data).toBe(123);
   });
 
   it("should call requestFunction again when we don't get response from requestFunction(within timeout)", async () => {
     const mockFetch = jest
       .fn()
-      .mockReturnValueOnce("one")
-      .mockReturnValueOnce("two");
+      .mockImplementationOnce(async () => Promise.reject({ ok: false }))
+      .mockImplementationOnce(async () => Promise.reject({ ok: false }))
+      .mockImplementationOnce(async () => Promise.reject({ ok: false }))
+      .mockImplementationOnce(async () => {
+        return {
+          data: 123,
+        } as any;
+      }) as unknown as jest.Mock;
 
-    const requestFunction = jest.fn().mockImplementation(() => {
-      const res = mockFetch();
-      return new Promise((resolve) => {
-        if (res === "two") resolve(true);
-      });
-    }) as any;
-
-    const res = await pollRequest(requestFunction, 8000);
-    expect(res).toBe(true);
-    expect(requestFunction).toBeCalledTimes(2);
-  }, 8000);
+    const res = (await pollRequest(mockFetch, 1500, 300)) as any;
+    expect(res.data).toBe(123);
+    expect(mockFetch).toBeCalledTimes(4);
+  });
 });
