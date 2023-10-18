@@ -49,9 +49,6 @@ const Identity = () => {
     setCredentialVerificationKey,
   } = useContext(AppContext);
 
-  // User uploaded file
-  const [file, setFile] = useState<File | undefined>();
-
   const [displayedKey, setDisplayedKey] = useState(didPrivateKey);
   const [isRevealed, setIsRevealed] = useState(false);
 
@@ -75,10 +72,9 @@ const Identity = () => {
   }, [vcVerificaitonResult, verifyCredentialErrMsg]);
 
   const isExtractDidSuccess = useMemo(() => {
-    if (file) return !!credentialDid;
-    if (credentialDid) return true;
+    if (credentialDid) return !!credentialDid;
     return undefined;
-  }, [credentialDid, file]);
+  }, [credentialDid]);
 
   // Get public key from user uploaded credential
   const getPublicKey = useCallback(
@@ -136,7 +132,6 @@ const Identity = () => {
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files?.length) {
-      setFile(e.target.files[0]);
       const fileReader = new FileReader();
       fileReader.readAsText(e.target.files[0], "UTF-8");
       fileReader.onload = async (e) => {
