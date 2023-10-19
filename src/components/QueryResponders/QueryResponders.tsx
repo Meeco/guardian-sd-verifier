@@ -60,13 +60,18 @@ const QueryResponders = () => {
               timeStamp,
               network,
             });
+
             const messages = topicMessages?.filter(
               (msg) =>
                 msg.request_id === requestId &&
                 msg.operation === MessageType.QUERY_RESPONSE
             );
 
-            return messages;
+            if (messages && messages?.length > 0) {
+              return messages;
+            } else {
+              return null;
+            }
           }, 30000);
 
           if (queryRespondersMessages) {
