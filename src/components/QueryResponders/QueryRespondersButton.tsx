@@ -14,14 +14,34 @@ const QueryRespondersButton = ({
   getRespondersErrMsg: string;
   disabled?: boolean;
 }) => {
-  const { signer, activeLoaders, vcVerificaitonResult } =
-    useContext(AppContext);
+  const {
+    signer,
+    activeLoaders,
+    vcVerificaitonResult,
+    presentationDefinition,
+  } = useContext(AppContext);
 
-  if (!signer || !vcVerificaitonResult) {
+  if (!signer) {
     return (
       <AccordianToggleButton
-        text={!signer ? "Connect to wallet" : "Complete Identity section"}
-        eventKey={!signer ? EventKey.HederaAccount : EventKey.Identity}
+        text={"Connect to wallet"}
+        eventKey={EventKey.HederaAccount}
+      />
+    );
+  } else if (!vcVerificaitonResult) {
+    return (
+      <AccordianToggleButton
+        text={"Complete Identity section"}
+        eventKey={EventKey.Identity}
+      />
+    );
+  } else if (!presentationDefinition) {
+    return (
+      <AccordianToggleButton
+        text={
+          "Complete Verifiable credential and Presentation definition section"
+        }
+        eventKey={EventKey.VCAndPresentationDefinition}
       />
     );
   } else {
