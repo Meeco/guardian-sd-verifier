@@ -143,8 +143,8 @@ const AppProvider = ({ children }: { children: JSX.Element }) => {
 
   const defaultTopicId =
     network === NetworkType.testnet
-      ? process.env.REACT_APP_DEFAULT_TESTNET_TOPIC_ID || ""
-      : process.env.REACT_APP_DEFAULT_MAINNET_TOPIC_ID || "";
+      ? process.env.REACT_APP_TESTNET_DEFAULT_TOPIC_ID || ""
+      : process.env.REACT_APP_MAINNET_DEFAULT_TOPIC_ID || "";
 
   // Topic ID for sending/receiving message
   const [topicId, setTopicId] = useState<string>(defaultTopicId);

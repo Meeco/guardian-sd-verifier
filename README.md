@@ -16,11 +16,14 @@ It can be run locally with node >= 16:
 
 Ensure `.env.example` is copied as `.env` and completed with all properties.
 
-| Property                             | Description                                                   |
-| ------------------------------------ | ------------------------------------------------------------- |
-| `REACT_APP_DEFAULT_TESTNET_TOPIC_ID` | Default topic for sending/receiving message from HCS(testnet) |
-| `REACT_APP_DEFAULT_MAINNET_TOPIC_ID` | Default topic for sending/receiving message from HCS(mainnet) |
-| `REACT_APP_DID_RESOLVER_URL`         | Url of did resolver on verifier side                          |
+| Property                               | Description                                                   |
+| -------------------------------------- | ------------------------------------------------------------- |
+| `REACT_APP_TESTNET_DEFAULT_TOPIC_ID`   | Default topic for sending/receiving message from HCS(testnet) |
+| `REACT_APP_MAINNET_DEFAULT_TOPIC_ID`   | Default topic for sending/receiving message from HCS(mainnet) |
+| `REACT_APP_DID_UNIVERSAL_RESOLVER_URL` | Url of universal did resolver.                                |
+
+NB. The DID universal resolver defaults to https://dev.uniresolver.io. If using `did:hedera`, may need to run local resolver for testing, for example [hedera-did-universal-resolver-mock](https://github.com/Meeco/hedera-did-universal-resolver-mock)
+
 
 - Install dependencies with `yarn` (`npm i -g yarn` to install yarn if you do not have it installed)
 - `yarn start` to start the responder listening on the configured topics
