@@ -9,27 +9,19 @@ const resolveDid = async (didUrl: string) => {
   return didDocument;
 };
 
-const UNIVERSAL_RESOLVER_HOST =
-  process.env.UNIVERSAL_RESOLVER_HOST ??
-  `https://dev.uniresolver.io/1.0/identifiers`;
-const HEDERA_RESOLVER_HOST =
-  process.env.HEDERA_RESOLVER_HOST ?? `http://localhost:5000/1.0/identifiers`;
+const UNIVERSAL_RESOLVER_URL =
+  process.env.REACT_APP_DID_UNIVERSAL_RESOLVER_URL ?? `https://dev.uniresolver.io/1.0/identifiers`;
+
 
 /**
- * Placeholder did resolver.
- * Since universal resolvers don't yet typically support Hedera DIDs, assumes a
- * universal did resolver running at localhost:5000 that will resolve Hedera DIDs
+ * Construct DID Document local if did:key, else use Universal DID resolver.
  */
 const resolveDidDocument = (did: string) => {
   if (did.startsWith("did:key")) {
     return resolveDid(did);
   } else
     return fetchJson({
-      url: `${
-        did.startsWith("did:hedera")
-          ? HEDERA_RESOLVER_HOST
-          : UNIVERSAL_RESOLVER_HOST
-      }/${did}`,
+      url: `${UNIVERSAL_RESOLVER_URL}/${did}`,
     });
 };
 

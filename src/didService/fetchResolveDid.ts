@@ -1,8 +1,8 @@
 import { fetchJson } from "../utils";
 import { promiseWithTimeout } from "../utils/promiseWithTimeout";
 
-const HEDERA_RESOLVER_HOST =
-  process.env.HEDERA_RESOLVER_HOST ?? `http://localhost:5000/1.0/identifiers`;
+const DID_RESOLVER_URL =
+  process.env.REACT_APP_DID_UNIVERSAL_RESOLVER_URL ?? `https://dev.uniresolver.io/1.0/identifiers`;
 
 /**
  * Placeholder did resolver.
@@ -11,7 +11,7 @@ const HEDERA_RESOLVER_HOST =
  */
 const fetchResolveDid = async (did: string) =>
   await promiseWithTimeout({
-    promise: fetchJson({ url: `${HEDERA_RESOLVER_HOST}/${did}` }),
+    promise: fetchJson({ url: `${DID_RESOLVER_URL}/${did}` }),
     time: 3000,
   });
 
