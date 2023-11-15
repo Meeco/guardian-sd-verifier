@@ -6,7 +6,6 @@ export const createPresentationDefinition = (
 ) => {
   const path = selectedFields.map((field) => `$.credentialSubject.${field}`);
   return {
-    comment: "Note: VP, OIDC, DIDComm, or CHAPI outer wrapper would be here.",
     presentation_definition: {
       id: uuidv4(),
       input_descriptors: [

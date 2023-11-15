@@ -1,7 +1,6 @@
-import * as ed25519 from "@transmute/did-key-ed25519";
+import { fetchResolveDid, resolveDid } from "../didService";
 import { ResultType, fetchIPFSFile } from "../fileService";
 import fetchJson from "./fetchJson";
-import resolveDidDocument from "./resolveDid";
 
 const wrapResponse = (url: string, document: any) => {
   return {
@@ -19,15 +18,13 @@ export const documentLoader = async (url: string) => {
 
     if (url.startsWith("did:key")) {
       const [did] = url.split("#");
-      const { didDocument } = await ed25519.resolve(did, {
-        accept: "application/did+json",
-      });
+      const didDocument = await resolveDid(did);
 
       document = didDocument;
     } else {
       switch (protocol) {
         case "did":
-          document = await resolveDidDocument(url);
+          document = await fetchResolveDid(url);
           break;
         case "ipfs":
           document = await fetchIPFSFile(url, { resultType: ResultType.JSON });
