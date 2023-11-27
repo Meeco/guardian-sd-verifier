@@ -21,7 +21,7 @@ import deriveEdVerificationKey from "../../utils/deriveEdVerificationKey";
 import derivePublicKeyHexFromJwk from "../../utils/derivePublicKeyHexFromJwk";
 import { AppContext } from "../AppProvider";
 import {
-  AccordianToggleButton,
+  AccordionToggleButton,
   Button as ButtonWithLoader,
   StatusLabel,
 } from "../common";
@@ -340,7 +340,7 @@ const Identity = () => {
               <div className="d-flex mt-3">
                 {vcVerificaitonResult ? (
                   <>
-                    <AccordianToggleButton
+                    <AccordionToggleButton
                       text="Next"
                       eventKey={EventKey.VCAndPresentationDefinition}
                       isSuccess={

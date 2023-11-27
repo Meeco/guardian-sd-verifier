@@ -2,7 +2,7 @@ import { useContext, useMemo, useState } from "react";
 import { Accordion, Button, Dropdown } from "react-bootstrap";
 import { EventKey } from "../../constants";
 import { AppContext, NetworkType } from "../AppProvider";
-import { AccordianToggleButton, StatusLabel } from "../common";
+import { AccordionToggleButton, StatusLabel } from "../common";
 import ChangeNetworkModal from "./ChangeNetworkModal";
 import ConnectWalletModal from "./ConnectWalletModal";
 
@@ -145,7 +145,7 @@ const HederaAccount = () => {
             <StatusLabel isSuccess={connectWalletSuccess} text="Connected" />
           </div>
 
-          <AccordianToggleButton
+          <AccordionToggleButton
             text="Next"
             disabled={!connectWalletSuccess}
             eventKey={EventKey.Identity}

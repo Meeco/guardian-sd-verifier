@@ -2,7 +2,7 @@ import { useContext } from "react";
 import { EventKey } from "../../../constants";
 import { AppContext } from "../../AppProvider";
 import {
-  AccordianToggleButton,
+  AccordionToggleButton,
   Button as ButtonWithLoader,
   StatusLabel,
 } from "../../common";
@@ -45,7 +45,7 @@ const CreatePresentationButton = ({
     );
   } else {
     return (
-      <AccordianToggleButton
+      <AccordionToggleButton
         text="Complete Identity section"
         eventKey={EventKey.Identity}
       />

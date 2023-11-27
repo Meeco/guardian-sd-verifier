@@ -10,7 +10,7 @@ import CreatePresentationButton from "../DisclosureRequest/components/CreatePres
 import GetVcButton from "../DisclosureRequest/components/GetVcButton";
 import createPresentationRequest from "../DisclosureRequest/createPresentationRequest";
 import {
-  AccordianToggleButton,
+  AccordionToggleButton,
   Button as ButtonWithLoader,
   StatusLabel,
 } from "../common";
@@ -271,7 +271,7 @@ const VCAndPresentationDefinition = () => {
             )}
             {presentationDefinition ? (
               <div className="mt-3">
-                <AccordianToggleButton
+                <AccordionToggleButton
                   text="Next"
                   eventKey={EventKey.QueryResponders}
                 />
