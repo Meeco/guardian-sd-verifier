@@ -7,7 +7,7 @@ import { EventKey } from "../../constants";
 import { MessageType, PresentationQueryMessage } from "../../types";
 import { pollRequest } from "../../utils";
 import { AppContext } from "../AppProvider";
-import { AccordianToggleButton } from "../common";
+import { AccordionToggleButton } from "../common";
 import QueryRespondersButton from "./QueryRespondersButton";
 
 const QueryResponders = () => {
@@ -144,7 +144,7 @@ const QueryResponders = () => {
           </div>
           {getRespondersSuccess ? (
             <div className="mt-2">
-              <AccordianToggleButton
+              <AccordionToggleButton
                 text="Next"
                 eventKey={EventKey.DisclosureRequest}
               />

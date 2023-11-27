@@ -21,10 +21,12 @@ const createSuite = async ({
           key: ed25519VerificationKey2020,
         });
       case "Ed25519VerificationKey2020":
+      case "JsonWebKey2020":
         return new Ed25519Signature2020({
           key: verificationKey,
         });
       default:
+        console.error(`Unsupported key type ${type}`);
         return;
     }
   } catch (error) {

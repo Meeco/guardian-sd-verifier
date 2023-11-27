@@ -6,16 +6,24 @@ import { EventKey } from "../../../constants";
 import { downloadJson } from "../../../utils";
 import { AppContext } from "../../AppProvider";
 import {
-  AccordianToggleButton,
+  AccordionToggleButton,
   Button as ButtonWithLoader,
   StatusLabel,
 } from "../../common";
 import createEncryptedFile from "../createEncryptedFile";
+import decryptPresentationResponseMessage from "../decryptPresentationResponseMessage";
 import handleSendPresentationRequest from "../handleSendPresentationRequest";
 
 interface FileResponse {
   did: string;
   fileId: string;
+}
+
+export interface PresentationResponseTopicMessage {
+  fileCid?: string;
+  error?: {
+    message?: string;
+  };
 }
 
 const DisclosureRequest = () => {
@@ -34,6 +42,10 @@ const DisclosureRequest = () => {
     network,
   } = useContext(AppContext);
 
+  const [
+    presentationResponseTopicMessage,
+    setPresentationResponseTopicMessage,
+  ] = useState<PresentationResponseTopicMessage>();
   const [fileResponses, setFileResponses] = useState<FileResponse[]>([]);
 
   const getResponderFile = useCallback(
@@ -63,6 +75,29 @@ const DisclosureRequest = () => {
     } else return "";
   };
 
+  const presentationResponseTopicMessageStatus = (
+    topicMessage: any,
+    loaderId: string
+  ) => {
+    if (activeLoaders.includes(loaderId)) {
+      return;
+    }
+    if (topicMessage !== undefined) {
+      if (topicMessage?.fileCid) return true;
+      else return false;
+    }
+  };
+
+  const presentationResponseTopicMessageStatusMessage = (
+    presentationResponse: any
+  ) => {
+    if (presentationResponseTopicMessage !== undefined) {
+      if (presentationResponseTopicMessage?.fileCid)
+        return "Response file's CID received from HCS";
+      else return presentationResponse?.error?.message ?? "Send request failed";
+    } else return "";
+  };
+
   const presentationResponseStatus = (
     presentationResponse: any,
     loaderId: string
@@ -78,8 +113,12 @@ const DisclosureRequest = () => {
 
   const presentationResponseStatusMessage = (presentationResponse: any) => {
     if (presentationResponse !== undefined) {
-      if (presentationResponse?.data) return "Sent";
-      else return presentationResponse?.error?.message ?? "Send request failed";
+      if (presentationResponse?.data) return "Success";
+      else
+        return (
+          presentationResponse?.error?.message ??
+          "Fetch presentation response failed"
+        );
     } else return "";
   };
 
@@ -148,7 +187,7 @@ const DisclosureRequest = () => {
       <Accordion.Body>
         {!signer ? (
           <div className="mt-2">
-            <AccordianToggleButton
+            <AccordionToggleButton
               text={"Connect to wallet"}
               eventKey={EventKey.HederaAccount}
             />
@@ -156,7 +195,7 @@ const DisclosureRequest = () => {
         ) : null}
         {!presentationRequest ? (
           <div className="mt-2">
-            <AccordianToggleButton
+            <AccordionToggleButton
               text={"Create Presentation"}
               eventKey={EventKey.VCAndPresentationDefinition}
             />
@@ -164,7 +203,7 @@ const DisclosureRequest = () => {
         ) : null}
         {responders.length === 0 ? (
           <div className="mt-2">
-            <AccordianToggleButton
+            <AccordionToggleButton
               text={"Query Responders"}
               eventKey={EventKey.QueryResponders}
             />
@@ -180,21 +219,25 @@ const DisclosureRequest = () => {
 
             const file = getResponderFile(did);
 
-            const sendRequestLoaderId = `handleSendRequest-${did}`;
             const createFileLoaderId = `createEncryptedFile-${did}`;
-
-            const isSentRequestSuccess = presentationResponseStatus(
-              presentationResponse,
-              sendRequestLoaderId
-            );
+            const sendRequestLoaderId = `handleSendRequest-${did}`;
+            const getResponseFileLoaderId = `getResponseFile-${did}`;
 
             const isCreateFileSuccess = fileResponseStatus(
               did,
               createFileLoaderId
             );
 
-            const statusText =
-              presentationResponseStatusMessage(presentationResponse);
+            const isSendPresentationRequestSuccess =
+              presentationResponseTopicMessageStatus(
+                presentationResponseTopicMessage,
+                sendRequestLoaderId
+              );
+
+            const isReceiveResponseSuccess = presentationResponseStatus(
+              presentationResponse,
+              getResponseFileLoaderId
+            );
 
             return (
               <Accordion key={did}>
@@ -235,6 +278,7 @@ const DisclosureRequest = () => {
                         />
                       </div>
                     )}
+
                     {file?.fileId && signer ? (
                       <div className="d-flex mt-2">
                         <ButtonWithLoader
@@ -246,12 +290,9 @@ const DisclosureRequest = () => {
                               removeLoader,
                               signer,
                               topicId,
-                              cipher,
-                              responders,
-                              setResponders,
-                              credentialVerificationKey,
                               loaderId: sendRequestLoaderId,
                               network,
+                              setPresentationResponseTopicMessage,
                             })
                           }
                           text="Send Presentation Request"
@@ -269,9 +310,57 @@ const DisclosureRequest = () => {
                           isSuccess={
                             activeLoaders.includes(sendRequestLoaderId)
                               ? undefined
-                              : isSentRequestSuccess
+                              : isSendPresentationRequestSuccess
                           }
-                          text={statusText}
+                          text={presentationResponseTopicMessageStatusMessage(
+                            presentationResponseTopicMessage
+                          )}
+                        />
+                      </div>
+                    ) : null}
+
+                    {presentationResponseTopicMessage?.fileCid ? (
+                      <div className="d-flex mt-2">
+                        <ButtonWithLoader
+                          onClick={() =>
+                            decryptPresentationResponseMessage({
+                              cipher,
+                              credentialVerificationKey,
+                              fileCid:
+                                presentationResponseTopicMessage?.fileCid ?? "",
+                              addLoader,
+                              removeLoader,
+                              loaderId: getResponseFileLoaderId,
+                              responderDid: did,
+                              responders,
+                              setResponders,
+                            })
+                          }
+                          text={
+                            isReceiveResponseSuccess === false
+                              ? "Get Response File - Try again"
+                              : "Get Response File"
+                          }
+                          loading={activeLoaders.includes(
+                            getResponseFileLoaderId
+                          )}
+                          disabled={
+                            activeLoaders.length > 0
+                              ? !activeLoaders.find(
+                                  (item) => item === getResponseFileLoaderId
+                                )
+                              : false
+                          }
+                        />
+                        <StatusLabel
+                          isSuccess={
+                            activeLoaders.includes(getResponseFileLoaderId)
+                              ? undefined
+                              : isReceiveResponseSuccess
+                          }
+                          text={presentationResponseStatusMessage(
+                            presentationResponse
+                          )}
                         />
                       </div>
                     ) : null}

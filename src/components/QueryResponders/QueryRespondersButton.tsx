@@ -1,7 +1,7 @@
 import { useContext } from "react";
 import { EventKey } from "../../constants";
 import { AppContext } from "../AppProvider";
-import { AccordianToggleButton, Button, StatusLabel } from "../common";
+import { AccordionToggleButton, Button, StatusLabel } from "../common";
 
 const QueryRespondersButton = ({
   handleQueryResponders,
@@ -23,21 +23,21 @@ const QueryRespondersButton = ({
 
   if (!signer) {
     return (
-      <AccordianToggleButton
+      <AccordionToggleButton
         text={"Connect to wallet"}
         eventKey={EventKey.HederaAccount}
       />
     );
   } else if (!vcVerificaitonResult) {
     return (
-      <AccordianToggleButton
+      <AccordionToggleButton
         text={"Complete Identity section"}
         eventKey={EventKey.Identity}
       />
     );
   } else if (!presentationDefinition) {
     return (
-      <AccordianToggleButton
+      <AccordionToggleButton
         text={
           "Complete Verifiable credential and Presentation definition section"
         }

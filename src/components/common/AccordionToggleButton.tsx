@@ -1,7 +1,7 @@
 import { Button, useAccordionButton } from "react-bootstrap";
 import StatusLabel from "./StatusLabel";
 
-const AccordianToggleButton = ({
+const AccordionToggleButton = ({
   text,
   eventKey,
   disabled,
@@ -25,4 +25,4 @@ const AccordianToggleButton = ({
     </>
   );
 };
-export default AccordianToggleButton;
+export default AccordionToggleButton;
