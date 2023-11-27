@@ -22,8 +22,7 @@ Ensure `.env.example` is copied as `.env` and completed with all properties.
 | `REACT_APP_MAINNET_DEFAULT_TOPIC_ID`   | Default topic for sending/receiving message from HCS(mainnet) |
 | `REACT_APP_DID_UNIVERSAL_RESOLVER_URL` | Url of universal did resolver.                                |
 
-NB. The DID universal resolver defaults to https://dev.uniresolver.io. If using `did:hedera`, may need to run local resolver for testing, for example [hedera-did-universal-resolver-mock](https://github.com/Meeco/hedera-did-universal-resolver-mock)
-
+NB. The DID universal resolver defaults to [https://dev.uniresolver.io](https://dev.uniresolver.io). If using `did:hedera`, you may need to run local resolver for testing, for example [hedera-did-universal-resolver-mock](https://github.com/Meeco/hedera-did-universal-resolver-mock).
 
 - Install dependencies with `yarn` (`npm i -g yarn` to install yarn if you do not have it installed)
 - `yarn start` to start the responder listening on the configured topics
@@ -32,15 +31,15 @@ NB. The DID universal resolver defaults to https://dev.uniresolver.io. If using 
 
 Dependencies:
 
-- Hashpack extension on browser or application on mobile phone
+- [Hashpack wallet](https://www.hashpack.app/); [web-app](https://wallet.hashpack.app/), [chrome extension](https://chrome.google.com/webstore/detail/hashpack/gjagmgiddbbciopjhllkdnddhcglnemk) or [mobile application](https://www.hashpack.app/download).
 
-Folder structure:
+Folder structure for `src`:
 
-- `hashConnectService` - Functions relevant to HashConnect library e.g., init connection, connect to wallet
 - `components` - React components
 - `consensusService` - Functions relevant to Hedera consensus service e.g., submit message to topic, get topic's messages
 - `didService` - Functions relevant to DID e.g., resolve did
 - `fileService` - Functions relevant to Hedera file service e.g., create file, get file's contents
+- `hashConnectService` - Functions relevant to HashConnect library e.g., init connection, connect to wallet
 - `mock` - Mock files for testing
 - `types` - e.g., message types
 - `utils` - Utility functions e.g., decrypt data, documentLoader, poll request, derive key
