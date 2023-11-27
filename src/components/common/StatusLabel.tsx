@@ -23,16 +23,16 @@ const StatusLabel: React.FC<StatusLabelProps> = ({ isSuccess, text }) => {
   }, [isSuccess]);
 
   return status === ActionStatus.Idle ? null : (
-    <div className="d-flex algin-items-center mx-2">
+    <div className="d-flex algin-items-center">
       <div className="d-flex align-items-center">
         {status === ActionStatus.Success ? (
           <>
-            <CheckCircle color="green" className="mx-1" />
+            <CheckCircle color="green" className="mx-2" />
             {text}
           </>
         ) : (
           <>
-            <XCircle color="red" className="mx-1" />
+            <XCircle color="red" className="mx-2" />
             {text}
           </>
         )}

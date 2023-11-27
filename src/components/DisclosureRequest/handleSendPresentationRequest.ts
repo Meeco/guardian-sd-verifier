@@ -1,6 +1,6 @@
 import { HashConnectSigner } from "hashconnect/dist/esm/provider/signer";
-import { NetworkType, Responder } from "../AppProvider";
-import decryptPresentationResponseMessage from "./decryptPresentationResponseMessage";
+import { NetworkType } from "../AppProvider";
+import { PresentationResponseTopicMessage } from "./components/DisclosureRequest";
 import { handlePollPresentationResponseRequest } from "./handlePollPresentationResponseRequest";
 import sendPresentationRequest from "./sendPresentationRequest";
 
@@ -12,12 +12,9 @@ const handleSendPresentationRequest = async ({
   removeLoader,
   signer,
   topicId,
-  cipher,
-  responders,
-  setResponders,
-  credentialVerificationKey,
   loaderId,
   network,
+  setPresentationResponseTopicMessage,
 }: {
   fileId: string;
   responderDid: string;
@@ -25,23 +22,14 @@ const handleSendPresentationRequest = async ({
   removeLoader: (removedId: string) => void;
   signer: HashConnectSigner;
   topicId?: string;
-  cipher: any;
-  responders: Responder[];
-  setResponders: (value: React.SetStateAction<Responder[]>) => void;
-  credentialVerificationKey: any;
   loaderId: string;
   network: NetworkType;
+  setPresentationResponseTopicMessage: React.Dispatch<
+    React.SetStateAction<PresentationResponseTopicMessage | undefined>
+  >;
 }) => {
   try {
     addLoader(loaderId);
-    // Remove old response from responder before sending new request
-    setResponders((prev) =>
-      prev.map((responder) => {
-        if (responder.did === responderDid) {
-          return { ...responder, presentationResponse: undefined };
-        } else return responder;
-      })
-    );
 
     const timeStamp = Date.now();
     await sendPresentationRequest({
@@ -51,83 +39,33 @@ const handleSendPresentationRequest = async ({
       topicId,
     }).then(async ({ isSuccess, requestId }) => {
       if (isSuccess && requestId) {
-        const responseMessage = await handlePollPresentationResponseRequest({
+        const message = await handlePollPresentationResponseRequest({
           requestId,
           topicId,
           timeStamp,
           network,
         });
 
-        let presentationResponse: any;
+        const responseMessage: PresentationResponseTopicMessage = {};
 
-        if (responseMessage) {
-          if (responseMessage.error) {
-            presentationResponse = {
-              error: responseMessage.error,
-            };
+        if (message !== undefined) {
+          if (message.error) {
+            responseMessage.error = message.error;
           } else {
-            const data = await decryptPresentationResponseMessage({
-              cipher,
-              presentationResponseMessage: responseMessage,
-              credentialVerificationKey,
-            });
-            presentationResponse = {
-              data,
-            };
+            responseMessage.fileCid = message.response_file_cid;
           }
         } else {
-          presentationResponse = {
-            error: { message: "Send request failed" },
-          };
+          responseMessage.error = { message: "Send request failed" };
         }
 
-        if (!presentationResponse) {
-          presentationResponse = {
-            error: { message: "Unable to process the request file." },
-          };
-        }
-
-        const selectedIndex = responders.findIndex(
-          (item) => item.did === responderDid
-        );
-
-        setResponders((prev) => {
-          const updatedResponders = responders.map((_, index) => {
-            if (index === selectedIndex) {
-              return {
-                ...prev[index],
-                presentationResponse,
-              };
-            } else return prev[index];
-          });
-
-          return updatedResponders;
-        });
-
+        setPresentationResponseTopicMessage(responseMessage);
         removeLoader(loaderId);
       }
     });
   } catch (error) {
     console.log("send presentation request failed: ", error);
-    const selectedIndex = responders.findIndex(
-      (item) => item.did === responderDid
-    );
-
-    setResponders((prev) => {
-      const updatedResponders = responders.map((r, index) => {
-        if (index === selectedIndex) {
-          return {
-            ...prev[index],
-            presentationResponse: {
-              error: {
-                message: (error as any).message,
-              },
-            },
-          };
-        } else return prev[index];
-      });
-
-      return updatedResponders;
+    setPresentationResponseTopicMessage({
+      error: { message: (error as any).message },
     });
     removeLoader(loaderId);
   }

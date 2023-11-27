@@ -5,7 +5,7 @@ import { jest } from "@jest/globals";
 import decryptPresentationResponseMessage from "./decryptPresentationResponseMessage";
 
 import { Buffer } from "buffer";
-import { MessageType } from "../../types";
+import { Responder } from "../AppProvider";
 
 global.Buffer = Buffer;
 
@@ -47,20 +47,28 @@ describe("decryptPresentationResponseMessage", () => {
       keyResolver,
     });
 
+    const mockSetResponders = jest.fn();
+    const mockAddLoader = jest.fn();
+    const mockRemoveLoader = jest.fn();
+
     global.fetch = jest.fn(() =>
       Promise.resolve({ json: () => encrypted, status: 200, ok: true })
     ) as unknown as jest.Mock;
 
+    const responders: Responder[] = [
+      { did: "did:key:123", accountId: "123", encryptedKeyId: "123" },
+    ];
+
     const decrypted = await decryptPresentationResponseMessage({
-      // Cast to any to fix esm/cjs issue
       cipher,
-      presentationResponseMessage: {
-        operation: MessageType.PRESENTATION_RESPONSE,
-        request_id: "123",
-        recipient_did: "123",
-        response_file_cid: "123",
-      },
       credentialVerificationKey: sharedEdKey,
+      fileCid: "cid567",
+      responders,
+      setResponders: mockSetResponders,
+      loaderId: "decryptPresentationResponseMessage",
+      addLoader: mockAddLoader,
+      removeLoader: mockRemoveLoader,
+      responderDid: "did:key:123",
     });
 
     expect(JSON.stringify(decrypted)).toBe(JSON.stringify(data));
