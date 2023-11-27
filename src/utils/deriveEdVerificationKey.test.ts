@@ -3,6 +3,7 @@ import { Ed25519VerificationKey2020 } from "@digitalbazaar/ed25519-verification-
 import bs58 from "bs58";
 import { base58btc } from "multiformats/bases/base58";
 import deriveEdVerificationKey from "./deriveEdVerificationKey";
+import derivePublicKeyHexFromJwk from "./derivePublicKeyHexFromJwk";
 
 describe("deriveEdVerificationKey", () => {
   it("should derive Ed25519VerificationKey2020 from Ed25519VerificationKey2018", async () => {
@@ -76,5 +77,43 @@ describe("deriveEdVerificationKey", () => {
     expect(JSON.stringify(verificationKey)).toBe(
       JSON.stringify(edVerificationKey)
     );
+  });
+
+  it("should derive Ed25519VerificationKey2020 from JsonWebKey2020", async () => {
+    const publicKeyJwk = {
+      kty: "OKP",
+      crv: "Ed25519",
+      x: "utFUwQtgjXE5QTfzC2-OO8OWkqfWpxZo6I43pRHpLf4",
+    };
+    const publicKeyHex = derivePublicKeyHexFromJwk(publicKeyJwk);
+    const verificationKey = await deriveEdVerificationKey({
+      id: "did:key:z6Mks2X1aKs8PvepaGbhUghRY3pTBsjQificC4ybNnriSBSM#z6Mks2X1aKs8PvepaGbhUghRY3pTBsjQificC4ybNnriSBSM",
+      type: "JsonWebKey2020",
+      publicKeyHex,
+      privateKeyHex:
+        "aec54845d5a1ada14b5bc78ad0b0097c6b6a2169d3afae3539756aabb60a697ebad154c10b608d71394137f30b6f8e3bc39692a7d6a71668e88e37a511e92dfe",
+      publicKeyJwk,
+    });
+
+    expect(verificationKey.type).toBe("Ed25519VerificationKey2020");
+  });
+
+  it("should derive Ed25519VerificationKey2020 from Ed25519VerificationKey2018 with publicKeyJwk", async () => {
+    const publicKeyJwk = {
+      kty: "OKP",
+      crv: "Ed25519",
+      x: "utFUwQtgjXE5QTfzC2-OO8OWkqfWpxZo6I43pRHpLf4",
+    };
+    const publicKeyHex = derivePublicKeyHexFromJwk(publicKeyJwk);
+    const verificationKey = await deriveEdVerificationKey({
+      id: "did:key:z6Mks2X1aKs8PvepaGbhUghRY3pTBsjQificC4ybNnriSBSM#z6Mks2X1aKs8PvepaGbhUghRY3pTBsjQificC4ybNnriSBSM",
+      type: "Ed25519VerificationKey2018",
+      publicKeyHex,
+      privateKeyHex:
+        "aec54845d5a1ada14b5bc78ad0b0097c6b6a2169d3afae3539756aabb60a697ebad154c10b608d71394137f30b6f8e3bc39692a7d6a71668e88e37a511e92dfe",
+      publicKeyJwk,
+    });
+
+    expect(verificationKey.type).toBe("Ed25519VerificationKey2020");
   });
 });

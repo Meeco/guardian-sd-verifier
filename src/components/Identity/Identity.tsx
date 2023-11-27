@@ -2,6 +2,7 @@ import { Ed25519Signature2018 } from "@transmute/ed25519-signature-2018";
 import { Ed25519Signature2020 } from "@transmute/ed25519-signature-2020";
 import { verifiable } from "@transmute/vc.js";
 import { DocumentLoader } from "@transmute/vc.js/dist/types/DocumentLoader";
+import bs58 from "bs58";
 import { base58btc } from "multiformats/bases/base58";
 import {
   ChangeEvent,
@@ -80,16 +81,27 @@ const Identity = () => {
   const getPublicKey = useCallback(
     (selectedMethod: any) => {
       try {
-        const { type } = selectedMethod;
+        const { type, publicKeyJwk } = selectedMethod;
         switch (type) {
           case "Ed25519VerificationKey2018":
-            const { publicKeyJwk } = selectedMethod;
+            if (publicKeyJwk) {
+              setDidPublicKey(derivePublicKeyHexFromJwk(publicKeyJwk));
+            } else {
+              setDidPublicKey(
+                Buffer.from(
+                  bs58.decode(selectedMethod.publicKeyBase58)
+                ).toString("hex")
+              );
+            }
+            break;
+          case "JsonWebKey2020":
             setDidPublicKey(derivePublicKeyHexFromJwk(publicKeyJwk));
             break;
           case "Ed25519VerificationKey2020":
-            const { publicKeyMultibase } = selectedMethod;
             setDidPublicKey(
-              Buffer.from(base58btc.decode(publicKeyMultibase)).toString("hex")
+              Buffer.from(
+                base58btc.decode(selectedMethod.publicKeyMultibase)
+              ).toString("hex")
             );
             break;
           default:
