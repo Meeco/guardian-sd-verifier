@@ -79,7 +79,7 @@ const decryptPresentationResponseMessage = async ({
       removeLoader(loaderId);
 
       // return `decrypted` value for testability because it's easier to test the decryption result
-      // (`setResponders` args are anonymous functions which is hard to get the decrypted result for comparison in test)
+      // (`setResponders` args are anonymous functions which is hard to get the decryption result for comparison in test)
       return decrypted;
     } else {
       removeLoader(loaderId);
